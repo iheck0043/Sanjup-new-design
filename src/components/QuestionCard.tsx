@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Trash2, GripVertical } from 'lucide-react';
 import { Question } from '../pages/Index';
 
 interface QuestionCardProps {
@@ -20,128 +20,99 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const getQuestionColor = (type: string) => {
-    const colors = {
-      'متنی با پاسخ کوتاه': 'bg-blue-50 border-blue-200',
-      'متنی با پاسخ بلند': 'bg-purple-50 border-purple-200',
-      'چندگزینه‌ای': 'bg-pink-50 border-pink-200',
-      'چندگزینه‌ای تصویری': 'bg-yellow-50 border-yellow-200',
-      'لیست کشویی': 'bg-teal-50 border-teal-200',
-      'عدد': 'bg-red-50 border-red-200',
-      'ایمیل': 'bg-red-50 border-red-200',
-      'لینک/وب‌سایت': 'bg-cyan-50 border-cyan-200',
-      'طیفی': 'bg-indigo-50 border-indigo-200',
+  const getQuestionIcon = (type: string) => {
+    const icons = {
+      'متنی با پاسخ کوتاه': '📝',
+      'متنی با پاسخ بلند': '📄',
+      'چندگزینه‌ای': '⚪',
+      'چندگزینه‌ای تصویری': '🖼️',
+      'لیست کشویی': '📋',
+      'عدد': '🔢',
+      'ایمیل': '📧',
+      'لینک/وب‌سایت': '🔗',
+      'طیفی': '📊',
+      'گروه سوال': '📁',
+      'درخت‌بندی': '🌳',
+      'اولویت‌دهی': '⬆️',
+      'متن بدون پاسخ': '💬',
+      'درگاه پرداخت': '💳',
+      'صفحه پایان': '🏁',
     };
-    return colors[type as keyof typeof colors] || 'bg-gray-50 border-gray-200';
-  };
-
-  const renderQuestionInput = () => {
-    switch (question.type) {
-      case 'متنی با پاسخ کوتاه':
-        return (
-          <Input
-            placeholder="پاسخ کوتاه..."
-            className="mt-3"
-            disabled
-          />
-        );
-      case 'متنی با پاسخ بلند':
-        return (
-          <Textarea
-            placeholder="پاسخ بلند..."
-            className="mt-3"
-            rows={3}
-            disabled
-          />
-        );
-      case 'عدد':
-        return (
-          <Input
-            type="number"
-            placeholder="عدد..."
-            className="mt-3"
-            disabled
-          />
-        );
-      case 'ایمیل':
-        return (
-          <Input
-            type="email"
-            placeholder="آدرس ایمیل..."
-            className="mt-3"
-            disabled
-          />
-        );
-      case 'چندگزینه‌ای':
-        return (
-          <div className="mt-3 space-y-2">
-            {question.options?.map((option, idx) => (
-              <div key={idx} className="flex items-center space-x-2 space-x-reverse">
-                <input type="radio" name={`question-${question.id}`} disabled />
-                <span className="text-sm">{option}</span>
-              </div>
-            ))}
-          </div>
-        );
-      default:
-        return null;
-    }
+    return icons[type as keyof typeof icons] || '❓';
   };
 
   return (
-    <div className={`p-6 rounded-lg border-2 ${getQuestionColor(question.type)} relative group`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 space-x-reverse mb-2">
-            <span className="bg-white px-2 py-1 rounded text-xs font-medium text-gray-600">
-              {index + 1}
-            </span>
-            <span className="text-xs text-gray-500">{question.type}</span>
-          </div>
-          
+    <div className="group bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 hover:shadow-md">
+      <div className="flex items-center p-4 gap-4">
+        {/* Drag Handle */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
+          <GripVertical className="w-4 h-4 text-gray-400" />
+        </div>
+
+        {/* Question Number */}
+        <div className="flex-shrink-0">
+          <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+            {index + 1}
+          </span>
+        </div>
+
+        {/* Question Icon */}
+        <div className="flex-shrink-0 text-xl">
+          {getQuestionIcon(question.type)}
+        </div>
+
+        {/* Question Text */}
+        <div className="flex-1 min-w-0">
           {isEditing ? (
             <Input
               value={question.label}
               onChange={(e) => onUpdate(question.id, { label: e.target.value })}
               onBlur={() => setIsEditing(false)}
               onKeyPress={(e) => e.key === 'Enter' && setIsEditing(false)}
-              className="text-lg font-medium"
+              className="border-none shadow-none p-0 text-base font-medium bg-transparent focus:bg-white focus:shadow-md focus:border focus:p-2 rounded-lg transition-all"
               autoFocus
             />
           ) : (
-            <h3
-              className="text-lg font-medium text-gray-800 cursor-pointer hover:bg-white hover:bg-opacity-50 p-2 rounded"
+            <button
               onClick={() => setIsEditing(true)}
+              className="text-right w-full text-base font-medium text-gray-800 hover:text-blue-600 transition-colors truncate"
             >
               {question.label}
-            </h3>
+            </button>
           )}
-          
-          {renderQuestionInput()}
         </div>
-        
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+
+        {/* Question Type Badge */}
+        <div className="flex-shrink-0">
+          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
+            {question.type}
+          </span>
+        </div>
+
+        {/* Required Toggle */}
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={question.required}
+              onChange={(e) => onUpdate(question.id, { required: e.target.checked })}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs text-gray-600">الزامی</span>
+          </label>
+        </div>
+
+        {/* Delete Button */}
+        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onRemove(question.id)}
-            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-8 h-8 p-0"
           >
-            حذف
+            <Trash2 className="w-4 h-4" />
           </Button>
         </div>
-      </div>
-      
-      <div className="mt-4 flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
-        <label className="flex items-center space-x-1 space-x-reverse cursor-pointer">
-          <input
-            type="checkbox"
-            checked={question.required}
-            onChange={(e) => onUpdate(question.id, { required: e.target.checked })}
-            className="rounded"
-          />
-          <span>الزامی</span>
-        </label>
       </div>
     </div>
   );
