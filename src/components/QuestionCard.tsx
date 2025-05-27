@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, GripVertical } from 'lucide-react';
@@ -10,6 +11,7 @@ interface QuestionCardProps {
   index: number;
   onRemove: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Question>) => void;
+  onMove: (dragIndex: number, hoverIndex: number) => void;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -17,8 +19,58 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   index,
   onRemove,
   onUpdate,
+  onMove,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const [{ handlerId }, drop] = useDrop({
+    accept: 'question-card',
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item: { index: number }, monitor) {
+      if (!ref.current) {
+        return;
+      }
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
+
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
+
+      onMove(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
+  const [{ isDragging }, drag] = useDrag({
+    type: 'question-card',
+    item: () => {
+      return { id: question.id, index };
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  drag(drop(ref));
 
   const getQuestionIcon = (type: string) => {
     const icons = {
@@ -42,22 +94,28 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   return (
-    <div className="group bg-white/80 backdrop-blur-sm hover:bg-white border border-gray-100 hover:border-gray-200 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-gray-100/50 hover:-translate-y-0.5">
-      <div className="flex items-center p-5 gap-4">
+    <div
+      ref={ref}
+      data-handler-id={handlerId}
+      className={`group bg-white border border-gray-200 rounded-lg transition-all duration-200 hover:shadow-md hover:border-gray-300 ${
+        isDragging ? 'opacity-50' : ''
+      }`}
+    >
+      <div className="flex items-center p-4 gap-3">
         {/* Drag Handle */}
-        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing">
-          <GripVertical className="w-4 h-4 text-gray-300 hover:text-gray-500" />
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+          <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
 
         {/* Question Number */}
         <div className="flex-shrink-0">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold shadow-sm">
+          <div className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium">
             {index + 1}
           </div>
         </div>
 
         {/* Question Icon */}
-        <div className="flex-shrink-0 text-xl filter drop-shadow-sm">
+        <div className="flex-shrink-0 text-lg">
           {getQuestionIcon(question.type)}
         </div>
 
@@ -69,13 +127,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
               onChange={(e) => onUpdate(question.id, { label: e.target.value })}
               onBlur={() => setIsEditing(false)}
               onKeyPress={(e) => e.key === 'Enter' && setIsEditing(false)}
-              className="border-none shadow-none p-0 text-base font-medium bg-transparent focus:bg-white/90 focus:shadow-lg focus:border-2 focus:border-blue-200 focus:p-3 rounded-xl transition-all duration-200"
+              className="border-none shadow-none p-0 text-sm bg-transparent focus:bg-white focus:shadow-sm focus:border focus:border-blue-200 focus:p-2 rounded transition-all"
               autoFocus
             />
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="text-right w-full text-base font-medium text-gray-700 hover:text-gray-900 transition-colors truncate"
+              className="text-right w-full text-sm text-gray-700 hover:text-gray-900 transition-colors truncate"
             >
               {question.label}
             </button>
@@ -84,18 +142,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
         {/* Question Type Badge */}
         <div className="flex-shrink-0">
-          <span className="text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full font-medium border border-gray-100">
+          <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md font-medium">
             {question.type}
           </span>
         </div>
 
         {/* Delete Button */}
-        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
+        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onRemove(question.id)}
-            className="text-gray-300 hover:text-red-500 hover:bg-red-50 w-9 h-9 p-0 rounded-xl transition-all duration-200"
+            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-8 h-8 p-0 rounded-md"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

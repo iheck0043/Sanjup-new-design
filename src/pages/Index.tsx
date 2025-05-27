@@ -17,6 +17,7 @@ export interface Question {
 
 const Index = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [formTitle, setFormTitle] = useState('بدون عنوان');
 
   const addQuestion = useCallback((questionType: string) => {
     const newQuestion: Question = {
@@ -43,18 +44,29 @@ const Index = () => {
     );
   }, []);
 
+  const moveQuestion = useCallback((dragIndex: number, hoverIndex: number) => {
+    setQuestions(prev => {
+      const draggedItem = prev[dragIndex];
+      const newItems = [...prev];
+      newItems.splice(dragIndex, 1);
+      newItems.splice(hoverIndex, 0, draggedItem);
+      return newItems;
+    });
+  }, []);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col" dir="rtl">
-        <FormHeader />
+      <div className="min-h-screen bg-gray-50 flex flex-col font-vazir" dir="rtl">
+        <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
         
         <div className="flex flex-1 h-[calc(100vh-80px)]">
           <div className="flex-1 overflow-y-auto">
-            <div className="p-8 max-w-6xl mx-auto">
+            <div className="p-6 max-w-4xl mx-auto">
               <FormBuilder
                 questions={questions}
                 onRemoveQuestion={removeQuestion}
                 onUpdateQuestion={updateQuestion}
+                onMoveQuestion={moveQuestion}
               />
             </div>
           </div>
