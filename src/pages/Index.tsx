@@ -1,13 +1,66 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState, useCallback } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import FormBuilder from '../components/FormBuilder';
+import QuestionSidebar from '../components/QuestionSidebar';
+import FormHeader from '../components/FormHeader';
+
+export interface Question {
+  id: string;
+  type: string;
+  label: string;
+  placeholder?: string;
+  required?: boolean;
+  options?: string[];
+}
 
 const Index = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  const addQuestion = useCallback((questionType: string) => {
+    const newQuestion: Question = {
+      id: Date.now().toString(),
+      type: questionType,
+      label: `سوال جدید`,
+      required: false,
+    };
+
+    if (questionType === 'چندگزینه‌ای' || questionType === 'چندگزینه‌ای تصویری') {
+      newQuestion.options = ['گزینه ۱', 'گزینه ۲'];
+    }
+
+    setQuestions(prev => [...prev, newQuestion]);
+  }, []);
+
+  const removeQuestion = useCallback((id: string) => {
+    setQuestions(prev => prev.filter(q => q.id !== id));
+  }, []);
+
+  const updateQuestion = useCallback((id: string, updates: Partial<Question>) => {
+    setQuestions(prev =>
+      prev.map(q => (q.id === id ? { ...q, ...updates } : q))
+    );
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <DndProvider backend={HTML5Backend}>
+      <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
+        <FormHeader />
+        
+        <div className="flex flex-1">
+          <div className="flex-1 p-6">
+            <FormBuilder
+              questions={questions}
+              onRemoveQuestion={removeQuestion}
+              onUpdateQuestion={updateQuestion}
+            />
+          </div>
+          
+          <QuestionSidebar onAddQuestion={addQuestion} />
+        </div>
       </div>
-    </div>
+    </DndProvider>
   );
 };
 
