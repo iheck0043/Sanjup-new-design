@@ -45,12 +45,12 @@ const Index = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col" dir="rtl">
         <FormHeader />
         
         <div className="flex flex-1 h-[calc(100vh-80px)]">
           <div className="flex-1 overflow-y-auto">
-            <div className="p-8">
+            <div className="p-8 max-w-6xl mx-auto">
               <FormBuilder
                 questions={questions}
                 onRemoveQuestion={removeQuestion}
