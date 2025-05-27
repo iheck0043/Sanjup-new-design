@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { 
   Text, 
   SquareCheck, 
   ListCheck, 
-  Number,
+  Hash,
   Mail,
   Link,
   ArrowUp,
@@ -134,7 +133,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
     {
       type: 'عدد',
       label: 'عدد',
-      icon: <Number className="w-5 h-5 text-red-600" />,
+      icon: <Hash className="w-5 h-5 text-red-600" />,
       color: 'bg-red-50 border-red-200 hover:bg-red-100'
     },
     {
