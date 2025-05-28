@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -66,14 +66,20 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0" dir="rtl">
-        <DialogHeader className="p-6 border-b border-gray-200">
-          <DialogTitle className="text-xl font-semibold">تنظیمات سوال</DialogTitle>
-        </DialogHeader>
-        
+      <DialogContent className="max-w-7xl h-[95vh] p-0" dir="rtl">
         <div className="flex h-full">
+          {/* Close button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="absolute left-4 top-4 z-10 w-8 h-8 p-0 rounded-full bg-white shadow-md hover:bg-gray-50"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+
           {/* Settings Sidebar */}
-          <div className="w-80 border-l border-gray-200 p-6 overflow-y-auto">
+          <div className="w-80 border-l border-gray-200 p-6 overflow-y-auto bg-gray-50/50">
             <div className="space-y-6">
               <div>
                 <Label htmlFor="question-label" className="text-sm font-medium">
@@ -156,67 +162,69 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           </div>
 
           {/* Preview Area */}
-          <div className="flex-1 p-6 bg-gray-50">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-medium mb-4">پیش‌نمایش سوال</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-base font-medium">
-                    {localQuestion.label}
-                    {localQuestion.required && <span className="text-red-500 mr-1">*</span>}
-                  </Label>
-                  
-                  <div className="mt-3">
-                    {localQuestion.type === 'متنی با پاسخ کوتاه' && (
-                      <Input
-                        placeholder={localQuestion.placeholder || 'پاسخ خود را وارد کنید'}
-                        disabled
-                        className="bg-gray-50"
-                      />
-                    )}
+          <div className="flex-1 p-6 bg-white overflow-y-auto">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-medium mb-6 text-gray-800 border-b border-gray-200 pb-3">پیش‌نمایش سوال</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium text-gray-900">
+                      {localQuestion.label}
+                      {localQuestion.required && <span className="text-red-500 mr-1">*</span>}
+                    </Label>
                     
-                    {localQuestion.type === 'متنی با پاسخ بلند' && (
-                      <Textarea
-                        placeholder={localQuestion.placeholder || 'پاسخ خود را وارد کنید'}
-                        disabled
-                        className="bg-gray-50 min-h-[100px]"
-                      />
-                    )}
-                    
-                    {localQuestion.type === 'عدد' && (
-                      <Input
-                        type="number"
-                        placeholder="عدد را وارد کنید"
-                        disabled
-                        className="bg-gray-50"
-                      />
-                    )}
-                    
-                    {localQuestion.type === 'ایمیل' && (
-                      <Input
-                        type="email"
-                        placeholder="ایمیل خود را وارد کنید"
-                        disabled
-                        className="bg-gray-50"
-                      />
-                    )}
-                    
-                    {hasOptions && localQuestion.options && (
-                      <div className="space-y-2">
-                        {localQuestion.options.map((option, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <input
-                              type={localQuestion.type === 'چندگزینه‌ای' ? 'checkbox' : 'radio'}
-                              name="preview-options"
-                              disabled
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                            />
-                            <span className="text-sm">{option}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="mt-3">
+                      {localQuestion.type === 'متنی با پاسخ کوتاه' && (
+                        <Input
+                          placeholder={localQuestion.placeholder || 'پاسخ خود را وارد کنید'}
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
+                      
+                      {localQuestion.type === 'متنی با پاسخ بلند' && (
+                        <Textarea
+                          placeholder={localQuestion.placeholder || 'پاسخ خود را وارد کنید'}
+                          disabled
+                          className="bg-gray-50 min-h-[100px]"
+                        />
+                      )}
+                      
+                      {localQuestion.type === 'عدد' && (
+                        <Input
+                          type="number"
+                          placeholder="عدد را وارد کنید"
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
+                      
+                      {localQuestion.type === 'ایمیل' && (
+                        <Input
+                          type="email"
+                          placeholder="ایمیل خود را وارد کنید"
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
+                      
+                      {hasOptions && localQuestion.options && (
+                        <div className="space-y-3">
+                          {localQuestion.options.map((option, index) => (
+                            <div key={index} className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.type === 'چندگزینه‌ای' ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">{option}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

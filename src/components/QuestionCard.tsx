@@ -35,13 +35,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     drop(item: { type?: string; index?: number }, monitor) {
       if (!ref.current) return;
       
-      if (item.type && !item.index) {
-        // From sidebar
+      if (item.type && item.index === undefined) {
+        // From sidebar - add at this position
         onAddQuestion(item.type, index);
         return;
       }
       
-      // From reordering
+      // From reordering existing questions
       if (item.index !== undefined) {
         const dragIndex = item.index;
         const hoverIndex = index;
@@ -70,7 +70,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     },
   });
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag, preview] = useDrag({
     type: 'question-card',
     item: () => ({ id: question.id, index }),
     collect: (monitor) => ({
@@ -78,40 +78,43 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }),
   });
 
-  drag(drop(ref));
+  const dragRef = useRef<HTMLDivElement>(null);
+  drag(dragRef);
+  drop(preview(ref));
 
   const getQuestionIcon = (type: string) => {
     const iconMap = {
-      'متنی با پاسخ کوتاه': <Text className="w-5 h-5 text-blue-600" />,
-      'متنی با پاسخ بلند': <Text className="w-5 h-5 text-purple-600" />,
-      'گروه سوال': <SquarePlus className="w-5 h-5 text-green-600" />,
-      'چندگزینه‌ای': <SquareCheck className="w-5 h-5 text-pink-600" />,
-      'چندگزینه‌ای تصویری': <SquareCheck className="w-5 h-5 text-yellow-600" />,
-      'لیست کشویی': <ListCheck className="w-5 h-5 text-teal-600" />,
-      'طیفی': <BarChart3 className="w-5 h-5 text-indigo-600" />,
-      'درخت‌بندی': <ArrowDown className="w-5 h-5 text-orange-600" />,
-      'اولویت‌دهی': <ArrowUp className="w-5 h-5 text-red-600" />,
-      'لینک/وب‌سایت': <Link className="w-5 h-5 text-cyan-600" />,
-      'متن بدون پاسخ': <Text className="w-5 h-5 text-gray-600" />,
-      'درگاه پرداخت': <CreditCard className="w-5 h-5 text-emerald-600" />,
-      'عدد': <Hash className="w-5 h-5 text-blue-600" />,
-      'ایمیل': <Mail className="w-5 h-5 text-red-600" />,
-      'صفحه پایان': <Flag className="w-5 h-5 text-gray-600" />,
+      'متنی با پاسخ کوتاه': <Text className="w-4 h-4 text-blue-600" />,
+      'متنی با پاسخ بلند': <Text className="w-4 h-4 text-purple-600" />,
+      'گروه سوال': <SquarePlus className="w-4 h-4 text-green-600" />,
+      'چندگزینه‌ای': <SquareCheck className="w-4 h-4 text-pink-600" />,
+      'چندگزینه‌ای تصویری': <SquareCheck className="w-4 h-4 text-yellow-600" />,
+      'لیست کشویی': <ListCheck className="w-4 h-4 text-teal-600" />,
+      'طیفی': <BarChart3 className="w-4 h-4 text-indigo-600" />,
+      'درخت‌بندی': <ArrowDown className="w-4 h-4 text-orange-600" />,
+      'اولویت‌دهی': <ArrowUp className="w-4 h-4 text-red-600" />,
+      'لینک/وب‌سایت': <Link className="w-4 h-4 text-cyan-600" />,
+      'متن بدون پاسخ': <Text className="w-4 h-4 text-gray-600" />,
+      'درگاه پرداخت': <CreditCard className="w-4 h-4 text-emerald-600" />,
+      'عدد': <Hash className="w-4 h-4 text-blue-600" />,
+      'ایمیل': <Mail className="w-4 h-4 text-red-600" />,
+      'صفحه پایان': <Flag className="w-4 h-4 text-gray-600" />,
     };
-    return iconMap[type as keyof typeof iconMap] || <Text className="w-5 h-5 text-gray-600" />;
+    return iconMap[type as keyof typeof iconMap] || <Text className="w-4 h-4 text-gray-600" />;
   };
 
   return (
     <div
       ref={ref}
       data-handler-id={handlerId}
-      className={`group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl transition-all duration-200 hover:shadow-lg hover:border-gray-300/50 cursor-pointer ${
+      className={`group bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 hover:shadow-md hover:border-gray-300/70 cursor-pointer ${
         isDragging ? 'opacity-50' : ''
       }`}
       onClick={() => onClick(question)}
     >
-      <div className="flex items-center p-4 gap-3">
+      <div className="flex items-center p-3 gap-3">
         <div 
+          ref={dragRef}
           className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
           onClick={(e) => e.stopPropagation()}
         >
@@ -119,7 +122,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
 
         <div className="flex-shrink-0">
-          <div className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium">
+          <div className="w-5 h-5 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium">
             {index + 1}
           </div>
         </div>
@@ -141,16 +144,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
 
         <div 
-          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onRemove(question.id)}
-            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-8 h-8 p-0 rounded-md"
+            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>

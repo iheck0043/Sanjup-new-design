@@ -23,8 +23,10 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const addQuestion = useCallback((questionType: string, insertIndex?: number) => {
+    console.log('Adding question:', questionType, 'at index:', insertIndex);
+    
     const newQuestion: Question = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type: questionType,
       label: `سوال جدید`,
       required: false,
@@ -38,8 +40,10 @@ const Index = () => {
       if (insertIndex !== undefined) {
         const newQuestions = [...prev];
         newQuestions.splice(insertIndex, 0, newQuestion);
+        console.log('Questions after insert:', newQuestions.length);
         return newQuestions;
       }
+      console.log('Questions after append:', [...prev, newQuestion].length);
       return [...prev, newQuestion];
     });
   }, []);
@@ -55,6 +59,7 @@ const Index = () => {
   }, []);
 
   const moveQuestion = useCallback((dragIndex: number, hoverIndex: number) => {
+    console.log('Moving question from', dragIndex, 'to', hoverIndex);
     setQuestions(prev => {
       const draggedItem = prev[dragIndex];
       const newItems = [...prev];
@@ -80,8 +85,6 @@ const Index = () => {
         <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
         
         <div className="flex flex-1 h-[calc(100vh-80px)]">
-          <QuestionSidebar onAddQuestion={addQuestion} />
-          
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 max-w-4xl mx-auto">
               <FormBuilder
@@ -94,6 +97,8 @@ const Index = () => {
               />
             </div>
           </div>
+          
+          <QuestionSidebar onAddQuestion={addQuestion} />
         </div>
 
         <QuestionSettingsModal
