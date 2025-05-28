@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import QuestionCard from './QuestionCard';
 import { Question } from '../pages/Index';
@@ -8,93 +8,74 @@ import { MousePointer2 } from 'lucide-react';
 interface FormBuilderProps {
   questions: Question[];
   onRemoveQuestion: (id: string) => void;
-  onDuplicateQuestion: (question: Question) => void;
   onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
   onQuestionClick: (question: Question) => void;
-  onConditionalLogic: (question: Question) => void;
   onAddQuestion: (type: string, insertIndex?: number) => void;
 }
 
 const FormBuilder: React.FC<FormBuilderProps> = ({
   questions,
   onRemoveQuestion,
-  onDuplicateQuestion,
   onUpdateQuestion,
   onMoveQuestion,
   onQuestionClick,
-  onConditionalLogic,
   onAddQuestion,
 }) => {
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'question',
     drop: (item: { type: string }, monitor) => {
       if (monitor.didDrop()) return;
       onAddQuestion(item.type, questions.length);
-      setDragOverIndex(null);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
     }),
     hover: (item, monitor) => {
       if (monitor.getItemType() === 'question') {
-        setDragOverIndex(questions.length);
+        setDropIndex(questions.length);
       }
     },
   }));
-
-  const handleDropZoneHover = useCallback((index: number) => {
-    setDragOverIndex(index);
-  }, []);
-
-  const handleDropZoneDrop = useCallback((item: { type: string }, index: number) => {
-    onAddQuestion(item.type, index);
-    setDragOverIndex(null);
-  }, [onAddQuestion]);
 
   const DropZone: React.FC<{ index: number }> = ({ index }) => {
     const [{ isOver: isZoneOver }, zoneDrop] = useDrop(() => ({
       accept: 'question',
       drop: (item: { type: string }, monitor) => {
         if (monitor.didDrop()) return;
-        handleDropZoneDrop(item, index);
+        onAddQuestion(item.type, index);
+        setDropIndex(null);
       },
       collect: (monitor) => ({
         isOver: monitor.isOver({ shallow: true }),
       }),
       hover: () => {
-        handleDropZoneHover(index);
+        setDropIndex(index);
       },
     }));
 
     return (
       <div
         ref={zoneDrop}
-        className={`transition-all duration-200 ${
-          isZoneOver || dragOverIndex === index 
-            ? 'h-12 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg my-2 flex items-center justify-center' 
-            : 'h-2'
-        }`}
-      >
-        {(isZoneOver || dragOverIndex === index) && (
-          <span className="text-blue-600 text-sm font-medium">رها کنید تا سوال اضافه شود</span>
-        )}
-      </div>
+        className={`h-2 transition-all duration-200 ${
+          isZoneOver ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg' : ''
+        } ${dropIndex === index ? 'bg-blue-50 border border-dashed border-blue-300 rounded-lg h-6' : ''}`}
+      />
     );
   };
 
   return (
-    <div className="w-full mr-96">
+    <div className="w-full">
       <div
         ref={drop}
         className={`min-h-[500px] transition-all duration-200 ${
-          isOver && dragOverIndex === questions.length
+          isOver && dropIndex === questions.length
             ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl p-6'
             : ''
         }`}
-        onDragLeave={() => setDragOverIndex(null)}
+        onDragLeave={() => setDropIndex(null)}
       >
         {questions.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-96 text-gray-400">
@@ -103,7 +84,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             </div>
             <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
             <p className="text-center max-w-sm text-gray-500 text-sm">
-              سوالات خود را از سایدبار سمت چپ به اینجا بکشید یا روی آنها کلیک کنید
+              سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
             </p>
           </div>
         ) : (
@@ -115,11 +96,9 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                   question={question}
                   index={index}
                   onRemove={onRemoveQuestion}
-                  onDuplicate={onDuplicateQuestion}
                   onUpdate={onUpdateQuestion}
                   onMove={onMoveQuestion}
                   onClick={onQuestionClick}
-                  onConditionalLogic={onConditionalLogic}
                   onAddQuestion={onAddQuestion}
                 />
                 <DropZone index={index + 1} />

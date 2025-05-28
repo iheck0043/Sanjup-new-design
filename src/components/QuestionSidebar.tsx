@@ -151,8 +151,8 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
   ];
 
   return (
-    <div className="w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200/70 h-screen fixed left-0 top-0 z-10 overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-gray-200/50 mt-20">
+    <div className="w-96 bg-white/90 backdrop-blur-sm border-r border-gray-200/70 h-full overflow-hidden flex flex-col">
+      <div className="p-4 border-b border-gray-200/50">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
             <Sparkles className="w-3 h-3 text-white" />
