@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Button } from '@/components/ui/button';
-import { Trash2, GripVertical, Text, SquareCheck, ListCheck, Hash, Mail, Link, ArrowUp, ArrowDown, SquarePlus, BarChart3, CreditCard, Flag } from 'lucide-react';
+import { Trash2, GripVertical, Text, SquareCheck, ListCheck, Hash, Mail, Link, ArrowUp, ArrowDown, SquarePlus, BarChart3, CreditCard, Flag, Copy, GitBranch } from 'lucide-react';
 import { Question } from '../pages/Index';
 
 interface QuestionCardProps {
@@ -13,6 +13,8 @@ interface QuestionCardProps {
   onMove: (dragIndex: number, hoverIndex: number) => void;
   onClick: (question: Question) => void;
   onAddQuestion: (type: string, insertIndex: number) => void;
+  onDuplicate: (question: Question) => void;
+  onConditionClick: (question: Question) => void;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -22,6 +24,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onMove,
   onClick,
   onAddQuestion,
+  onDuplicate,
+  onConditionClick,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -36,12 +40,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       if (!ref.current) return;
       
       if (item.type && item.index === undefined) {
-        // From sidebar - add at this position
         onAddQuestion(item.type, index);
         return;
       }
       
-      // From reordering existing questions
       if (item.index !== undefined) {
         const dragIndex = item.index;
         const hoverIndex = index;
@@ -60,7 +62,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       const hoverBoundingRect = ref.current.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
-      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+      if (!clientOffset) return;
+      
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
@@ -150,8 +154,29 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => onConditionClick(question)}
+            className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md"
+            title="شرط‌گذاری"
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDuplicate(question)}
+            className="text-gray-400 hover:text-green-500 hover:bg-green-50 w-7 h-7 p-0 rounded-md"
+            title="کپی کردن"
+          >
+            <Copy className="w-3.5 h-3.5" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onRemove(question.id)}
             className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md"
+            title="حذف"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>

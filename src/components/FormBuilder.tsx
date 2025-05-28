@@ -12,6 +12,8 @@ interface FormBuilderProps {
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
   onQuestionClick: (question: Question) => void;
   onAddQuestion: (type: string, insertIndex?: number) => void;
+  onDuplicateQuestion: (question: Question) => void;
+  onConditionClick: (question: Question) => void;
 }
 
 const FormBuilder: React.FC<FormBuilderProps> = ({
@@ -21,6 +23,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onMoveQuestion,
   onQuestionClick,
   onAddQuestion,
+  onDuplicateQuestion,
+  onConditionClick,
 }) => {
   const [dropIndex, setDropIndex] = useState<number | null>(null);
 
@@ -29,6 +33,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     drop: (item: { type: string }, monitor) => {
       if (monitor.didDrop()) return;
       onAddQuestion(item.type, questions.length);
+      setDropIndex(null);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
@@ -59,15 +64,15 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     return (
       <div
         ref={zoneDrop}
-        className={`h-2 transition-all duration-200 ${
-          isZoneOver ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg' : ''
+        className={`transition-all duration-150 ${
+          isZoneOver ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg' : 'h-2'
         } ${dropIndex === index ? 'bg-blue-50 border border-dashed border-blue-300 rounded-lg h-6' : ''}`}
       />
     );
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full ml-96">
       <div
         ref={drop}
         className={`min-h-[500px] transition-all duration-200 ${
@@ -84,7 +89,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             </div>
             <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
             <p className="text-center max-w-sm text-gray-500 text-sm">
-              سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
+              سوالات خود را از سایدبار سمت چپ به اینجا بکشید یا روی آنها کلیک کنید
             </p>
           </div>
         ) : (
@@ -100,6 +105,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                   onMove={onMoveQuestion}
                   onClick={onQuestionClick}
                   onAddQuestion={onAddQuestion}
+                  onDuplicate={onDuplicateQuestion}
+                  onConditionClick={onConditionClick}
                 />
                 <DropZone index={index + 1} />
               </React.Fragment>
