@@ -66,9 +66,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl h-[95vh] p-0" dir="rtl">
+      <DialogContent className="max-w-7xl h-[100vh] p-0 m-0" dir="rtl">
         <div className="flex h-full">
-          {/* Close button */}
           <Button
             variant="ghost"
             size="sm"
@@ -78,90 +77,101 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             <X className="w-4 h-4" />
           </Button>
 
-          {/* Settings Sidebar */}
-          <div className="w-80 border-l border-gray-200 p-6 overflow-y-auto bg-gray-50/50">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="question-label" className="text-sm font-medium">
-                  عنوان سوال
-                </Label>
-                <Input
-                  id="question-label"
-                  value={localQuestion.label}
-                  onChange={(e) => handleUpdateField('label', e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-
-              {(localQuestion.type === 'متنی با پاسخ کوتاه' || localQuestion.type === 'متنی با پاسخ بلند') && (
+          <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col">
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="space-y-6">
                 <div>
-                  <Label htmlFor="question-placeholder" className="text-sm font-medium">
-                    متن راهنما
+                  <Label htmlFor="question-label" className="text-sm font-medium">
+                    عنوان سوال
                   </Label>
                   <Input
-                    id="question-placeholder"
-                    value={localQuestion.placeholder || ''}
-                    onChange={(e) => handleUpdateField('placeholder', e.target.value)}
+                    id="question-label"
+                    value={localQuestion.label}
+                    onChange={(e) => handleUpdateField('label', e.target.value)}
                     className="mt-2"
-                    placeholder="متن راهنما برای کاربر"
                   />
                 </div>
-              )}
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="required-toggle" className="text-sm font-medium">
-                  سوال اجباری
-                </Label>
-                <Switch
-                  id="required-toggle"
-                  checked={localQuestion.required || false}
-                  onCheckedChange={(checked) => handleUpdateField('required', checked)}
-                />
-              </div>
+                {(localQuestion.type === 'متنی با پاسخ کوتاه' || localQuestion.type === 'متنی با پاسخ بلند') && (
+                  <div>
+                    <Label htmlFor="question-placeholder" className="text-sm font-medium">
+                      متن راهنما
+                    </Label>
+                    <Input
+                      id="question-placeholder"
+                      value={localQuestion.placeholder || ''}
+                      onChange={(e) => handleUpdateField('placeholder', e.target.value)}
+                      className="mt-2"
+                      placeholder="متن راهنما برای کاربر"
+                    />
+                  </div>
+                )}
 
-              {hasOptions && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <Label className="text-sm font-medium">گزینه‌ها</Label>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={addOption}
-                      className="h-8 px-2"
-                    >
-                      <Plus className="w-4 h-4 ml-1" />
-                      افزودن
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {localQuestion.options?.map((option, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Input
-                          value={option}
-                          onChange={(e) => updateOption(index, e.target.value)}
-                          className="flex-1"
-                          placeholder={`گزینه ${index + 1}`}
-                        />
-                        {localQuestion.options && localQuestion.options.length > 2 && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeOption(index)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="required-toggle" className="text-sm font-medium">
+                    سوال اجباری
+                  </Label>
+                  <Switch
+                    id="required-toggle"
+                    checked={localQuestion.required || false}
+                    onCheckedChange={(checked) => handleUpdateField('required', checked)}
+                  />
                 </div>
-              )}
+
+                {hasOptions && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium">گزینه‌ها</Label>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={addOption}
+                        className="h-8 px-2"
+                      >
+                        <Plus className="w-4 h-4 ml-1" />
+                        افزودن
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {localQuestion.options?.map((option, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input
+                            value={option}
+                            onChange={(e) => updateOption(index, e.target.value)}
+                            className="flex-1"
+                            placeholder={`گزینه ${index + 1}`}
+                          />
+                          {localQuestion.options && localQuestion.options.length > 2 && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeOption(index)}
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-200 p-4 bg-white">
+              <div className="flex gap-2">
+                <Button onClick={onClose} className="flex-1">
+                  ذخیره
+                </Button>
+                <Button variant="outline" onClick={onClose} className="flex-1">
+                  انصراف
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* Preview Area */}
           <div className="flex-1 p-6 bg-white overflow-y-auto">
             <div className="max-w-2xl mx-auto">
               <div className="bg-white rounded-lg p-6 border border-gray-200">

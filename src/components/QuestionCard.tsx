@@ -2,16 +2,18 @@
 import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Button } from '@/components/ui/button';
-import { Trash2, GripVertical, Text, SquareCheck, ListCheck, Hash, Mail, Link, ArrowUp, ArrowDown, SquarePlus, BarChart3, CreditCard, Flag } from 'lucide-react';
+import { Trash2, GripVertical, Text, SquareCheck, ListCheck, Hash, Mail, Link, ArrowUp, ArrowDown, SquarePlus, BarChart3, CreditCard, Flag, Copy, GitBranch } from 'lucide-react';
 import { Question } from '../pages/Index';
 
 interface QuestionCardProps {
   question: Question;
   index: number;
   onRemove: (id: string) => void;
+  onDuplicate: (question: Question) => void;
   onUpdate: (id: string, updates: Partial<Question>) => void;
   onMove: (dragIndex: number, hoverIndex: number) => void;
   onClick: (question: Question) => void;
+  onConditionalLogic: (question: Question) => void;
   onAddQuestion: (type: string, insertIndex: number) => void;
 }
 
@@ -19,8 +21,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   index,
   onRemove,
+  onDuplicate,
   onMove,
   onClick,
+  onConditionalLogic,
   onAddQuestion,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -36,12 +40,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       if (!ref.current) return;
       
       if (item.type && item.index === undefined) {
-        // From sidebar - add at this position
         onAddQuestion(item.type, index);
         return;
       }
       
-      // From reordering existing questions
       if (item.index !== undefined) {
         const dragIndex = item.index;
         const hoverIndex = index;
@@ -150,8 +152,27 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => onConditionalLogic(question)}
+            className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md"
+            title="شرط گذاری"
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDuplicate(question)}
+            className="text-gray-400 hover:text-green-500 hover:bg-green-50 w-7 h-7 p-0 rounded-md"
+            title="کپی کردن"
+          >
+            <Copy className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onRemove(question.id)}
             className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md"
+            title="حذف"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
