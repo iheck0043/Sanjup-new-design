@@ -72,7 +72,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   };
 
   return (
-    <div className="w-full ml-96">
+    <div className="w-full mr-96">
       <div
         ref={drop}
         className={`min-h-[500px] transition-all duration-200 ${
@@ -89,7 +89,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             </div>
             <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
             <p className="text-center max-w-sm text-gray-500 text-sm">
-              سوالات خود را از سایدبار سمت چپ به اینجا بکشید یا روی آنها کلیک کنید
+              سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
             </p>
           </div>
         ) : (
