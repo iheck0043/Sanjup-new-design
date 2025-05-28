@@ -25,40 +25,38 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
   ];
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
-      <div className="flex items-center justify-between max-w-6xl mx-auto">
-        <div className="flex items-center space-x-6 space-x-reverse">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">F</span>
-            </div>
-            
-            {isEditingTitle ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={tempTitle}
-                  onChange={(e) => setTempTitle(e.target.value)}
-                  className="text-lg font-semibold border-blue-200 focus:border-blue-400"
-                  autoFocus
-                  onKeyPress={(e) => e.key === 'Enter' && handleTitleSave()}
-                />
-                <Button size="sm" onClick={handleTitleSave} className="h-8 w-8 p-0">
-                  <Check className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <button 
-                onClick={() => setIsEditingTitle(true)}
-                className="flex items-center gap-2 text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors group"
-              >
-                {formTitle}
-                <Edit2 className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-            )}
+    <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 px-6 py-4 sticky top-0 z-50">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center space-x-3 space-x-reverse">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+            <span className="text-white text-sm font-bold">F</span>
           </div>
+          
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                className="text-lg font-semibold border-blue-200 focus:border-blue-400"
+                autoFocus
+                onKeyPress={(e) => e.key === 'Enter' && handleTitleSave()}
+              />
+              <Button size="sm" onClick={handleTitleSave} className="h-8 w-8 p-0">
+                <Check className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsEditingTitle(true)}
+              className="flex items-center gap-2 text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors group"
+            >
+              {formTitle}
+              <Edit2 className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          )}
         </div>
         
-        <div className="flex items-center">
+        <div className="flex items-center justify-center flex-1">
           <nav className="flex items-center space-x-1 space-x-reverse">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
@@ -81,6 +79,8 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
             ))}
           </nav>
         </div>
+
+        <div className="w-8"></div>
       </div>
     </header>
   );

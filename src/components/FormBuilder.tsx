@@ -10,6 +10,8 @@ interface FormBuilderProps {
   onRemoveQuestion: (id: string) => void;
   onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
+  onQuestionClick: (question: Question) => void;
+  onAddQuestion: (type: string, insertIndex?: number) => void;
 }
 
 const FormBuilder: React.FC<FormBuilderProps> = ({
@@ -17,37 +19,42 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onRemoveQuestion,
   onUpdateQuestion,
   onMoveQuestion,
+  onQuestionClick,
+  onAddQuestion,
 }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'question',
+    drop: (item: { type: string }, monitor) => {
+      if (monitor.didDrop()) return;
+      onAddQuestion(item.type);
+    },
     collect: (monitor) => ({
-      isOver: monitor.isOver(),
+      isOver: monitor.isOver({ shallow: true }),
     }),
   }));
 
   return (
     <div className="w-full">
-      {/* Questions Drop Zone */}
       <div
         ref={drop}
-        className={`min-h-[600px] transition-all duration-200 ${
+        className={`min-h-[500px] transition-all duration-200 ${
           isOver
-            ? 'bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-6'
+            ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl p-6'
             : ''
         }`}
       >
         {questions.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-96 text-gray-400">
-            <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
-              <MousePointer2 className="w-10 h-10 text-gray-400" />
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+              <MousePointer2 className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
             <p className="text-center max-w-sm text-gray-500">
-              سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
+              سوالات خود را از سایدبار سمت چپ به اینجا بکشید یا روی آنها کلیک کنید
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {questions.map((question, index) => (
               <QuestionCard
                 key={question.id}
@@ -56,6 +63,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 onRemove={onRemoveQuestion}
                 onUpdate={onUpdateQuestion}
                 onMove={onMoveQuestion}
+                onClick={onQuestionClick}
+                onAddQuestion={onAddQuestion}
               />
             ))}
           </div>

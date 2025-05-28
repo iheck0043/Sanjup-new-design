@@ -5,6 +5,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import FormBuilder from '../components/FormBuilder';
 import QuestionSidebar from '../components/QuestionSidebar';
 import FormHeader from '../components/FormHeader';
+import QuestionSettingsModal from '../components/QuestionSettingsModal';
 
 export interface Question {
   id: string;
@@ -18,8 +19,10 @@ export interface Question {
 const Index = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [formTitle, setFormTitle] = useState('بدون عنوان');
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const addQuestion = useCallback((questionType: string) => {
+  const addQuestion = useCallback((questionType: string, insertIndex?: number) => {
     const newQuestion: Question = {
       id: Date.now().toString(),
       type: questionType,
@@ -31,7 +34,14 @@ const Index = () => {
       newQuestion.options = ['گزینه ۱', 'گزینه ۲'];
     }
 
-    setQuestions(prev => [...prev, newQuestion]);
+    setQuestions(prev => {
+      if (insertIndex !== undefined) {
+        const newQuestions = [...prev];
+        newQuestions.splice(insertIndex, 0, newQuestion);
+        return newQuestions;
+      }
+      return [...prev, newQuestion];
+    });
   }, []);
 
   const removeQuestion = useCallback((id: string) => {
@@ -54,12 +64,24 @@ const Index = () => {
     });
   }, []);
 
+  const openQuestionSettings = useCallback((question: Question) => {
+    setSelectedQuestion(question);
+    setIsModalOpen(true);
+  }, []);
+
+  const closeQuestionSettings = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedQuestion(null);
+  }, []);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gray-50 flex flex-col font-vazir" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn']" dir="rtl">
         <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
         
         <div className="flex flex-1 h-[calc(100vh-80px)]">
+          <QuestionSidebar onAddQuestion={addQuestion} />
+          
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 max-w-4xl mx-auto">
               <FormBuilder
@@ -67,12 +89,19 @@ const Index = () => {
                 onRemoveQuestion={removeQuestion}
                 onUpdateQuestion={updateQuestion}
                 onMoveQuestion={moveQuestion}
+                onQuestionClick={openQuestionSettings}
+                onAddQuestion={addQuestion}
               />
             </div>
           </div>
-          
-          <QuestionSidebar onAddQuestion={addQuestion} />
         </div>
+
+        <QuestionSettingsModal
+          isOpen={isModalOpen}
+          onClose={closeQuestionSettings}
+          question={selectedQuestion}
+          onUpdateQuestion={updateQuestion}
+        />
       </div>
     </DndProvider>
   );
