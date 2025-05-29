@@ -72,12 +72,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   };
 
   return (
-    <div className="w-full mr-96">
+    <div className="flex-1 overflow-y-auto pr-96">
       <div
         ref={drop}
-        className={`min-h-[500px] transition-all duration-200 ${
+        className={`min-h-[500px] transition-all duration-200 p-6 max-w-4xl mx-auto ${
           isOver && dropIndex === questions.length
-            ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl p-6'
+            ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl'
             : ''
         }`}
         onDragLeave={() => setDropIndex(null)}

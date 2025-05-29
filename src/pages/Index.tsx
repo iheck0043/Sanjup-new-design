@@ -114,26 +114,22 @@ const Index = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn']" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn'] overflow-x-hidden" dir="rtl">
         <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
         
-        <div className="flex flex-1 h-[calc(100vh-80px)]">
-          <QuestionSidebar onAddQuestion={addQuestion} />
+        <div className="flex flex-1 h-[calc(100vh-80px)] relative">
+          <FormBuilder
+            questions={questions}
+            onRemoveQuestion={removeQuestion}
+            onUpdateQuestion={updateQuestion}
+            onMoveQuestion={moveQuestion}
+            onQuestionClick={openQuestionSettings}
+            onAddQuestion={addQuestion}
+            onDuplicateQuestion={duplicateQuestion}
+            onConditionClick={openConditionModal}
+          />
           
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-6 max-w-4xl mx-auto">
-              <FormBuilder
-                questions={questions}
-                onRemoveQuestion={removeQuestion}
-                onUpdateQuestion={updateQuestion}
-                onMoveQuestion={moveQuestion}
-                onQuestionClick={openQuestionSettings}
-                onAddQuestion={addQuestion}
-                onDuplicateQuestion={duplicateQuestion}
-                onConditionClick={openConditionModal}
-              />
-            </div>
-          </div>
+          <QuestionSidebar onAddQuestion={addQuestion} />
         </div>
 
         <QuestionSettingsModal

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft, Share2, Eye, Settings } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,21 +33,6 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
           className="text-lg font-semibold bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 min-w-0 max-w-md"
           placeholder="عنوان فرم"
         />
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-          <Settings className="w-4 h-4 ml-2" />
-          تنظیمات
-        </Button>
-        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-          <Eye className="w-4 h-4 ml-2" />
-          پیش‌نمایش
-        </Button>
-        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-          <Share2 className="w-4 h-4 ml-2" />
-          انتشار
-        </Button>
       </div>
     </div>
   );
