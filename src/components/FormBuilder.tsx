@@ -26,23 +26,20 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onDuplicateQuestion,
   onConditionClick,
 }) => {
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'question',
     drop: (item: { type: string }, monitor) => {
       if (monitor.didDrop()) return;
-      onAddQuestion(item.type, questions.length);
-      setDropIndex(null);
+      
+      const targetIndex = dragOverIndex !== null ? dragOverIndex : questions.length;
+      onAddQuestion(item.type, targetIndex);
+      setDragOverIndex(null);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
     }),
-    hover: (item, monitor) => {
-      if (monitor.getItemType() === 'question') {
-        setDropIndex(questions.length);
-      }
-    },
   }));
 
   const DropZone: React.FC<{ index: number }> = ({ index }) => {
@@ -51,13 +48,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       drop: (item: { type: string }, monitor) => {
         if (monitor.didDrop()) return;
         onAddQuestion(item.type, index);
-        setDropIndex(null);
+        setDragOverIndex(null);
       },
       collect: (monitor) => ({
         isOver: monitor.isOver({ shallow: true }),
       }),
       hover: () => {
-        setDropIndex(index);
+        setDragOverIndex(index);
       },
     }));
 
@@ -65,8 +62,15 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       <div
         ref={zoneDrop}
         className={`transition-all duration-150 ${
-          isZoneOver ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg' : 'h-2'
-        } ${dropIndex === index ? 'bg-blue-50 border border-dashed border-blue-300 rounded-lg h-6' : ''}`}
+          isZoneOver || dragOverIndex === index
+            ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-2'
+            : 'h-2'
+        }`}
+        onDragLeave={() => {
+          if (dragOverIndex === index) {
+            setDragOverIndex(null);
+          }
+        }}
       />
     );
   };
@@ -76,11 +80,11 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       <div
         ref={drop}
         className={`min-h-[500px] transition-all duration-200 p-6 max-w-4xl mx-auto ${
-          isOver && dropIndex === questions.length
+          isOver && dragOverIndex === questions.length
             ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl'
             : ''
         }`}
-        onDragLeave={() => setDropIndex(null)}
+        onDragLeave={() => setDragOverIndex(null)}
       >
         {questions.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-96 text-gray-400">
