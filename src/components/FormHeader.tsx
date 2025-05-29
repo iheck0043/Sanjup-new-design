@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -50,7 +50,8 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
         />
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* Centered Steps */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>
             <button
@@ -70,6 +71,15 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
           </React.Fragment>
         ))}
       </div>
+
+      {/* Preview Button */}
+      <Button 
+        variant="outline"
+        className="flex items-center gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
+      >
+        <Eye className="w-4 h-4" />
+        پیش‌نمایش
+      </Button>
     </div>
   );
 };
