@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -32,10 +31,20 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [newDropdownOption, setNewDropdownOption] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (question) {
-      setLocalQuestion({ ...question });
+      const questionCopy = { ...question };
+      
+      // Set empty title for new questions
+      if (isNewQuestion) {
+        questionCopy.label = '';
+        // Set required to true by default for new questions
+        questionCopy.required = true;
+      }
+      
+      setLocalQuestion(questionCopy);
       setHasChanges(isNewQuestion);
     }
   }, [question, isNewQuestion]);
@@ -49,6 +58,11 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
+    // Check if title is required and empty
+    if (!localQuestion.label.trim()) {
+      return; // Don't save if title is empty
+    }
+    
     if (hasChanges && localQuestion) {
       onSave(localQuestion);
     } else {
@@ -63,6 +77,25 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       setHasChanges(false);
       onClose();
     }
+  };
+
+  // Handle image upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        handleUpdateField('mediaUrl', imageUrl);
+        handleUpdateField('mediaType', 'image');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Trigger file input click
+  const triggerImageUpload = () => {
+    fileInputRef.current?.click();
   };
 
   // Helper functions for different question types
@@ -176,18 +209,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     }
   };
 
-  const handleImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        updateImageOption(index, 'imageUrl', imageUrl);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const hasOptions = localQuestion.type === 'چندگزینه‌ای';
   const isMultiChoice = localQuestion.type === 'چندگزینه‌ای';
   const isDropdown = localQuestion.type === 'لیست کشویی';
@@ -205,29 +226,46 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl h-screen p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
-        <div className="flex h-full">
+        <div className="flex h-full bg-gradient-to-br from-gray-50/50 to-blue-50/30">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleCancel}
-            className="absolute left-4 top-4 z-10 w-8 h-8 p-0 rounded-full bg-white shadow-md hover:bg-gray-50"
+            className="absolute left-4 top-4 z-10 w-8 h-8 p-0 rounded-full bg-white/90 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200 backdrop-blur-sm"
           >
             <X className="w-4 h-4" />
           </Button>
 
-          <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
+          <div className="w-80 border-l border-gray-200/60 bg-white/80 backdrop-blur-sm flex flex-col h-full">
+            {/* Header with question type */}
+            <div className="p-6 border-b border-gray-200/60 bg-gradient-to-r from-blue-50/50 to-indigo-50/30">
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                {isNewQuestion ? 'سوال جدید' : 'ویرایش سوال'}
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">نوع سوال:</span>
+                <span className="text-sm font-medium text-blue-600 bg-blue-100/80 px-2 py-1 rounded-md">
+                  {localQuestion.type}
+                </span>
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="question-label" className="text-sm font-medium">
-                    {isQuestionGroup ? 'متن گروه سوال' : 'عنوان سوال'}
+                  <Label htmlFor="question-label" className="text-sm font-medium text-red-600">
+                    {isQuestionGroup ? 'متن گروه سوال' : 'عنوان سوال'} *
                   </Label>
                   <Input
                     id="question-label"
                     value={localQuestion.label}
                     onChange={(e) => handleUpdateField('label', e.target.value)}
-                    className="mt-2"
+                    className={`mt-2 ${!localQuestion.label.trim() ? 'border-red-300 focus:border-red-500' : ''}`}
+                    placeholder={isQuestionGroup ? 'عنوان گروه سوال را وارد کنید' : 'عنوان سوال را وارد کنید'}
                   />
+                  {!localQuestion.label.trim() && (
+                    <p className="text-xs text-red-500 mt-1">عنوان سوال اجباری است</p>
+                  )}
                 </div>
 
                 {/* Question Description */}
@@ -251,7 +289,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   </div>
                 )}
 
-                {/* Required field for non-description questions */}
+                {/* Required field for non-description questions - default enabled */}
                 {!isDescription && !isQuestionGroup && (
                   <div className="flex items-center justify-between">
                     <Label htmlFor="required-toggle" className="text-sm font-medium">
@@ -265,7 +303,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   </div>
                 )}
 
-                {/* Image/Video Upload for all question types */}
+                {/* Enhanced Image/Video Upload */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">
@@ -277,16 +315,37 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                     />
                   </div>
                   {localQuestion.hasMedia && (
-                    <div className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full">
+                    <div className="space-y-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                        onClick={triggerImageUpload}
+                      >
                         <Upload className="w-4 h-4 ml-2" />
                         آپلود تصویر
                       </Button>
                       {(isQuestionGroup || isDescription) && (
-                        <Button variant="outline" size="sm" className="w-full">
+                        <Button variant="outline" size="sm" className="w-full hover:bg-green-50 hover:border-green-300 transition-all duration-200">
                           <Video className="w-4 h-4 ml-2" />
                           آپلود ویدیو
                         </Button>
+                      )}
+                      {localQuestion.mediaUrl && localQuestion.mediaType === 'image' && (
+                        <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
+                          <img
+                            src={localQuestion.mediaUrl}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       )}
                     </div>
                   )}
@@ -758,23 +817,36 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               </div>
             </div>
 
-            <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="border-t border-gray-200/60 p-4 bg-white/90 backdrop-blur-sm">
               <div className="flex gap-2">
-                <Button onClick={handleSave} className="flex-1" disabled={!hasChanges}>
+                <Button 
+                  onClick={handleSave} 
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200" 
+                  disabled={!hasChanges || !localQuestion.label.trim()}
+                >
                   ذخیره
                 </Button>
-                <Button onClick={handleCancel} variant="outline" className="flex-1">
+                <Button 
+                  onClick={handleCancel} 
+                  variant="outline" 
+                  className="flex-1 hover:bg-gray-50 transition-all duration-200"
+                >
                   انصراف
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* Preview Section */}
-          <div className="flex-1 p-6 bg-white overflow-y-auto">
+          {/* Enhanced Preview Section */}
+          <div className="flex-1 p-8 bg-gradient-to-br from-white/60 to-blue-50/30 overflow-y-auto backdrop-blur-sm">
             <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h3 className="text-lg font-medium mb-6 text-gray-800 border-b border-gray-200 pb-3">پیش‌نمایش سوال</h3>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/60 shadow-lg">
+                <h3 className="text-xl font-semibold mb-8 text-gray-800 border-b border-gray-200/60 pb-4 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+                    <Star className="w-4 h-4 text-blue-600" />
+                  </div>
+                  پیش‌نمایش سوال
+                </h3>
                 
                 <div className="space-y-4">
                   <div>

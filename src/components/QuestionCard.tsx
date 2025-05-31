@@ -120,64 +120,66 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const getQuestionNumberBg = () => {
     if (isChild) {
-      return 'bg-blue-100 text-blue-600';
+      return 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700';
     }
-    return 'bg-gray-100 text-gray-600';
+    return 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700';
   };
 
   return (
     <div
       ref={ref}
       data-handler-id={handlerId}
-      className={`group bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 hover:shadow-md hover:border-gray-300/70 cursor-pointer ${
-        isDragging ? 'opacity-50' : ''
-      } ${isChild ? 'bg-blue-50/30' : ''}`}
+      className={`group bg-white/90 backdrop-blur-sm border border-gray-200/60 rounded-lg transition-all duration-300 hover:shadow-lg hover:border-gray-300/60 cursor-pointer hover:-translate-y-0.5 ${
+        isDragging ? 'opacity-50 rotate-1 scale-105' : ''
+      } ${isChild ? 'bg-blue-50/40 border-blue-200/40' : ''}`}
       onClick={() => onClick(question)}
     >
-      <div className="flex items-center p-3 gap-3">
+      <div className="flex items-center p-3.5 gap-3">
         <div 
           ref={dragRef}
-          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className="opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-110"
           onClick={(e) => e.stopPropagation()}
         >
-          <GripVertical className="w-4 h-4 text-gray-400" />
+          <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
         </div>
 
         <div className="flex-shrink-0">
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium ${getQuestionNumberBg()}`}>
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shadow-sm ${getQuestionNumberBg()}`}>
             {getQuestionNumber()}
           </div>
         </div>
 
         <div className="flex-shrink-0">
-          {getQuestionIcon(question.type)}
+          <div className="p-1.5 bg-white/80 rounded-lg shadow-sm">
+            {getQuestionIcon(question.type)}
+          </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="text-sm text-gray-700 font-medium truncate">
+          <div className="text-sm text-gray-800 font-semibold truncate">
             {question.label}
           </div>
         </div>
 
         <div className="flex-shrink-0">
-          <span className={`text-xs px-2 py-1 rounded-md font-medium ${
+          <span className={`text-xs px-3 py-1.5 rounded-full font-medium shadow-sm ${
             isChild 
-              ? 'text-blue-600 bg-blue-50' 
-              : 'text-gray-500 bg-gray-50'
+              ? 'text-blue-700 bg-gradient-to-r from-blue-100 to-indigo-100' 
+              : 'text-gray-600 bg-gradient-to-r from-gray-100 to-gray-150'
           }`}>
             {question.type}
           </span>
         </div>
 
         <div 
-          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onConditionClick(question)}
-            className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md"
+            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 w-8 h-8 p-0 rounded-lg transition-all duration-200 hover:scale-110"
             title="شرط‌گذاری"
           >
             <GitBranch className="w-3.5 h-3.5" />
@@ -187,7 +189,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onDuplicate(question)}
-            className="text-gray-400 hover:text-green-500 hover:bg-green-50 w-7 h-7 p-0 rounded-md"
+            className="text-gray-400 hover:text-green-600 hover:bg-green-50 w-8 h-8 p-0 rounded-lg transition-all duration-200 hover:scale-110"
             title="کپی کردن"
           >
             <Copy className="w-3.5 h-3.5" />
@@ -197,7 +199,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onRemove(question.id)}
-            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md"
+            className="text-gray-400 hover:text-red-600 hover:bg-red-50 w-8 h-8 p-0 rounded-lg transition-all duration-200 hover:scale-110"
             title="حذف"
           >
             <Trash2 className="w-3.5 h-3.5" />
