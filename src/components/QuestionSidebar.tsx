@@ -77,8 +77,8 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
       color: 'bg-green-50 border-green-100 hover:bg-green-100 hover:border-green-200'
     },
     {
-      type: 'توضیح',
-      label: 'توضیح',
+      type: 'متن بدون پاسخ',
+      label: 'متن بدون پاسخ',
       icon: <FileText className="w-4 h-4 text-gray-600" />,
       color: 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200'
     },
@@ -107,8 +107,8 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
       color: 'bg-pink-50 border-pink-100 hover:bg-pink-100 hover:border-pink-200'
     },
     {
-      type: 'تصویری',
-      label: 'تصویری',
+      type: 'چند‌گزینه‌ای تصویری',
+      label: 'چند‌گزینه‌ای تصویری',
       icon: <Image className="w-4 h-4 text-yellow-600" />,
       color: 'bg-yellow-50 border-yellow-100 hover:bg-yellow-100 hover:border-yellow-200'
     },

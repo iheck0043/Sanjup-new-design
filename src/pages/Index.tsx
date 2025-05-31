@@ -26,6 +26,36 @@ export interface Question {
     sourceOption: string;
     targetQuestionId: string;
   }>;
+  // New fields for description
+  description?: string;
+  hasDescription?: boolean;
+  // New fields for scale questions
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleLabels?: {
+    left: string;
+    center: string;
+    right: string;
+  };
+  // New fields for text questions
+  textType?: 'short' | 'long';
+  minChars?: number;
+  maxChars?: number;
+  // New fields for number questions
+  minNumber?: number;
+  maxNumber?: number;
+  // New fields for matrix questions
+  rows?: string[];
+  columns?: string[];
+  // New fields for priority questions - using options for simplicity
+  // New fields for image questions
+  imageOptions?: Array<{
+    text: string;
+    imageUrl?: string;
+  }>;
+  // For question groups
+  parentId?: string;
+  children?: string[];
 }
 
 const Index = () => {
