@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus, Trash2, GripVertical, Upload, Image as ImageIcon, Star, Heart, ThumbsUp, Play, Video } from 'lucide-react';
 import { Question } from '../pages/Index';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface QuestionSettingsModalProps {
   isOpen: boolean;
@@ -232,7 +232,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
           <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
             {/* Fixed header with question type */}
-            <div className="p-6 border-b border-gray-200 bg-white">
+            <div className="p-6 border-b border-gray-200 bg-white flex-shrink-0">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium">
                   {localQuestion.type}
@@ -254,538 +254,540 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6">
-                {/* Question Description */}
-                {!isQuestionGroup && !isDescription && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">توضیحات سوال</Label>
-                      <Switch
-                        checked={localQuestion.hasDescription || false}
-                        onCheckedChange={(checked) => handleUpdateField('hasDescription', checked)}
-                      />
-                    </div>
-                    {localQuestion.hasDescription && (
-                      <Textarea
-                        value={localQuestion.description || ''}
-                        onChange={(e) => handleUpdateField('description', e.target.value)}
-                        placeholder="توضیحات اضافی برای سوال"
-                        className="min-h-[80px]"
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* Required field for non-description questions */}
-                {!isDescription && !isQuestionGroup && (
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="required-toggle" className="text-sm font-medium">
-                      سوال اجباری
-                    </Label>
-                    <Switch
-                      id="required-toggle"
-                      checked={localQuestion.required || false}
-                      onCheckedChange={(checked) => handleUpdateField('required', checked)}
-                    />
-                  </div>
-                )}
-
-                {/* Image/Video Upload for all question types */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      {isQuestionGroup || isDescription ? 'تصویر/ویدیو' : 'تصویر'}
-                    </Label>
-                    <Switch
-                      checked={localQuestion.hasMedia || false}
-                      onCheckedChange={(checked) => handleUpdateField('hasMedia', checked)}
-                    />
-                  </div>
-                  {localQuestion.hasMedia && (
-                    <div className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Upload className="w-4 h-4 ml-2" />
-                        آپلود تصویر
-                      </Button>
-                      {(isQuestionGroup || isDescription) && (
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Video className="w-4 h-4 ml-2" />
-                          آپلود ویدیو
-                        </Button>
+            {/* Scrollable content area */}
+            <ScrollArea className="flex-1">
+              <div className="p-6 pb-0">
+                <div className="space-y-6">
+                  {/* Question Description */}
+                  {!isQuestionGroup && !isDescription && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">توضیحات سوال</Label>
+                        <Switch
+                          checked={localQuestion.hasDescription || false}
+                          onCheckedChange={(checked) => handleUpdateField('hasDescription', checked)}
+                        />
+                      </div>
+                      {localQuestion.hasDescription && (
+                        <Textarea
+                          value={localQuestion.description || ''}
+                          onChange={(e) => handleUpdateField('description', e.target.value)}
+                          placeholder="توضیحات اضافی برای سوال"
+                          className="min-h-[80px]"
+                        />
                       )}
                     </div>
                   )}
-                </div>
 
-                {/* Scale Question Settings */}
-                {isScale && (
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium mb-3 block">تنظیم طیف</Label>
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-gray-600 mb-1 block">تعداد گزینه‌ها</Label>
-                          <Slider
-                            value={[localQuestion.scaleMax || 5]}
-                            onValueChange={(value) => handleUpdateField('scaleMax', value[0])}
-                            min={3}
-                            max={11}
-                            step={2}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>3</span>
-                            <span>11</span>
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
-                          <Input
-                            type="number"
-                            value={localQuestion.scaleMax || 5}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (value >= 3 && value <= 11 && value % 2 === 1) {
-                                handleUpdateField('scaleMax', value);
-                              }
-                            }}
-                            min={3}
-                            max={11}
-                            step={2}
-                            className="w-24"
-                          />
-                        </div>
-                      </div>
+                  {/* Required field for non-description questions */}
+                  {!isDescription && !isQuestionGroup && (
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="required-toggle" className="text-sm font-medium">
+                        سوال اجباری
+                      </Label>
+                      <Switch
+                        id="required-toggle"
+                        checked={localQuestion.required || false}
+                        onCheckedChange={(checked) => handleUpdateField('required', checked)}
+                      />
                     </div>
-                    
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">برچسب‌های طیف</Label>
+                  )}
+
+                  {/* Image/Video Upload for all question types */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">
+                        {isQuestionGroup || isDescription ? 'تصویر/ویدیو' : 'تصویر'}
+                      </Label>
+                      <Switch
+                        checked={localQuestion.hasMedia || false}
+                        onCheckedChange={(checked) => handleUpdateField('hasMedia', checked)}
+                      />
+                    </div>
+                    {localQuestion.hasMedia && (
                       <div className="space-y-2">
-                        <Input
-                          placeholder="برچسب چپ"
-                          value={localQuestion.scaleLabels?.left || ''}
-                          onChange={(e) => handleUpdateField('scaleLabels', {
-                            ...localQuestion.scaleLabels,
-                            left: e.target.value
-                          })}
-                        />
-                        <Input
-                          placeholder="برچسب وسط"
-                          value={localQuestion.scaleLabels?.center || ''}
-                          onChange={(e) => handleUpdateField('scaleLabels', {
-                            ...localQuestion.scaleLabels,
-                            center: e.target.value
-                          })}
-                        />
-                        <Input
-                          placeholder="برچسب راست"
-                          value={localQuestion.scaleLabels?.right || ''}
-                          onChange={(e) => handleUpdateField('scaleLabels', {
-                            ...localQuestion.scaleLabels,
-                            right: e.target.value
-                          })}
-                        />
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Upload className="w-4 h-4 ml-2" />
+                          آپلود تصویر
+                        </Button>
+                        {(isQuestionGroup || isDescription) && (
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Video className="w-4 h-4 ml-2" />
+                            آپلود ویدیو
+                          </Button>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
 
-                {/* Rating Question Settings */}
-                {isRating && (
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium mb-3 block">تنظیم درجه</Label>
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-gray-600 mb-1 block">تعداد درجه‌ها (1-10)</Label>
-                          <Slider
-                            value={[localQuestion.ratingMax || 5]}
-                            onValueChange={(value) => handleUpdateField('ratingMax', value[0])}
-                            min={1}
-                            max={10}
-                            step={1}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>1</span>
-                            <span>10</span>
+                  {/* Scale Question Settings */}
+                  {isScale && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium mb-3 block">تنظیم طیف</Label>
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">تعداد گزینه‌ها</Label>
+                            <Slider
+                              value={[localQuestion.scaleMax || 5]}
+                              onValueChange={(value) => handleUpdateField('scaleMax', value[0])}
+                              min={3}
+                              max={11}
+                              step={2}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-gray-500 mt-1">
+                              <span>3</span>
+                              <span>11</span>
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
+                            <Input
+                              type="number"
+                              value={localQuestion.scaleMax || 5}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 3 && value <= 11 && value % 2 === 1) {
+                                  handleUpdateField('scaleMax', value);
+                                }
+                              }}
+                              min={3}
+                              max={11}
+                              step={2}
+                              className="w-24"
+                            />
                           </div>
                         </div>
-                        <div>
-                          <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">برچسب‌های طیف</Label>
+                        <div className="space-y-2">
                           <Input
-                            type="number"
-                            value={localQuestion.ratingMax || 5}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (value >= 1 && value <= 10) {
-                                handleUpdateField('ratingMax', value);
-                              }
-                            }}
-                            min={1}
-                            max={10}
-                            className="w-24"
+                            placeholder="برچسب چپ"
+                            value={localQuestion.scaleLabels?.left || ''}
+                            onChange={(e) => handleUpdateField('scaleLabels', {
+                              ...localQuestion.scaleLabels,
+                              left: e.target.value
+                            })}
+                          />
+                          <Input
+                            placeholder="برچسب وسط"
+                            value={localQuestion.scaleLabels?.center || ''}
+                            onChange={(e) => handleUpdateField('scaleLabels', {
+                              ...localQuestion.scaleLabels,
+                              center: e.target.value
+                            })}
+                          />
+                          <Input
+                            placeholder="برچسب راست"
+                            value={localQuestion.scaleLabels?.right || ''}
+                            onChange={(e) => handleUpdateField('scaleLabels', {
+                              ...localQuestion.scaleLabels,
+                              right: e.target.value
+                            })}
                           />
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">شکل درجه‌بندی</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { type: 'star', icon: <Star className="w-5 h-5" />, label: 'ستاره' },
-                          { type: 'heart', icon: <Heart className="w-5 h-5" />, label: 'قلب' },
-                          { type: 'thumbs', icon: <ThumbsUp className="w-5 h-5" />, label: 'لایک' }
-                        ].map(({ type, icon, label }) => (
-                          <button
-                            key={type}
-                            className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
-                              localQuestion.ratingStyle === type
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => handleUpdateField('ratingStyle', type)}
-                          >
-                            {icon}
-                            <span className="text-xs mt-1">{label}</span>
-                          </button>
-                        ))}
+                  )}
+
+                  {/* Rating Question Settings */}
+                  {isRating && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium mb-3 block">تنظیم درجه</Label>
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">تعداد درجه‌ها (1-10)</Label>
+                            <Slider
+                              value={[localQuestion.ratingMax || 5]}
+                              onValueChange={(value) => handleUpdateField('ratingMax', value[0])}
+                              min={1}
+                              max={10}
+                              step={1}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-gray-500 mt-1">
+                              <span>1</span>
+                              <span>10</span>
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
+                            <Input
+                              type="number"
+                              value={localQuestion.ratingMax || 5}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 1 && value <= 10) {
+                                  handleUpdateField('ratingMax', value);
+                                }
+                              }}
+                              min={1}
+                              max={10}
+                              className="w-24"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">شکل درجه‌بندی</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { type: 'star', icon: <Star className="w-5 h-5" />, label: 'ستاره' },
+                            { type: 'heart', icon: <Heart className="w-5 h-5" />, label: 'قلب' },
+                            { type: 'thumbs', icon: <ThumbsUp className="w-5 h-5" />, label: 'لایک' }
+                          ].map(({ type, icon, label }) => (
+                            <button
+                              key={type}
+                              className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
+                                localQuestion.ratingStyle === type
+                                  ? 'border-blue-500 bg-blue-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => handleUpdateField('ratingStyle', type)}
+                            >
+                              {icon}
+                              <span className="text-xs mt-1">{label}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Text Question Settings */}
-                {isText && (
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">نوع متن</Label>
-                      <Select value={localQuestion.textType || 'short'} onValueChange={(value) => handleUpdateField('textType', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="short">متن کوتاه</SelectItem>
-                          <SelectItem value="long">متن بلند</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  {/* Text Question Settings */}
+                  {isText && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium mb-2 block">نوع متن</Label>
+                        <Select value={localQuestion.textType || 'short'} onValueChange={(value) => handleUpdateField('textType', value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="short">متن کوتاه</SelectItem>
+                            <SelectItem value="long">متن بلند</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-sm font-medium">حداقل کاراکتر</Label>
+                          <Input
+                            type="number"
+                            value={localQuestion.minChars || ''}
+                            onChange={(e) => handleUpdateField('minChars', parseInt(e.target.value) || 0)}
+                            min={0}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">حداکثر کاراکتر</Label>
+                          <Input
+                            type="number"
+                            value={localQuestion.maxChars || ''}
+                            onChange={(e) => handleUpdateField('maxChars', parseInt(e.target.value) || 0)}
+                            min={0}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    
+                  )}
+
+                  {/* Number Question Settings */}
+                  {isNumber && (
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label className="text-sm font-medium">حداقل کاراکتر</Label>
+                        <Label className="text-sm font-medium">حداقل عدد</Label>
                         <Input
                           type="number"
-                          value={localQuestion.minChars || ''}
-                          onChange={(e) => handleUpdateField('minChars', parseInt(e.target.value) || 0)}
-                          min={0}
+                          value={localQuestion.minNumber || ''}
+                          onChange={(e) => handleUpdateField('minNumber', parseInt(e.target.value) || 0)}
                           className="mt-1"
                         />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">حداکثر کاراکتر</Label>
+                        <Label className="text-sm font-medium">حداکثر عدد</Label>
                         <Input
                           type="number"
-                          value={localQuestion.maxChars || ''}
-                          onChange={(e) => handleUpdateField('maxChars', parseInt(e.target.value) || 0)}
-                          min={0}
+                          value={localQuestion.maxNumber || ''}
+                          onChange={(e) => handleUpdateField('maxNumber', parseInt(e.target.value) || 0)}
                           className="mt-1"
                         />
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Number Question Settings */}
-                {isNumber && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-sm font-medium">حداقل عدد</Label>
-                      <Input
-                        type="number"
-                        value={localQuestion.minNumber || ''}
-                        onChange={(e) => handleUpdateField('minNumber', parseInt(e.target.value) || 0)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">حداکثر عدد</Label>
-                      <Input
-                        type="number"
-                        value={localQuestion.maxNumber || ''}
-                        onChange={(e) => handleUpdateField('maxNumber', parseInt(e.target.value) || 0)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Matrix Question Settings */}
-                {isMatrix && (
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <Label className="text-sm font-medium">سطرها</Label>
-                        <Button size="sm" variant="outline" onClick={addRow} className="h-8 px-2">
-                          <Plus className="w-4 h-4 ml-1" />
-                          افزودن
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Input
-                              value={row}
-                              onChange={(e) => updateRow(index, e.target.value)}
-                              className="flex-1"
-                            />
-                            {(localQuestion.rows?.length || 2) > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeRow(index)}
-                                className="h-8 w-8 p-0 text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <Label className="text-sm font-medium">ستون‌ها</Label>
-                        <Button size="sm" variant="outline" onClick={addColumn} className="h-8 px-2">
-                          <Plus className="w-4 h-4 ml-1" />
-                          افزودن
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Input
-                              value={column}
-                              onChange={(e) => updateColumn(index, e.target.value)}
-                              className="flex-1"
-                            />
-                            {(localQuestion.columns?.length || 2) > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeColumn(index)}
-                                className="h-8 w-8 p-0 text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Priority Question Settings */}
-                {isPriority && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                      <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
-                        <Plus className="w-4 h-4 ml-1" />
-                        افزودن
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-                          <Input
-                            value={option}
-                            onChange={(e) => updateOption(index, e.target.value)}
-                            className="flex-1"
-                          />
-                          {(localQuestion.options?.length || 2) > 2 && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeOption(index)}
-                              className="h-8 w-8 p-0 text-red-500"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                  {/* Matrix Question Settings */}
+                  {isMatrix && (
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <Label className="text-sm font-medium">سطرها</Label>
+                          <Button size="sm" variant="outline" onClick={addRow} className="h-8 px-2">
+                            <Plus className="w-4 h-4 ml-1" />
+                            افزودن
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Image Choice Question Settings */}
-                {isImageChoice && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                      <Button size="sm" variant="outline" onClick={addImageOption} className="h-8 px-2">
-                        <Plus className="w-4 h-4 ml-1" />
-                        افزودن
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              value={option.text}
-                              onChange={(e) => updateImageOption(index, 'text', e.target.value)}
-                              placeholder={`گزینه ${index + 1}`}
-                              className="flex-1"
-                            />
-                            {(localQuestion.imageOptions?.length || 2) > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeImageOption(index)}
-                                className="h-8 w-8 p-0 text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <div className="relative">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleImageUpload(index, e)}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        <div className="space-y-2">
+                          {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <Input
+                                value={row}
+                                onChange={(e) => updateRow(index, e.target.value)}
+                                className="flex-1"
                               />
-                              <Button variant="outline" size="sm" className="w-full">
-                                <Upload className="w-4 h-4 ml-2" />
-                                آپلود تصویر
-                              </Button>
+                              {(localQuestion.rows?.length || 2) > 2 && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeRow(index)}
+                                  className="h-8 w-8 p-0 text-red-500"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
-                            {option.imageUrl && (
-                              <div className="w-full h-20 bg-gray-100 rounded-md overflow-hidden">
-                                <img
-                                  src={option.imageUrl}
-                                  alt={`Preview ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      </div>
 
-                {/* Regular Options for Multi-choice */}
-                {hasOptions && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                      <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
-                        <Plus className="w-4 h-4 ml-1" />
-                        افزودن
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-                          <Input
-                            value={option}
-                            onChange={(e) => updateOption(index, e.target.value)}
-                            className="flex-1"
-                          />
-                          {(localQuestion.options?.length || 2) > 2 && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeOption(index)}
-                              className="h-8 w-8 p-0 text-red-500"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <Label className="text-sm font-medium">ستون‌ها</Label>
+                          <Button size="sm" variant="outline" onClick={addColumn} className="h-8 px-2">
+                            <Plus className="w-4 h-4 ml-1" />
+                            افزودن
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Dropdown Options */}
-                {isDropdown && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="border border-gray-200 rounded-lg p-3">
-                        <Input
-                          value={newDropdownOption}
-                          onChange={(e) => setNewDropdownOption(e.target.value)}
-                          onKeyPress={handleDropdownKeyPress}
-                          placeholder="گزینه جدید را تایپ کنید و Enter بزنید"
-                          className="mb-2"
-                        />
-                        <div className="flex flex-wrap gap-2">
-                          {(localQuestion.options || []).map((option, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
-                            >
-                              <span>{option}</span>
-                              <button
-                                onClick={() => removeDropdownOption(index)}
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
+                        <div className="space-y-2">
+                          {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <Input
+                                value={column}
+                                onChange={(e) => updateColumn(index, e.target.value)}
+                                className="flex-1"
+                              />
+                              {(localQuestion.columns?.length || 2) > 2 && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeColumn(index)}
+                                  className="h-8 w-8 p-0 text-red-500"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Advanced Multi-choice Settings */}
-                {isMultiChoice && (
-                  <div className="space-y-4 border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-900">تنظیمات پیشرفته</h4>
-                    
-                    <div className="space-y-3">
-                      {[
-                        { key: 'hasOther', label: 'گزینه سایر' },
-                        { key: 'hasNone', label: 'گزینه هیچکدام' },
-                        { key: 'hasAll', label: 'گزینه همه موارد' },
-                        { key: 'isRequired', label: 'پاسخ اجباری باشد' },
-                        { key: 'isMultiSelect', label: 'سوال چند انتخابی' },
-                        { key: 'randomizeOptions', label: 'گزینه‌های تصادفی' }
-                      ].map(({ key, label }) => (
-                        <div key={key} className="flex items-center justify-between">
-                          <Label className="text-sm font-medium">{label}</Label>
-                          <Switch
-                            checked={localQuestion[key as keyof Question] as boolean || false}
-                            onCheckedChange={(checked) => handleUpdateField(key as keyof Question, checked)}
-                          />
-                        </div>
-                      ))}
+                  {/* Priority Question Settings */}
+                  {isPriority && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-medium">گزینه‌ها</Label>
+                        <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
+                          <Plus className="w-4 h-4 ml-1" />
+                          افزودن
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+                            <Input
+                              value={option}
+                              onChange={(e) => updateOption(index, e.target.value)}
+                              className="flex-1"
+                            />
+                            {(localQuestion.options?.length || 2) > 2 && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeOption(index)}
+                                className="h-8 w-8 p-0 text-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* Image Choice Question Settings */}
+                  {isImageChoice && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-medium">گزینه‌ها</Label>
+                        <Button size="sm" variant="outline" onClick={addImageOption} className="h-8 px-2">
+                          <Plus className="w-4 h-4 ml-1" />
+                          افزودن
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={option.text}
+                                onChange={(e) => updateImageOption(index, 'text', e.target.value)}
+                                placeholder={`گزینه ${index + 1}`}
+                                className="flex-1"
+                              />
+                              {(localQuestion.imageOptions?.length || 2) > 2 && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeImageOption(index)}
+                                  className="h-8 w-8 p-0 text-red-500"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleImageUpload(index, e)}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <Button variant="outline" size="sm" className="w-full">
+                                  <Upload className="w-4 h-4 ml-2" />
+                                  آپلود تصویر
+                                </Button>
+                              </div>
+                              {option.imageUrl && (
+                                <div className="w-full h-20 bg-gray-100 rounded-md overflow-hidden">
+                                  <img
+                                    src={option.imageUrl}
+                                    alt={`Preview ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Regular Options for Multi-choice */}
+                  {hasOptions && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-medium">گزینه‌ها</Label>
+                        <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
+                          <Plus className="w-4 h-4 ml-1" />
+                          افزودن
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+                            <Input
+                              value={option}
+                              onChange={(e) => updateOption(index, e.target.value)}
+                              className="flex-1"
+                            />
+                            {(localQuestion.options?.length || 2) > 2 && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeOption(index)}
+                                className="h-8 w-8 p-0 text-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dropdown Options */}
+                  {isDropdown && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-medium">گزینه‌ها</Label>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="border border-gray-200 rounded-lg p-3">
+                          <Input
+                            value={newDropdownOption}
+                            onChange={(e) => setNewDropdownOption(e.target.value)}
+                            onKeyPress={handleDropdownKeyPress}
+                            placeholder="گزینه جدید را تایپ کنید و Enter بزنید"
+                            className="mb-2"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            {(localQuestion.options || []).map((option, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+                              >
+                                <span>{option}</span>
+                                <button
+                                  onClick={() => removeDropdownOption(index)}
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Advanced Multi-choice Settings */}
+                  {isMultiChoice && (
+                    <div className="space-y-4 border-t pt-4">
+                      <h4 className="text-sm font-medium text-gray-900">تنظیمات پیشرفته</h4>
+                      
+                      <div className="space-y-3">
+                        {[
+                          { key: 'hasOther', label: 'گزینه سایر' },
+                          { key: 'hasNone', label: 'گزینه هیچکدام' },
+                          { key: 'hasAll', label: 'گزینه همه موارد' },
+                          { key: 'isRequired', label: 'پاسخ اجباری باشد' },
+                          { key: 'isMultiSelect', label: 'سوال چند انتخابی' },
+                          { key: 'randomizeOptions', label: 'گزینه‌های تصادفی' }
+                        ].map(({ key, label }) => (
+                          <div key={key} className="flex items-center justify-between">
+                            <Label className="text-sm font-medium">{label}</Label>
+                            <Switch
+                              checked={localQuestion[key as keyof Question] as boolean || false}
+                              onCheckedChange={(checked) => handleUpdateField(key as keyof Question, checked)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollArea>
 
             {/* Fixed footer with save/cancel buttons */}
-            <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="flex gap-2">
                 <Button 
                   onClick={handleSave} 
