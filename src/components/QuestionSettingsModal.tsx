@@ -35,7 +35,15 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   useEffect(() => {
     if (question) {
-      setLocalQuestion({ ...question });
+      const updatedQuestion = { ...question };
+      
+      // For new questions, empty the label and set required to true by default
+      if (isNewQuestion) {
+        updatedQuestion.label = '';
+        updatedQuestion.required = true;
+      }
+      
+      setLocalQuestion(updatedQuestion);
       setHasChanges(isNewQuestion);
     }
   }, [question, isNewQuestion]);
@@ -49,6 +57,13 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
+    // Check if title is required and empty
+    if (!localQuestion.label.trim()) {
+      // Focus on the title input if it's empty
+      inputRef.current?.focus();
+      return;
+    }
+    
     if (hasChanges && localQuestion) {
       onSave(localQuestion);
     } else {
@@ -216,20 +231,32 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           </Button>
 
           <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
+            {/* Fixed header with question type */}
+            <div className="p-6 border-b border-gray-200 bg-white">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium">
+                  {localQuestion.type}
+                </span>
+              </div>
+              <div>
+                <Label htmlFor="question-label" className="text-sm font-medium">
+                  {isQuestionGroup ? 'متن گروه سوال' : 'عنوان سوال'}
+                  <span className="text-red-500 mr-1">*</span>
+                </Label>
+                <Input
+                  ref={inputRef}
+                  id="question-label"
+                  value={localQuestion.label}
+                  onChange={(e) => handleUpdateField('label', e.target.value)}
+                  placeholder={isQuestionGroup ? "عنوان گروه سوال را وارد کنید" : "عنوان سوال را وارد کنید"}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+
+            {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-6">
-                <div>
-                  <Label htmlFor="question-label" className="text-sm font-medium">
-                    {isQuestionGroup ? 'متن گروه سوال' : 'عنوان سوال'}
-                  </Label>
-                  <Input
-                    id="question-label"
-                    value={localQuestion.label}
-                    onChange={(e) => handleUpdateField('label', e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-
                 {/* Question Description */}
                 {!isQuestionGroup && !isDescription && (
                   <div className="space-y-3">
@@ -702,7 +729,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                     <div className="space-y-3">
                       <div className="border border-gray-200 rounded-lg p-3">
                         <Input
-                          ref={inputRef}
                           value={newDropdownOption}
                           onChange={(e) => setNewDropdownOption(e.target.value)}
                           onKeyPress={handleDropdownKeyPress}
@@ -758,9 +784,14 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               </div>
             </div>
 
+            {/* Fixed footer with save/cancel buttons */}
             <div className="border-t border-gray-200 p-4 bg-white">
               <div className="flex gap-2">
-                <Button onClick={handleSave} className="flex-1" disabled={!hasChanges}>
+                <Button 
+                  onClick={handleSave} 
+                  className="flex-1" 
+                  disabled={!hasChanges || !localQuestion.label.trim()}
+                >
                   ذخیره
                 </Button>
                 <Button onClick={handleCancel} variant="outline" className="flex-1">

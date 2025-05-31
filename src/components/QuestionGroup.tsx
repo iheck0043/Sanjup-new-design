@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { ChevronDown, ChevronUp, SquarePlus, GripVertical } from 'lucide-react';
 import { Question } from '../pages/Index';
 import QuestionCard from './QuestionCard';
@@ -38,6 +38,15 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
+  // Make question group draggable
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
+    type: 'question-card',
+    item: { id: group.id, index, type: 'question-group' },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ['question-card', 'question'],
     drop: (item: { type?: string; id?: string; index?: number }, monitor) => {
@@ -55,21 +64,50 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
         return;
       }
     },
+    hover: (item: { id: string; index: number; type?: string }, monitor) => {
+      if (!ref.current) return;
+      if (item.type === 'question' || item.index === undefined) return;
+
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      if (dragIndex === hoverIndex) return;
+
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
+      onMoveQuestion(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
     }),
   }));
 
-  drop(ref);
+  // Combine drag and drop refs
+  preview(drop(ref));
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200">
+    <div 
+      ref={ref}
+      className={`bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 ${
+        isDragging ? 'opacity-50' : ''
+      } ${isOver ? 'border-blue-300' : ''}`}
+    >
       {/* Group Header */}
       <div
-        className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50/50 rounded-t-lg"
+        className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50/50 rounded-t-lg group"
         onClick={() => onQuestionClick(group)}
       >
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+        <div 
+          ref={drag}
+          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
 
@@ -118,12 +156,7 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
 
       {/* Group Content */}
       {isExpanded && (
-        <div
-          ref={ref}
-          className={`border-t border-gray-200/50 p-3 space-y-2 transition-all duration-200 ${
-            isOver ? 'bg-blue-50/30' : ''
-          }`}
-        >
+        <div className="border-t border-gray-200/50 p-3 space-y-2 transition-all duration-200">
           {children.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <SquarePlus className="w-8 h-8 mx-auto mb-2 text-gray-300" />
