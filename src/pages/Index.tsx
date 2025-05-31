@@ -26,10 +26,10 @@ export interface Question {
     sourceOption: string;
     targetQuestionId: string;
   }>;
-  // New fields for description
+  // Description fields
   description?: string;
   hasDescription?: boolean;
-  // New fields for scale questions
+  // Scale question fields
   scaleMin?: number;
   scaleMax?: number;
   scaleLabels?: {
@@ -37,23 +37,29 @@ export interface Question {
     center: string;
     right: string;
   };
-  // New fields for text questions
+  // Rating question fields
+  ratingMax?: number;
+  ratingStyle?: 'star' | 'heart' | 'thumbs';
+  // Text question fields
   textType?: 'short' | 'long';
   minChars?: number;
   maxChars?: number;
-  // New fields for number questions
+  // Number question fields
   minNumber?: number;
   maxNumber?: number;
-  // New fields for matrix questions
+  // Matrix question fields
   rows?: string[];
   columns?: string[];
-  // New fields for priority questions - using options for simplicity
-  // New fields for image questions
+  // Image question fields
   imageOptions?: Array<{
     text: string;
     imageUrl?: string;
   }>;
-  // For question groups
+  // Media fields
+  hasMedia?: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  // Question group fields
   parentId?: string;
   children?: string[];
 }
