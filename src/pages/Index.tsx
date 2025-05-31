@@ -15,6 +15,12 @@ export interface Question {
   placeholder?: string;
   required?: boolean;
   options?: string[];
+  hasOther?: boolean;
+  hasNone?: boolean;
+  hasAll?: boolean;
+  isRequired?: boolean;
+  isMultiSelect?: boolean;
+  randomizeOptions?: boolean;
   conditions?: Array<{
     id: string;
     sourceOption: string;
@@ -29,6 +35,20 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
   const [conditionQuestion, setConditionQuestion] = useState<Question | null>(null);
+  const [isNewQuestion, setIsNewQuestion] = useState(false);
+  const [pendingQuestionData, setPendingQuestionData] = useState<{type: string, insertIndex?: number} | null>(null);
+
+  const createQuestion = useCallback(async (questionData: Partial<Question>) => {
+    // API call for creating question
+    console.log('Creating question:', questionData);
+    return questionData;
+  }, []);
+
+  const updateQuestion = useCallback(async (id: string, updates: Partial<Question>) => {
+    // API call for updating question
+    console.log('Updating question:', id, updates);
+    return updates;
+  }, []);
 
   const addQuestion = useCallback((questionType: string, insertIndex?: number) => {
     console.log('Adding question:', questionType, 'at index:', insertIndex);
@@ -40,20 +60,58 @@ const Index = () => {
       required: false,
     };
 
-    if (questionType === 'چندگزینه‌ای' || questionType === 'چندگزینه‌ای تصویری') {
+    if (questionType === 'چندگزینه‌ای') {
       newQuestion.options = ['گزینه ۱', 'گزینه ۲'];
+      newQuestion.hasOther = false;
+      newQuestion.hasNone = false;
+      newQuestion.hasAll = false;
+      newQuestion.isRequired = false;
+      newQuestion.isMultiSelect = false;
+      newQuestion.randomizeOptions = false;
     }
 
-    setQuestions(prev => {
-      if (insertIndex !== undefined) {
-        const newQuestions = [...prev];
-        newQuestions.splice(insertIndex, 0, newQuestion);
-        console.log('Questions after insert:', newQuestions.length);
-        return newQuestions;
-      }
-      console.log('Questions after append:', [...prev, newQuestion].length);
-      return [...prev, newQuestion];
-    });
+    // Set as new question and open modal
+    setSelectedQuestion(newQuestion);
+    setIsNewQuestion(true);
+    setPendingQuestionData({ type: questionType, insertIndex });
+    setIsModalOpen(true);
+  }, []);
+
+  const handleQuestionSave = useCallback(async (questionData: Question) => {
+    if (isNewQuestion && pendingQuestionData) {
+      // Create new question
+      await createQuestion(questionData);
+      
+      setQuestions(prev => {
+        if (pendingQuestionData.insertIndex !== undefined) {
+          const newQuestions = [...prev];
+          newQuestions.splice(pendingQuestionData.insertIndex, 0, questionData);
+          console.log('Questions after insert:', newQuestions.length);
+          return newQuestions;
+        }
+        console.log('Questions after append:', [...prev, questionData].length);
+        return [...prev, questionData];
+      });
+    } else {
+      // Update existing question
+      await updateQuestion(questionData.id, questionData);
+      setQuestions(prev =>
+        prev.map(q => (q.id === questionData.id ? { ...q, ...questionData } : q))
+      );
+    }
+    
+    setIsModalOpen(false);
+    setSelectedQuestion(null);
+    setIsNewQuestion(false);
+    setPendingQuestionData(null);
+  }, [isNewQuestion, pendingQuestionData, createQuestion, updateQuestion]);
+
+  const handleQuestionCancel = useCallback(() => {
+    // Don't add question if cancelled
+    setIsModalOpen(false);
+    setSelectedQuestion(null);
+    setIsNewQuestion(false);
+    setPendingQuestionData(null);
   }, []);
 
   const duplicateQuestion = useCallback((question: Question) => {
@@ -75,7 +133,7 @@ const Index = () => {
     setQuestions(prev => prev.filter(q => q.id !== id));
   }, []);
 
-  const updateQuestion = useCallback((id: string, updates: Partial<Question>) => {
+  const updateQuestionInList = useCallback((id: string, updates: Partial<Question>) => {
     setQuestions(prev =>
       prev.map(q => (q.id === id ? { ...q, ...updates } : q))
     );
@@ -94,12 +152,15 @@ const Index = () => {
 
   const openQuestionSettings = useCallback((question: Question) => {
     setSelectedQuestion(question);
+    setIsNewQuestion(false);
     setIsModalOpen(true);
   }, []);
 
   const closeQuestionSettings = useCallback(() => {
     setIsModalOpen(false);
     setSelectedQuestion(null);
+    setIsNewQuestion(false);
+    setPendingQuestionData(null);
   }, []);
 
   const openConditionModal = useCallback((question: Question) => {
@@ -121,7 +182,7 @@ const Index = () => {
           <FormBuilder
             questions={questions}
             onRemoveQuestion={removeQuestion}
-            onUpdateQuestion={updateQuestion}
+            onUpdateQuestion={updateQuestionInList}
             onMoveQuestion={moveQuestion}
             onQuestionClick={openQuestionSettings}
             onAddQuestion={addQuestion}
@@ -136,7 +197,9 @@ const Index = () => {
           isOpen={isModalOpen}
           onClose={closeQuestionSettings}
           question={selectedQuestion}
-          onUpdateQuestion={updateQuestion}
+          onSave={handleQuestionSave}
+          onCancel={handleQuestionCancel}
+          isNewQuestion={isNewQuestion}
         />
 
         <ConditionalLogicModal
@@ -144,7 +207,7 @@ const Index = () => {
           onClose={closeConditionModal}
           question={conditionQuestion}
           questions={questions}
-          onUpdateQuestion={updateQuestion}
+          onUpdateQuestion={updateQuestionInList}
         />
       </div>
     </DndProvider>

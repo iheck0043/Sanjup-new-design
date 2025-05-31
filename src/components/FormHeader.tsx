@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { ArrowLeft, Eye, Edit3 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -41,13 +41,16 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
         
         <div className="h-8 w-px bg-gray-300"></div>
         
-        <input
-          type="text"
-          value={formTitle}
-          onChange={(e) => setFormTitle(e.target.value)}
-          className="text-lg font-semibold bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 min-w-0 max-w-md"
-          placeholder="عنوان فرم"
-        />
+        <div className="group relative">
+          <input
+            type="text"
+            value={formTitle}
+            onChange={(e) => setFormTitle(e.target.value)}
+            className="text-lg font-semibold bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 min-w-0 max-w-md border-2 border-transparent rounded-md px-2 py-1 transition-all duration-200 hover:border-gray-200 focus:border-blue-300 focus:bg-blue-50/30"
+            placeholder="عنوان فرم"
+          />
+          <Edit3 className="w-4 h-4 text-gray-400 absolute left-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        </div>
       </div>
 
       {/* Centered Steps */}

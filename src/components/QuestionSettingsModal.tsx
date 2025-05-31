@@ -6,21 +6,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, GripVertical } from 'lucide-react';
 import { Question } from '../pages/Index';
 
 interface QuestionSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   question: Question | null;
-  onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
+  onSave: (question: Question) => void;
+  onCancel: () => void;
+  isNewQuestion: boolean;
 }
 
 const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   isOpen,
   onClose,
   question,
-  onUpdateQuestion,
+  onSave,
+  onCancel,
+  isNewQuestion,
 }) => {
   const [localQuestion, setLocalQuestion] = useState<Question | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -28,9 +32,9 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   useEffect(() => {
     if (question) {
       setLocalQuestion({ ...question });
-      setHasChanges(false);
+      setHasChanges(isNewQuestion);
     }
-  }, [question]);
+  }, [question, isNewQuestion]);
 
   if (!localQuestion) return null;
 
@@ -41,15 +45,20 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
-    if (hasChanges) {
-      onUpdateQuestion(localQuestion.id, localQuestion);
+    if (hasChanges && localQuestion) {
+      onSave(localQuestion);
+    } else {
+      onClose();
     }
-    onClose();
   };
 
   const handleCancel = () => {
-    setHasChanges(false);
-    onClose();
+    if (isNewQuestion) {
+      onCancel();
+    } else {
+      setHasChanges(false);
+      onClose();
+    }
   };
 
   const addOption = () => {
@@ -76,7 +85,17 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     }
   };
 
-  const hasOptions = localQuestion.type === 'چندگزینه‌ای' || localQuestion.type === 'چندگزینه‌ای تصویری' || localQuestion.type === 'لیست کشویی';
+  const moveOption = (fromIndex: number, toIndex: number) => {
+    if (localQuestion.options) {
+      const newOptions = [...localQuestion.options];
+      const [movedOption] = newOptions.splice(fromIndex, 1);
+      newOptions.splice(toIndex, 0, movedOption);
+      handleUpdateField('options', newOptions);
+    }
+  };
+
+  const hasOptions = localQuestion.type === 'چندگزینه‌ای' || localQuestion.type === 'لیست کشویی';
+  const isMultiChoice = localQuestion.type === 'چندگزینه‌ای';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -106,7 +125,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   />
                 </div>
 
-                {(localQuestion.type === 'متنی با پاسخ کوتاه' || localQuestion.type === 'متنی با پاسخ بلند') && (
+                {(localQuestion.type === 'متنی' || localQuestion.type === 'توضیح') && (
                   <div>
                     <Label htmlFor="question-placeholder" className="text-sm font-medium">
                       متن راهنما
@@ -150,6 +169,13 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                     <div className="space-y-2">
                       {localQuestion.options?.map((option, index) => (
                         <div key={index} className="flex items-center gap-2">
+                          <GripVertical 
+                            className="w-4 h-4 text-gray-400 cursor-move" 
+                            onMouseDown={(e) => {
+                              // Simple drag implementation for reordering
+                              // This is a basic version - you might want to implement proper drag & drop
+                            }}
+                          />
                           <Input
                             value={option}
                             onChange={(e) => updateOption(index, e.target.value)}
@@ -168,6 +194,60 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                           )}
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {isMultiChoice && (
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-900">تنظیمات پیشرفته</h4>
+                    
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">گزینه سایر</Label>
+                      <Switch
+                        checked={localQuestion.hasOther || false}
+                        onCheckedChange={(checked) => handleUpdateField('hasOther', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">گزینه هیچکدام</Label>
+                      <Switch
+                        checked={localQuestion.hasNone || false}
+                        onCheckedChange={(checked) => handleUpdateField('hasNone', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">گزینه همه موارد</Label>
+                      <Switch
+                        checked={localQuestion.hasAll || false}
+                        onCheckedChange={(checked) => handleUpdateField('hasAll', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">پاسخ اجباری باشد</Label>
+                      <Switch
+                        checked={localQuestion.isRequired || false}
+                        onCheckedChange={(checked) => handleUpdateField('isRequired', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">سوال چند انتخابی</Label>
+                      <Switch
+                        checked={localQuestion.isMultiSelect || false}
+                        onCheckedChange={(checked) => handleUpdateField('isMultiSelect', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">گزینه‌های تصادفی</Label>
+                      <Switch
+                        checked={localQuestion.randomizeOptions || false}
+                        onCheckedChange={(checked) => handleUpdateField('randomizeOptions', checked)}
+                      />
                     </div>
                   </div>
                 )}
@@ -203,19 +283,11 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   <div>
                     <Label className="text-base font-medium text-gray-900">
                       {localQuestion.label}
-                      {localQuestion.required && <span className="text-red-500 mr-1">*</span>}
+                      {(localQuestion.required || localQuestion.isRequired) && <span className="text-red-500 mr-1">*</span>}
                     </Label>
                     
                     <div className="mt-3">
-                      {localQuestion.type === 'متنی با پاسخ کوتاه' && (
-                        <Input
-                          placeholder={localQuestion.placeholder || 'پاسخ خود را وارد کنید'}
-                          disabled
-                          className="bg-gray-50"
-                        />
-                      )}
-                      
-                      {localQuestion.type === 'متنی با پاسخ بلند' && (
+                      {localQuestion.type === 'متنی' && (
                         <Textarea
                           placeholder={localQuestion.placeholder || 'پاسخ خود را وارد کنید'}
                           disabled
@@ -223,7 +295,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                         />
                       )}
                       
-                      {localQuestion.type === 'عدد' && (
+                      {localQuestion.type === 'عددی' && (
                         <Input
                           type="number"
                           placeholder="عدد را وارد کنید"
@@ -240,13 +312,19 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                           className="bg-gray-50"
                         />
                       )}
+
+                      {localQuestion.type === 'توضیح' && (
+                        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                          {localQuestion.placeholder || 'متن توضیحات اینجا قرار می‌گیرد'}
+                        </div>
+                      )}
                       
                       {hasOptions && localQuestion.options && (
                         <div className="space-y-3">
                           {localQuestion.options.map((option, index) => (
                             <div key={index} className="flex items-center gap-3">
                               <input
-                                type={localQuestion.type === 'چندگزینه‌ای' ? 'checkbox' : 'radio'}
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
                                 name="preview-options"
                                 disabled
                                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
@@ -254,6 +332,42 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                               <span className="text-sm text-gray-700">{option}</span>
                             </div>
                           ))}
+                          
+                          {localQuestion.hasOther && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">سایر:</span>
+                              <Input className="text-xs h-8 bg-gray-50" disabled placeholder="توضیح دهید..." />
+                            </div>
+                          )}
+                          
+                          {localQuestion.hasNone && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">هیچکدام</span>
+                            </div>
+                          )}
+                          
+                          {localQuestion.hasAll && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">همه موارد</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

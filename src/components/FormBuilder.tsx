@@ -63,7 +63,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         ref={zoneDrop}
         className={`transition-all duration-150 ${
           isZoneOver || dragOverIndex === index
-            ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-2'
+            ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4'
             : 'h-2'
         }`}
         onDragLeave={() => {
@@ -87,15 +87,18 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         onDragLeave={() => setDragOverIndex(null)}
       >
         {questions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-96 text-gray-400">
-            <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-              <MousePointer2 className="w-7 h-7 text-gray-400" />
+          <>
+            <DropZone index={0} />
+            <div className="flex flex-col items-center justify-center h-96 text-gray-400">
+              <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                <MousePointer2 className="w-7 h-7 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
+              <p className="text-center max-w-sm text-gray-500 text-sm">
+                سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
+              </p>
             </div>
-            <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
-            <p className="text-center max-w-sm text-gray-500 text-sm">
-              سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
-            </p>
-          </div>
+          </>
         ) : (
           <div className="space-y-1">
             <DropZone index={0} />

@@ -1,18 +1,19 @@
+
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { 
-  Text, 
   SquareCheck, 
-  ListCheck, 
-  Hash,
-  Mail,
-  Link,
-  ArrowUp,
-  ArrowDown,
-  SquarePlus,
   BarChart3,
-  CreditCard,
-  Flag,
+  SquarePlus,
+  FileText,
+  Type,
+  Hash,
+  Grid3X3,
+  ArrowUpDown,
+  Image,
+  ChevronDown,
+  Star,
+  Mail,
   Sparkles
 } from 'lucide-react';
 
@@ -58,40 +59,10 @@ interface QuestionSidebarProps {
 const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
   const questionTypes = [
     {
-      type: 'متنی با پاسخ کوتاه',
-      label: 'متن کوتاه',
-      icon: <Text className="w-4 h-4 text-blue-600" />,
-      color: 'bg-blue-50 border-blue-100 hover:bg-blue-100 hover:border-blue-200'
-    },
-    {
-      type: 'متنی با پاسخ بلند',
-      label: 'متن بلند',
-      icon: <Text className="w-4 h-4 text-purple-600" />,
-      color: 'bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200'
-    },
-    {
-      type: 'گروه سوال',
-      label: 'گروه سوال',
-      icon: <SquarePlus className="w-4 h-4 text-green-600" />,
-      color: 'bg-green-50 border-green-100 hover:bg-green-100 hover:border-green-200'
-    },
-    {
       type: 'چندگزینه‌ای',
       label: 'چندگزینه‌ای',
-      icon: <SquareCheck className="w-4 h-4 text-pink-600" />,
-      color: 'bg-pink-50 border-pink-100 hover:bg-pink-100 hover:border-pink-200'
-    },
-    {
-      type: 'چندگزینه‌ای تصویری',
-      label: 'چندگزینه تصویری',
-      icon: <SquareCheck className="w-4 h-4 text-yellow-600" />,
-      color: 'bg-yellow-50 border-yellow-100 hover:bg-yellow-100 hover:border-yellow-200'
-    },
-    {
-      type: 'لیست کشویی',
-      label: 'لیست کشویی',
-      icon: <ListCheck className="w-4 h-4 text-teal-600" />,
-      color: 'bg-teal-50 border-teal-100 hover:bg-teal-100 hover:border-teal-200'
+      icon: <SquareCheck className="w-4 h-4 text-blue-600" />,
+      color: 'bg-blue-50 border-blue-100 hover:bg-blue-100 hover:border-blue-200'
     },
     {
       type: 'طیفی',
@@ -100,52 +71,64 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
       color: 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200'
     },
     {
-      type: 'درخت‌بندی',
-      label: 'درخت‌بندی',
-      icon: <ArrowDown className="w-4 h-4 text-orange-600" />,
+      type: 'گروه سوال',
+      label: 'گروه سوال',
+      icon: <SquarePlus className="w-4 h-4 text-green-600" />,
+      color: 'bg-green-50 border-green-100 hover:bg-green-100 hover:border-green-200'
+    },
+    {
+      type: 'توضیح',
+      label: 'توضیح',
+      icon: <FileText className="w-4 h-4 text-gray-600" />,
+      color: 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200'
+    },
+    {
+      type: 'متنی',
+      label: 'متنی',
+      icon: <Type className="w-4 h-4 text-purple-600" />,
+      color: 'bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200'
+    },
+    {
+      type: 'عددی',
+      label: 'عددی',
+      icon: <Hash className="w-4 h-4 text-orange-600" />,
       color: 'bg-orange-50 border-orange-100 hover:bg-orange-100 hover:border-orange-200'
+    },
+    {
+      type: 'ماتریسی',
+      label: 'ماتریسی',
+      icon: <Grid3X3 className="w-4 h-4 text-cyan-600" />,
+      color: 'bg-cyan-50 border-cyan-100 hover:bg-cyan-100 hover:border-cyan-200'
     },
     {
       type: 'اولویت‌دهی',
       label: 'اولویت‌دهی',
-      icon: <ArrowUp className="w-4 h-4 text-red-600" />,
-      color: 'bg-red-50 border-red-100 hover:bg-red-100 hover:border-red-200'
+      icon: <ArrowUpDown className="w-4 h-4 text-pink-600" />,
+      color: 'bg-pink-50 border-pink-100 hover:bg-pink-100 hover:border-pink-200'
     },
     {
-      type: 'لینک/وب‌سایت',
-      label: 'لینک',
-      icon: <Link className="w-4 h-4 text-cyan-600" />,
-      color: 'bg-cyan-50 border-cyan-100 hover:bg-cyan-100 hover:border-cyan-200'
+      type: 'تصویری',
+      label: 'تصویری',
+      icon: <Image className="w-4 h-4 text-yellow-600" />,
+      color: 'bg-yellow-50 border-yellow-100 hover:bg-yellow-100 hover:border-yellow-200'
     },
     {
-      type: 'متن بدون پاسخ',
-      label: 'متن توضیحی',
-      icon: <Text className="w-4 h-4 text-gray-600" />,
-      color: 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200'
+      type: 'لیست کشویی',
+      label: 'لیست کشویی',
+      icon: <ChevronDown className="w-4 h-4 text-teal-600" />,
+      color: 'bg-teal-50 border-teal-100 hover:bg-teal-100 hover:border-teal-200'
     },
     {
-      type: 'درگاه پرداخت',
-      label: 'پرداخت',
-      icon: <CreditCard className="w-4 h-4 text-emerald-600" />,
-      color: 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100 hover:border-emerald-200'
-    },
-    {
-      type: 'عدد',
-      label: 'عدد',
-      icon: <Hash className="w-4 h-4 text-blue-600" />,
-      color: 'bg-blue-50 border-blue-100 hover:bg-blue-100 hover:border-blue-200'
+      type: 'درجه‌بندی',
+      label: 'درجه‌بندی',
+      icon: <Star className="w-4 h-4 text-amber-600" />,
+      color: 'bg-amber-50 border-amber-100 hover:bg-amber-100 hover:border-amber-200'
     },
     {
       type: 'ایمیل',
       label: 'ایمیل',
       icon: <Mail className="w-4 h-4 text-red-600" />,
       color: 'bg-red-50 border-red-100 hover:bg-red-100 hover:border-red-200'
-    },
-    {
-      type: 'صفحه پایان',
-      label: 'صفحه پایان',
-      icon: <Flag className="w-4 h-4 text-gray-600" />,
-      color: 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200'
     }
   ];
 
