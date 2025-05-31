@@ -1,7 +1,4 @@
-
 import React, { useState, useCallback } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import FormBuilder from '../components/FormBuilder';
 import QuestionSidebar from '../components/QuestionSidebar';
 import FormHeader from '../components/FormHeader';
@@ -245,55 +242,50 @@ const Index = () => {
   }, []);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50 flex flex-col font-vazirmatn overflow-x-hidden relative" dir="rtl">
-        {/* Enhanced background with modern patterns */}
-        <div 
-          className="absolute inset-0 opacity-60"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}
-        ></div>
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/20 via-transparent to-indigo-50/20 pointer-events-none"></div>
-        
-        <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
-        
-        <div className="flex flex-1 h-[calc(100vh-80px)] relative">
-          <FormBuilder
-            questions={questions}
-            onRemoveQuestion={removeQuestion}
-            onUpdateQuestion={updateQuestionInList}
-            onMoveQuestion={moveQuestion}
-            onQuestionClick={openQuestionSettings}
-            onAddQuestion={addQuestion}
-            onDuplicateQuestion={duplicateQuestion}
-            onConditionClick={openConditionModal}
-            onMoveToGroup={moveToGroup}
-            expandedGroups={expandedGroups}
-            onToggleGroup={toggleGroup}
-          />
-          
-          <QuestionSidebar onAddQuestion={addQuestion} />
-        </div>
-
-        <QuestionSettingsModal
-          isOpen={isModalOpen}
-          onClose={closeQuestionSettings}
-          question={selectedQuestion}
-          onSave={handleQuestionSave}
-          onCancel={handleQuestionCancel}
-          isNewQuestion={isNewQuestion}
-        />
-
-        <ConditionalLogicModal
-          isOpen={isConditionModalOpen}
-          onClose={closeConditionModal}
-          question={conditionQuestion}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50 flex flex-col font-vazirmatn overflow-x-hidden relative" dir="rtl">
+      {/* Enhanced background with modern patterns */}
+      <div className="absolute inset-0 opacity-60" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/20 via-transparent to-indigo-50/20 pointer-events-none"></div>
+      
+      <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
+      
+      <div className="flex flex-1 h-[calc(100vh-80px)] relative">
+        <FormBuilder
           questions={questions}
+          onRemoveQuestion={removeQuestion}
           onUpdateQuestion={updateQuestionInList}
+          onMoveQuestion={moveQuestion}
+          onQuestionClick={openQuestionSettings}
+          onAddQuestion={addQuestion}
+          onDuplicateQuestion={duplicateQuestion}
+          onConditionClick={openConditionModal}
+          onMoveToGroup={moveToGroup}
+          expandedGroups={expandedGroups}
+          onToggleGroup={toggleGroup}
         />
+        
+        <QuestionSidebar onAddQuestion={addQuestion} />
       </div>
-    </DndProvider>
+
+      <QuestionSettingsModal
+        isOpen={isModalOpen}
+        onClose={closeQuestionSettings}
+        question={selectedQuestion}
+        onSave={handleQuestionSave}
+        onCancel={handleQuestionCancel}
+        isNewQuestion={isNewQuestion}
+      />
+
+      <ConditionalLogicModal
+        isOpen={isConditionModalOpen}
+        onClose={closeConditionModal}
+        question={conditionQuestion}
+        questions={questions}
+        onUpdateQuestion={updateQuestionInList}
+      />
+    </div>
   );
 };
 
