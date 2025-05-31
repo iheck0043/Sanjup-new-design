@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -232,7 +231,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
           <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
             {/* Fixed header with question type */}
-            <div className="p-6 border-b border-gray-200 bg-white">
+            <div className="p-6 border-b border-gray-200 bg-white flex-shrink-0">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium">
                   {localQuestion.type}
@@ -256,7 +255,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6">
+              <div className="space-y-6 pb-20">
                 {/* Question Description */}
                 {!isQuestionGroup && !isDescription && (
                   <div className="space-y-3">
@@ -340,53 +339,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                             <span>11</span>
                           </div>
                         </div>
-                        <div>
-                          <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
-                          <Input
-                            type="number"
-                            value={localQuestion.scaleMax || 5}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (value >= 3 && value <= 11 && value % 2 === 1) {
-                                handleUpdateField('scaleMax', value);
-                              }
-                            }}
-                            min={3}
-                            max={11}
-                            step={2}
-                            className="w-24"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">برچسب‌های طیف</Label>
-                      <div className="space-y-2">
-                        <Input
-                          placeholder="برچسب چپ"
-                          value={localQuestion.scaleLabels?.left || ''}
-                          onChange={(e) => handleUpdateField('scaleLabels', {
-                            ...localQuestion.scaleLabels,
-                            left: e.target.value
-                          })}
-                        />
-                        <Input
-                          placeholder="برچسب وسط"
-                          value={localQuestion.scaleLabels?.center || ''}
-                          onChange={(e) => handleUpdateField('scaleLabels', {
-                            ...localQuestion.scaleLabels,
-                            center: e.target.value
-                          })}
-                        />
-                        <Input
-                          placeholder="برچسب راست"
-                          value={localQuestion.scaleLabels?.right || ''}
-                          onChange={(e) => handleUpdateField('scaleLabels', {
-                            ...localQuestion.scaleLabels,
-                            right: e.target.value
-                          })}
-                        />
                       </div>
                     </div>
                   </div>
@@ -408,51 +360,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                             step={1}
                             className="w-full"
                           />
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>1</span>
-                            <span>10</span>
-                          </div>
                         </div>
-                        <div>
-                          <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
-                          <Input
-                            type="number"
-                            value={localQuestion.ratingMax || 5}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (value >= 1 && value <= 10) {
-                                handleUpdateField('ratingMax', value);
-                              }
-                            }}
-                            min={1}
-                            max={10}
-                            className="w-24"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">شکل درجه‌بندی</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { type: 'star', icon: <Star className="w-5 h-5" />, label: 'ستاره' },
-                          { type: 'heart', icon: <Heart className="w-5 h-5" />, label: 'قلب' },
-                          { type: 'thumbs', icon: <ThumbsUp className="w-5 h-5" />, label: 'لایک' }
-                        ].map(({ type, icon, label }) => (
-                          <button
-                            key={type}
-                            className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
-                              localQuestion.ratingStyle === type
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => handleUpdateField('ratingStyle', type)}
-                          >
-                            {icon}
-                            <span className="text-xs mt-1">{label}</span>
-                          </button>
-                        ))}
                       </div>
                     </div>
                   </div>
@@ -472,215 +380,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                           <SelectItem value="long">متن بلند</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-sm font-medium">حداقل کاراکتر</Label>
-                        <Input
-                          type="number"
-                          value={localQuestion.minChars || ''}
-                          onChange={(e) => handleUpdateField('minChars', parseInt(e.target.value) || 0)}
-                          min={0}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">حداکثر کاراکتر</Label>
-                        <Input
-                          type="number"
-                          value={localQuestion.maxChars || ''}
-                          onChange={(e) => handleUpdateField('maxChars', parseInt(e.target.value) || 0)}
-                          min={0}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Number Question Settings */}
-                {isNumber && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-sm font-medium">حداقل عدد</Label>
-                      <Input
-                        type="number"
-                        value={localQuestion.minNumber || ''}
-                        onChange={(e) => handleUpdateField('minNumber', parseInt(e.target.value) || 0)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">حداکثر عدد</Label>
-                      <Input
-                        type="number"
-                        value={localQuestion.maxNumber || ''}
-                        onChange={(e) => handleUpdateField('maxNumber', parseInt(e.target.value) || 0)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Matrix Question Settings */}
-                {isMatrix && (
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <Label className="text-sm font-medium">سطرها</Label>
-                        <Button size="sm" variant="outline" onClick={addRow} className="h-8 px-2">
-                          <Plus className="w-4 h-4 ml-1" />
-                          افزودن
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Input
-                              value={row}
-                              onChange={(e) => updateRow(index, e.target.value)}
-                              className="flex-1"
-                            />
-                            {(localQuestion.rows?.length || 2) > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeRow(index)}
-                                className="h-8 w-8 p-0 text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <Label className="text-sm font-medium">ستون‌ها</Label>
-                        <Button size="sm" variant="outline" onClick={addColumn} className="h-8 px-2">
-                          <Plus className="w-4 h-4 ml-1" />
-                          افزودن
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Input
-                              value={column}
-                              onChange={(e) => updateColumn(index, e.target.value)}
-                              className="flex-1"
-                            />
-                            {(localQuestion.columns?.length || 2) > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeColumn(index)}
-                                className="h-8 w-8 p-0 text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Priority Question Settings */}
-                {isPriority && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                      <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
-                        <Plus className="w-4 h-4 ml-1" />
-                        افزودن
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-                          <Input
-                            value={option}
-                            onChange={(e) => updateOption(index, e.target.value)}
-                            className="flex-1"
-                          />
-                          {(localQuestion.options?.length || 2) > 2 && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeOption(index)}
-                              className="h-8 w-8 p-0 text-red-500"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Image Choice Question Settings */}
-                {isImageChoice && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                      <Button size="sm" variant="outline" onClick={addImageOption} className="h-8 px-2">
-                        <Plus className="w-4 h-4 ml-1" />
-                        افزودن
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              value={option.text}
-                              onChange={(e) => updateImageOption(index, 'text', e.target.value)}
-                              placeholder={`گزینه ${index + 1}`}
-                              className="flex-1"
-                            />
-                            {(localQuestion.imageOptions?.length || 2) > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => removeImageOption(index)}
-                                className="h-8 w-8 p-0 text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <div className="relative">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleImageUpload(index, e)}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <Button variant="outline" size="sm" className="w-full">
-                                <Upload className="w-4 h-4 ml-2" />
-                                آپلود تصویر
-                              </Button>
-                            </div>
-                            {option.imageUrl && (
-                              <div className="w-full h-20 bg-gray-100 rounded-md overflow-hidden">
-                                <img
-                                  src={option.imageUrl}
-                                  alt={`Preview ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 )}
@@ -720,42 +419,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   </div>
                 )}
 
-                {/* Dropdown Options */}
-                {isDropdown && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium">گزینه‌ها</Label>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="border border-gray-200 rounded-lg p-3">
-                        <Input
-                          value={newDropdownOption}
-                          onChange={(e) => setNewDropdownOption(e.target.value)}
-                          onKeyPress={handleDropdownKeyPress}
-                          placeholder="گزینه جدید را تایپ کنید و Enter بزنید"
-                          className="mb-2"
-                        />
-                        <div className="flex flex-wrap gap-2">
-                          {(localQuestion.options || []).map((option, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
-                            >
-                              <span>{option}</span>
-                              <button
-                                onClick={() => removeDropdownOption(index)}
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Advanced Multi-choice Settings */}
                 {isMultiChoice && (
                   <div className="space-y-4 border-t pt-4">
@@ -785,7 +448,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             </div>
 
             {/* Fixed footer with save/cancel buttons */}
-            <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="flex gap-2">
                 <Button 
                   onClick={handleSave} 
@@ -819,7 +482,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                     )}
                     
                     <div className="mt-3">
-                      {/* Text Question Preview */}
+                      {/* Preview content based on question type */}
                       {isText && (
                         localQuestion.textType === 'long' ? (
                           <Textarea
@@ -834,221 +497,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                             className="bg-gray-50"
                           />
                         )
-                      )}
-                      
-                      {/* Number Question Preview */}
-                      {isNumber && (
-                        <Input
-                          type="number"
-                          placeholder="عدد را وارد کنید"
-                          disabled
-                          className="bg-gray-50"
-                        />
-                      )}
-                      
-                      {/* Email Question Preview */}
-                      {isEmail && (
-                        <Input
-                          type="email"
-                          placeholder="ایمیل خود را وارد کنید"
-                          disabled
-                          className="bg-gray-50"
-                        />
-                      )}
-
-                      {/* Description Preview */}
-                      {isDescription && (
-                        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-                          این یک متن بدون پاسخ است که فقط اطلاعات ارائه می‌دهد
-                        </div>
-                      )}
-
-                      {/* Scale Question Preview */}
-                      {isScale && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between text-sm text-gray-600">
-                            <span>{localQuestion.scaleLabels?.left || 'کم'}</span>
-                            <span>{localQuestion.scaleLabels?.center || 'متوسط'}</span>
-                            <span>{localQuestion.scaleLabels?.right || 'زیاد'}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            {Array.from({ length: localQuestion.scaleMax || 5 }, (_, i) => (
-                              <label key={i} className="flex flex-col items-center cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name="scale-preview"
-                                  disabled
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
-                                />
-                                <span className="text-xs mt-1">{i + 1}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Rating Question Preview */}
-                      {isRating && (
-                        <div className="flex gap-2">
-                          {Array.from({ length: localQuestion.ratingMax || 5 }, (_, i) => (
-                            <button key={i} className="text-gray-300 hover:text-yellow-400 disabled:cursor-not-allowed" disabled>
-                              {localQuestion.ratingStyle === 'heart' && <Heart className="w-6 h-6" />}
-                              {localQuestion.ratingStyle === 'thumbs' && <ThumbsUp className="w-6 h-6" />}
-                              {(!localQuestion.ratingStyle || localQuestion.ratingStyle === 'star') && <Star className="w-6 h-6" />}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Dropdown Preview */}
-                      {isDropdown && (
-                        <Select disabled>
-                          <SelectTrigger className="bg-gray-50">
-                            <SelectValue placeholder="گزینه‌ای را انتخاب کنید" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                              <SelectItem key={index} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-
-                      {/* Matrix Preview */}
-                      {isMatrix && (
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse border border-gray-300">
-                            <thead>
-                              <tr>
-                                <th className="border border-gray-300 p-2 bg-gray-50"></th>
-                                {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
-                                  <th key={index} className="border border-gray-300 p-2 bg-gray-50 text-sm">
-                                    {column}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                  <td className="border border-gray-300 p-2 bg-gray-50 text-sm">{row}</td>
-                                  {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((_, colIndex) => (
-                                    <td key={colIndex} className="border border-gray-300 p-2 text-center">
-                                      <input
-                                        type="radio"
-                                        name={`matrix-${rowIndex}`}
-                                        disabled
-                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
-                                      />
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-
-                      {/* Priority Preview */}
-                      {isPriority && (
-                        <div className="space-y-2">
-                          {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                            <div key={index} className="flex items-center gap-3 p-2 border border-gray-200 rounded bg-gray-50 cursor-move">
-                              <GripVertical className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm">{index + 1}.</span>
-                              <span className="text-sm">{option}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Image Choice Preview */}
-                      {isImageChoice && (
-                        <div className="grid grid-cols-2 gap-4">
-                          {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
-                            <label key={index} className="cursor-pointer">
-                              <div className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
-                                <input
-                                  type="radio"
-                                  name="image-choice-preview"
-                                  disabled
-                                  className="sr-only"
-                                />
-                                <div className="space-y-2">
-                                  {option.imageUrl ? (
-                                    <div className="w-full h-24 bg-gray-100 rounded overflow-hidden">
-                                      <img
-                                        src={option.imageUrl}
-                                        alt={option.text}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="w-full h-24 bg-gray-100 rounded flex items-center justify-center">
-                                      <ImageIcon className="w-8 h-8 text-gray-400" />
-                                    </div>
-                                  )}
-                                  <p className="text-sm text-center">{option.text}</p>
-                                </div>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {/* Multi-choice Preview */}
-                      {hasOptions && localQuestion.options && (
-                        <div className="space-y-3">
-                          {localQuestion.options.map((option, index) => (
-                            <div key={index} className="flex items-center gap-3">
-                              <input
-                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
-                                name="preview-options"
-                                disabled
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                              />
-                              <span className="text-sm text-gray-700">{option}</span>
-                            </div>
-                          ))}
-                          
-                          {localQuestion.hasOther && (
-                            <div className="flex items-center gap-3">
-                              <input
-                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
-                                name="preview-options"
-                                disabled
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                              />
-                              <span className="text-sm text-gray-700">سایر:</span>
-                              <Input className="text-xs h-8 bg-gray-50" disabled placeholder="توضیح دهید..." />
-                            </div>
-                          )}
-                          
-                          {localQuestion.hasNone && (
-                            <div className="flex items-center gap-3">
-                              <input
-                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
-                                name="preview-options"
-                                disabled
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                              />
-                              <span className="text-sm text-gray-700">هیچکدام</span>
-                            </div>
-                          )}
-                          
-                          {localQuestion.hasAll && (
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                disabled
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                              />
-                              <span className="text-sm text-gray-700">همه موارد</span>
-                            </div>
-                          )}
-                        </div>
                       )}
                     </div>
                   </div>

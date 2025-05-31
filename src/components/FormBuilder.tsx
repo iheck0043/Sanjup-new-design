@@ -77,12 +77,18 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     return (
       <div
         ref={zoneDrop}
-        className={`transition-all duration-150 ${
+        className={`transition-all duration-300 ease-in-out ${
           isZoneOver || dragOverIndex === index
-            ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4'
-            : 'h-2'
+            ? 'h-12 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-3 mx-4 flex items-center justify-center opacity-100 scale-105'
+            : 'h-1 opacity-0'
         }`}
-      />
+      >
+        {(isZoneOver || dragOverIndex === index) && (
+          <span className="text-blue-600 text-sm font-medium animate-pulse">
+            سوال جدید را اینجا رها کنید
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -132,35 +138,37 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             <DropZone index={0} />
             {topLevelQuestions.map((question, index) => (
               <React.Fragment key={question.id}>
-                {question.type === 'گروه سوال' ? (
-                  <QuestionGroup
-                    group={question}
-                    children={getChildQuestions(question.id)}
-                    index={index}
-                    onRemoveQuestion={onRemoveQuestion}
-                    onUpdateQuestion={onUpdateQuestion}
-                    onMoveQuestion={onMoveQuestion}
-                    onQuestionClick={onQuestionClick}
-                    onAddQuestion={onAddQuestion}
-                    onDuplicateQuestion={onDuplicateQuestion}
-                    onConditionClick={onConditionClick}
-                    onMoveToGroup={onMoveToGroup}
-                    isExpanded={expandedGroups.includes(question.id)}
-                    onToggleExpand={onToggleGroup}
-                  />
-                ) : (
-                  <QuestionCard
-                    question={question}
-                    index={index}
-                    onRemove={onRemoveQuestion}
-                    onUpdate={onUpdateQuestion}
-                    onMove={onMoveQuestion}
-                    onClick={onQuestionClick}
-                    onAddQuestion={onAddQuestion}
-                    onDuplicate={onDuplicateQuestion}
-                    onConditionClick={onConditionClick}
-                  />
-                )}
+                <div className="transform transition-all duration-300 ease-in-out hover:scale-[1.02]">
+                  {question.type === 'گروه سوال' ? (
+                    <QuestionGroup
+                      group={question}
+                      children={getChildQuestions(question.id)}
+                      index={index}
+                      onRemoveQuestion={onRemoveQuestion}
+                      onUpdateQuestion={onUpdateQuestion}
+                      onMoveQuestion={onMoveQuestion}
+                      onQuestionClick={onQuestionClick}
+                      onAddQuestion={onAddQuestion}
+                      onDuplicateQuestion={onDuplicateQuestion}
+                      onConditionClick={onConditionClick}
+                      onMoveToGroup={onMoveToGroup}
+                      isExpanded={expandedGroups.includes(question.id)}
+                      onToggleExpand={onToggleGroup}
+                    />
+                  ) : (
+                    <QuestionCard
+                      question={question}
+                      index={index}
+                      onRemove={onRemoveQuestion}
+                      onUpdate={onUpdateQuestion}
+                      onMove={onMoveQuestion}
+                      onClick={onQuestionClick}
+                      onAddQuestion={onAddQuestion}
+                      onDuplicate={onDuplicateQuestion}
+                      onConditionClick={onConditionClick}
+                    />
+                  )}
+                </div>
                 <DropZone index={index + 1} />
               </React.Fragment>
             ))}
