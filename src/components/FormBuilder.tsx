@@ -33,6 +33,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     drop: (item: { type: string }, monitor) => {
       if (monitor.didDrop()) return;
       
+      console.log('Dropped question type:', item.type, 'at index:', dragOverIndex);
       const targetIndex = dragOverIndex !== null ? dragOverIndex : questions.length;
       onAddQuestion(item.type, targetIndex);
       setDragOverIndex(null);
@@ -40,6 +41,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
     }),
+    hover: (item, monitor) => {
+      if (!monitor.isOver({ shallow: true })) return;
+      // Set dragOverIndex to end of list when hovering over main container
+      if (dragOverIndex === null) {
+        setDragOverIndex(questions.length);
+      }
+    },
   }));
 
   const DropZone: React.FC<{ index: number }> = ({ index }) => {
@@ -47,13 +55,15 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       accept: 'question',
       drop: (item: { type: string }, monitor) => {
         if (monitor.didDrop()) return;
+        console.log('Dropped in zone at index:', index, 'question type:', item.type);
         onAddQuestion(item.type, index);
         setDragOverIndex(null);
       },
       collect: (monitor) => ({
         isOver: monitor.isOver({ shallow: true }),
       }),
-      hover: () => {
+      hover: (item, monitor) => {
+        if (!monitor.isOver({ shallow: true })) return;
         setDragOverIndex(index);
       },
     }));
@@ -66,13 +76,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4'
             : 'h-2'
         }`}
-        onDragLeave={() => {
-          if (dragOverIndex === index) {
-            setDragOverIndex(null);
-          }
-        }}
       />
     );
+  };
+
+  // Reset dragOverIndex when drag ends
+  const handleDragEnd = () => {
+    setDragOverIndex(null);
   };
 
   return (
@@ -84,7 +94,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl'
             : ''
         }`}
-        onDragLeave={() => setDragOverIndex(null)}
+        onDragEnd={handleDragEnd}
+        onDragLeave={(e) => {
+          // Only reset if leaving the main container
+          if (e.currentTarget === e.target) {
+            setDragOverIndex(null);
+          }
+        }}
       >
         {questions.length === 0 ? (
           <>
