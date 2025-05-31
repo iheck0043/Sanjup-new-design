@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { ChevronDown, ChevronUp, SquarePlus, GripVertical, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, SquarePlus, GripVertical } from 'lucide-react';
 import { Question } from '../pages/Index';
 import QuestionCard from './QuestionCard';
 
@@ -96,9 +96,8 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
     <div 
       ref={ref}
       className={`bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 ${
-        isDragging ? 'opacity-50 scale-95' : ''
-      } ${isOver ? 'border-blue-300 shadow-md' : ''}`}
-      style={{ transform: isDragging ? 'rotate(2deg)' : 'none' }}
+        isDragging ? 'opacity-50' : ''
+      } ${isOver ? 'border-blue-300' : ''}`}
     >
       {/* Group Header */}
       <div
@@ -139,17 +138,6 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
             {children.length} سوال
           </span>
         </div>
-
-        {/* Delete button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemoveQuestion(group.id);
-          }}
-          className="flex-shrink-0 p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Trash2 className="w-4 h-4 text-red-500" />
-        </button>
 
         <button
           onClick={(e) => {
