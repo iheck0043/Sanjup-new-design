@@ -1,24 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus, Trash2 } from 'lucide-react';
-import { Question } from '../pages/Index';
-
-interface CombinedCondition {
-  id: string;
-  sourceQuestionId: string;
-  sourceOption: string;
-  operator: 'AND' | 'OR';
-}
-
-interface ConditionalRule {
-  id: string;
-  conditions: CombinedCondition[];
-  targetQuestionId: string;
-}
+import { Question, CombinedCondition, ConditionalRule } from '../types/Question';
 
 interface ConditionalLogicModalProps {
   isOpen: boolean;
