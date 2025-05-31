@@ -1,7 +1,8 @@
 
 import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { ChevronDown, ChevronUp, SquarePlus, GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronUp, SquarePlus, GripVertical, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Question } from '../pages/Index';
 import QuestionCard from './QuestionCard';
 
@@ -95,18 +96,18 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
   return (
     <div 
       ref={ref}
-      className={`bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 ${
-        isDragging ? 'opacity-50' : ''
-      } ${isOver ? 'border-blue-300' : ''}`}
+      className={`bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-300 ease-out transform ${
+        isDragging ? 'opacity-50 scale-95' : 'scale-100'
+      } ${isOver ? 'border-blue-300 shadow-lg' : ''}`}
     >
       {/* Group Header */}
       <div
-        className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50/50 rounded-t-lg group"
+        className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50/50 rounded-t-lg group transition-colors duration-200"
         onClick={() => onQuestionClick(group)}
       >
         <div 
           ref={drag}
-          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing"
         >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
@@ -139,12 +140,27 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
           </span>
         </div>
 
+        <div 
+          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemoveQuestion(group.id)}
+            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md transition-colors duration-200"
+            title="حذف گروه"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleExpand(group.id);
           }}
-          className="flex-shrink-0 p-1 hover:bg-gray-200 rounded"
+          className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition-colors duration-200"
         >
           {isExpanded ? (
             <ChevronUp className="w-4 h-4 text-gray-500" />
@@ -156,7 +172,7 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
 
       {/* Group Content */}
       {isExpanded && (
-        <div className="border-t border-gray-200/50 p-3 space-y-2 transition-all duration-200">
+        <div className="border-t border-gray-200/50 p-3 space-y-2 animate-accordion-down">
           {children.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <SquarePlus className="w-8 h-8 mx-auto mb-2 text-gray-300" />
@@ -164,7 +180,7 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
             </div>
           ) : (
             children.map((question, childIndex) => (
-              <div key={question.id} className="pr-4 border-r-2 border-gray-200">
+              <div key={question.id} className="pr-4 border-r-2 border-gray-200 transform transition-all duration-300 ease-out">
                 <QuestionCard
                   question={question}
                   index={childIndex}

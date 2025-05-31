@@ -34,6 +34,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onToggleGroup,
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isDraggingFromSidebar, setIsDraggingFromSidebar] = useState(false);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'question',
@@ -44,19 +45,21 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       const targetIndex = dragOverIndex !== null ? dragOverIndex : questions.length;
       onAddQuestion(item.type, targetIndex);
       setDragOverIndex(null);
+      setIsDraggingFromSidebar(false);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
     }),
     hover: (item, monitor) => {
       if (!monitor.isOver({ shallow: true })) return;
+      setIsDraggingFromSidebar(true);
       if (dragOverIndex === null) {
         setDragOverIndex(questions.length);
       }
     },
   }));
 
-  const DropZone: React.FC<{ index: number }> = ({ index }) => {
+  const DropZone: React.FC<{ index: number; isVisible?: boolean }> = ({ index, isVisible = false }) => {
     const [{ isOver: isZoneOver }, zoneDrop] = useDrop(() => ({
       accept: 'question',
       drop: (item: { type: string }, monitor) => {
@@ -64,6 +67,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         console.log('Dropped in zone at index:', index, 'question type:', item.type);
         onAddQuestion(item.type, index);
         setDragOverIndex(null);
+        setIsDraggingFromSidebar(false);
       },
       collect: (monitor) => ({
         isOver: monitor.isOver({ shallow: true }),
@@ -71,23 +75,33 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       hover: (item, monitor) => {
         if (!monitor.isOver({ shallow: true })) return;
         setDragOverIndex(index);
+        setIsDraggingFromSidebar(true);
       },
     }));
+
+    const shouldShow = isVisible || isZoneOver || dragOverIndex === index;
 
     return (
       <div
         ref={zoneDrop}
-        className={`transition-all duration-150 ${
-          isZoneOver || dragOverIndex === index
-            ? 'h-8 bg-blue-100 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4'
-            : 'h-2'
+        className={`transition-all duration-300 ease-out ${
+          shouldShow
+            ? 'h-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4 flex items-center justify-center opacity-100 scale-100'
+            : 'h-2 opacity-0 scale-95'
         }`}
-      />
+      >
+        {shouldShow && (
+          <div className="text-blue-500 text-sm font-medium animate-fade-in">
+            رها کنید تا سوال اضافه شود
+          </div>
+        )}
+      </div>
     );
   };
 
   const handleDragEnd = () => {
     setDragOverIndex(null);
+    setIsDraggingFromSidebar(false);
   };
 
   // Separate top-level questions from grouped questions
@@ -102,23 +116,24 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     <div className="flex-1 overflow-y-auto pr-96">
       <div
         ref={drop}
-        className={`min-h-[500px] transition-all duration-200 p-6 max-w-4xl mx-auto ${
+        className={`min-h-[500px] transition-all duration-300 ease-out p-6 max-w-4xl mx-auto ${
           isOver && dragOverIndex === topLevelQuestions.length
-            ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl'
+            ? 'bg-gradient-to-br from-blue-50/80 to-indigo-50/80 border-2 border-dashed border-blue-300 rounded-xl scale-[1.02]'
             : ''
         }`}
         onDragEnd={handleDragEnd}
         onDragLeave={(e) => {
           if (e.currentTarget === e.target) {
             setDragOverIndex(null);
+            setIsDraggingFromSidebar(false);
           }
         }}
       >
         {topLevelQuestions.length === 0 ? (
           <>
-            <DropZone index={0} />
-            <div className="flex flex-col items-center justify-center h-96 text-gray-400">
-              <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+            <DropZone index={0} isVisible={isDraggingFromSidebar} />
+            <div className="flex flex-col items-center justify-center h-96 text-gray-400 animate-fade-in">
+              <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4 hover-scale">
                 <MousePointer2 className="w-7 h-7 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
@@ -129,39 +144,41 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
           </>
         ) : (
           <div className="space-y-1">
-            <DropZone index={0} />
+            <DropZone index={0} isVisible={isDraggingFromSidebar} />
             {topLevelQuestions.map((question, index) => (
               <React.Fragment key={question.id}>
-                {question.type === 'گروه سوال' ? (
-                  <QuestionGroup
-                    group={question}
-                    children={getChildQuestions(question.id)}
-                    index={index}
-                    onRemoveQuestion={onRemoveQuestion}
-                    onUpdateQuestion={onUpdateQuestion}
-                    onMoveQuestion={onMoveQuestion}
-                    onQuestionClick={onQuestionClick}
-                    onAddQuestion={onAddQuestion}
-                    onDuplicateQuestion={onDuplicateQuestion}
-                    onConditionClick={onConditionClick}
-                    onMoveToGroup={onMoveToGroup}
-                    isExpanded={expandedGroups.includes(question.id)}
-                    onToggleExpand={onToggleGroup}
-                  />
-                ) : (
-                  <QuestionCard
-                    question={question}
-                    index={index}
-                    onRemove={onRemoveQuestion}
-                    onUpdate={onUpdateQuestion}
-                    onMove={onMoveQuestion}
-                    onClick={onQuestionClick}
-                    onAddQuestion={onAddQuestion}
-                    onDuplicate={onDuplicateQuestion}
-                    onConditionClick={onConditionClick}
-                  />
-                )}
-                <DropZone index={index + 1} />
+                <div className="transform transition-all duration-300 ease-out animate-fade-in">
+                  {question.type === 'گروه سوال' ? (
+                    <QuestionGroup
+                      group={question}
+                      children={getChildQuestions(question.id)}
+                      index={index}
+                      onRemoveQuestion={onRemoveQuestion}
+                      onUpdateQuestion={onUpdateQuestion}
+                      onMoveQuestion={onMoveQuestion}
+                      onQuestionClick={onQuestionClick}
+                      onAddQuestion={onAddQuestion}
+                      onDuplicateQuestion={onDuplicateQuestion}
+                      onConditionClick={onConditionClick}
+                      onMoveToGroup={onMoveToGroup}
+                      isExpanded={expandedGroups.includes(question.id)}
+                      onToggleExpand={onToggleGroup}
+                    />
+                  ) : (
+                    <QuestionCard
+                      question={question}
+                      index={index}
+                      onRemove={onRemoveQuestion}
+                      onUpdate={onUpdateQuestion}
+                      onMove={onMoveQuestion}
+                      onClick={onQuestionClick}
+                      onAddQuestion={onAddQuestion}
+                      onDuplicate={onDuplicateQuestion}
+                      onConditionClick={onConditionClick}
+                    />
+                  )}
+                </div>
+                <DropZone index={index + 1} isVisible={isDraggingFromSidebar} />
               </React.Fragment>
             ))}
           </div>

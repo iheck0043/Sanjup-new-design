@@ -129,55 +129,55 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     <div
       ref={ref}
       data-handler-id={handlerId}
-      className={`group bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 hover:shadow-md hover:border-gray-300/70 cursor-pointer ${
-        isDragging ? 'opacity-50' : ''
+      className={`group bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-300 ease-out transform hover:shadow-lg hover:border-gray-300/70 cursor-pointer ${
+        isDragging ? 'opacity-50 scale-95 rotate-1' : 'scale-100 hover:scale-[1.02]'
       } ${isChild ? 'bg-blue-50/30' : ''}`}
       onClick={() => onClick(question)}
     >
       <div className="flex items-center p-3 gap-3">
         <div 
           ref={dragRef}
-          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className="opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-grab active:cursor-grabbing hover:scale-110"
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
 
-        <div className="flex-shrink-0">
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium ${getQuestionNumberBg()}`}>
+        <div className="flex-shrink-0 transition-all duration-300 group-hover:scale-110">
+          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${getQuestionNumberBg()}`}>
             {getQuestionNumber()}
           </div>
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 transition-all duration-300 group-hover:scale-110">
           {getQuestionIcon(question.type)}
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="text-sm text-gray-700 font-medium truncate">
+          <div className="text-sm text-gray-700 font-medium truncate transition-all duration-300 group-hover:text-gray-900">
             {question.label}
           </div>
         </div>
 
         <div className="flex-shrink-0">
-          <span className={`text-xs px-2 py-1 rounded-md font-medium ${
+          <span className={`text-xs px-2 py-1 rounded-md font-medium transition-all duration-300 ${
             isChild 
-              ? 'text-blue-600 bg-blue-50' 
-              : 'text-gray-500 bg-gray-50'
+              ? 'text-blue-600 bg-blue-50 group-hover:bg-blue-100' 
+              : 'text-gray-500 bg-gray-50 group-hover:bg-gray-100'
           }`}>
             {question.type}
           </span>
         </div>
 
         <div 
-          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-1 transform translate-x-2 group-hover:translate-x-0"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onConditionClick(question)}
-            className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md"
+            className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md transition-all duration-200 hover:scale-110"
             title="شرط‌گذاری"
           >
             <GitBranch className="w-3.5 h-3.5" />
@@ -187,7 +187,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onDuplicate(question)}
-            className="text-gray-400 hover:text-green-500 hover:bg-green-50 w-7 h-7 p-0 rounded-md"
+            className="text-gray-400 hover:text-green-500 hover:bg-green-50 w-7 h-7 p-0 rounded-md transition-all duration-200 hover:scale-110"
             title="کپی کردن"
           >
             <Copy className="w-3.5 h-3.5" />
@@ -197,7 +197,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onRemove(question.id)}
-            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md"
+            className="text-gray-400 hover:text-red-500 hover:bg-red-50 w-7 h-7 p-0 rounded-md transition-all duration-200 hover:scale-110"
             title="حذف"
           >
             <Trash2 className="w-3.5 h-3.5" />
