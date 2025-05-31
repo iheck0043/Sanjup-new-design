@@ -38,8 +38,9 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const dragRef = useRef<HTMLDivElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
 
-  // Make the group draggable
+  // Drag functionality for the group itself
   const [{ isDragging }, drag, preview] = useDrag({
     type: 'question-card',
     item: () => ({ id: group.id, index }),
@@ -48,8 +49,8 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
     }),
   });
 
-  // Drop zone for adding questions to group
-  const [{ isOver }, drop] = useDrop(() => ({
+  // Drop functionality for questions being dropped into the group
+  const [{ isOver, canDrop }, drop] = useDrop({
     accept: ['question-card', 'question'],
     drop: (item: { type?: string; id?: string; index?: number }, monitor) => {
       if (monitor.didDrop()) return;
@@ -68,59 +69,99 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
     },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop(),
     }),
-  }));
+  });
 
-  // Enable drag for group header
+  // Drop functionality for moving the group itself
+  const [{ handlerId }, groupDrop] = useDrop({
+    accept: 'question-card',
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    drop(item: { id?: string; index?: number }, monitor) {
+      if (!ref.current || !item.id || item.index === undefined) return;
+      if (monitor.didDrop()) return;
+      
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) return;
+      onMoveQuestion(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+    hover(item: { index?: number }, monitor) {
+      if (!ref.current || item.index === undefined) return;
+      
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) return;
+
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
+      onMoveQuestion(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
   drag(dragRef);
-  drop(preview(ref));
+  drop(dropRef);
+  groupDrop(preview(ref));
 
   return (
-    <div 
+    <div
       ref={ref}
-      className={`bg-white/80 backdrop-blur-lg border border-gray-200/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 group ${
-        isDragging ? 'opacity-50 rotate-2 scale-105' : ''
+      data-handler-id={handlerId}
+      className={`bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 ${
+        isDragging ? 'opacity-50' : ''
       }`}
     >
-      {/* Enhanced Group Header */}
+      {/* Group Header */}
       <div
-        className="flex items-center p-4 gap-3 cursor-pointer hover:bg-gradient-to-r hover:from-green-50/50 hover:to-emerald-50/50 rounded-t-xl transition-all duration-200"
+        className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50/50 rounded-t-lg"
         onClick={() => onQuestionClick(group)}
       >
         <div 
           ref={dragRef}
-          className="opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-110"
+          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
           onClick={(e) => e.stopPropagation()}
         >
-          <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+          <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
 
         <div className="flex-shrink-0">
-          <div className="w-6 h-6 bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 rounded-full flex items-center justify-center text-xs font-semibold shadow-sm">
+          <div className="w-5 h-5 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium">
             {index + 1}
           </div>
         </div>
 
         <div className="flex-shrink-0">
-          <div className="p-1.5 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
-            <SquarePlus className="w-4 h-4 text-green-600" />
-          </div>
+          <SquarePlus className="w-4 h-4 text-green-600" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="text-sm text-gray-800 font-semibold truncate">
+          <div className="text-sm text-gray-700 font-medium truncate">
             {group.label}
           </div>
         </div>
 
         <div className="flex-shrink-0">
-          <span className="text-xs text-green-700 bg-gradient-to-r from-green-100 to-emerald-100 px-3 py-1.5 rounded-full font-semibold shadow-sm">
+          <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-md font-medium">
             گروه سوال
           </span>
         </div>
 
         <div className="flex-shrink-0">
-          <span className="text-xs text-gray-600 bg-gray-100/80 px-3 py-1.5 rounded-full font-medium">
+          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
             {children.length} سوال
           </span>
         </div>
@@ -130,7 +171,7 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
             e.stopPropagation();
             onToggleExpand(group.id);
           }}
-          className="flex-shrink-0 p-2 hover:bg-white/80 rounded-lg transition-all duration-200 hover:shadow-sm"
+          className="flex-shrink-0 p-1 hover:bg-gray-200 rounded"
         >
           {isExpanded ? (
             <ChevronUp className="w-4 h-4 text-gray-500" />
@@ -140,42 +181,48 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
         </button>
       </div>
 
-      {/* Enhanced Group Content */}
+      {/* Group Content */}
       {isExpanded && (
         <div
-          className={`border-t border-gray-100 p-4 space-y-3 bg-gradient-to-br from-gray-50/30 to-blue-50/20 rounded-b-xl transition-all duration-300 ${
-            isOver ? 'bg-gradient-to-br from-blue-50/60 to-indigo-50/40 border-blue-200' : ''
+          ref={dropRef}
+          className={`border-t border-gray-200/50 p-3 space-y-2 transition-all duration-200 min-h-[60px] ${
+            isOver && canDrop ? 'bg-blue-50/50 border-2 border-dashed border-blue-400' : ''
           }`}
         >
           {children.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-sm">
-                  <SquarePlus className="w-8 h-8 text-gray-300" />
+            <div className="text-center py-8 text-gray-400">
+              <SquarePlus className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">سوالات را به اینجا بکشید</p>
+              {isOver && canDrop && (
+                <div className="mt-2 text-blue-500 text-xs animate-pulse">
+                  رها کنید تا اضافه شود
                 </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full opacity-60 animate-pulse"></div>
-              </div>
-              <p className="text-sm font-medium">سوالات را به اینجا بکشید</p>
-              <p className="text-xs text-gray-300 mt-1">یا از ساید بار اضافه کنید</p>
+              )}
             </div>
           ) : (
-            children.map((question, childIndex) => (
-              <div key={question.id} className="pr-4 border-r-2 border-gradient-to-b from-blue-200 to-indigo-200 relative">
-                <div className="absolute -right-1 top-3 w-2 h-2 bg-blue-400 rounded-full shadow-sm"></div>
-                <QuestionCard
-                  question={question}
-                  index={childIndex}
-                  onRemove={onRemoveQuestion}
-                  onUpdate={onUpdateQuestion}
-                  onMove={onMoveQuestion}
-                  onClick={onQuestionClick}
-                  onAddQuestion={onAddQuestion}
-                  onDuplicate={onDuplicateQuestion}
-                  onConditionClick={onConditionClick}
-                  isChild={true}
-                />
-              </div>
-            ))
+            <div className="space-y-2">
+              {children.map((question, childIndex) => (
+                <div key={question.id} className="pr-4 border-r-2 border-gray-200">
+                  <QuestionCard
+                    question={question}
+                    index={childIndex}
+                    onRemove={onRemoveQuestion}
+                    onUpdate={onUpdateQuestion}
+                    onMove={onMoveQuestion}
+                    onClick={onQuestionClick}
+                    onAddQuestion={onAddQuestion}
+                    onDuplicate={onDuplicateQuestion}
+                    onConditionClick={onConditionClick}
+                    isChild={true}
+                  />
+                </div>
+              ))}
+              {isOver && canDrop && (
+                <div className="text-center py-4 text-blue-500 text-xs animate-pulse border-2 border-dashed border-blue-400 rounded bg-blue-50">
+                  رها کنید تا اضافه شود
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
