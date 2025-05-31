@@ -219,7 +219,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl h-screen p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
+      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
         <div className="flex h-full">
           <Button
             variant="ghost"
@@ -255,8 +255,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             </div>
 
             {/* Scrollable content area */}
-            <ScrollArea className="flex-1">
-              <div className="p-6 pb-0">
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6 pb-20">
                 <div className="space-y-6">
                   {/* Question Description */}
                   {!isQuestionGroup && !isDescription && (
@@ -784,10 +784,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   )}
                 </div>
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Fixed footer with save/cancel buttons */}
-            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
+            <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="flex gap-2">
                 <Button 
                   onClick={handleSave} 
@@ -803,277 +803,258 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             </div>
           </div>
 
-          {/* Preview Section - restructured to have fixed buttons at bottom */}
-          <div className="flex-1 flex flex-col h-full bg-white">
-            {/* Scrollable preview content with percentage height */}
-            <div className="flex-1 h-[calc(100%-80px)] overflow-y-auto p-6">
-              <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
-                  <h3 className="text-lg font-medium mb-6 text-gray-800 border-b border-gray-200 pb-3">پیش‌نمایش سوال</h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-base font-medium text-gray-900">
-                        {localQuestion.label}
-                        {(localQuestion.required || localQuestion.isRequired) && <span className="text-red-500 mr-1">*</span>}
-                      </Label>
-                      
-                      {localQuestion.hasDescription && localQuestion.description && (
-                        <p className="text-sm text-gray-600 mt-1 mb-3">{localQuestion.description}</p>
+          {/* Preview Section */}
+          <div className="flex-1 p-6 bg-white overflow-y-auto">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-medium mb-6 text-gray-800 border-b border-gray-200 pb-3">پیش‌نمایش سوال</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium text-gray-900">
+                      {localQuestion.label}
+                      {(localQuestion.required || localQuestion.isRequired) && <span className="text-red-500 mr-1">*</span>}
+                    </Label>
+                    
+                    {localQuestion.hasDescription && localQuestion.description && (
+                      <p className="text-sm text-gray-600 mt-1 mb-3">{localQuestion.description}</p>
+                    )}
+                    
+                    <div className="mt-3">
+                      {/* Text Question Preview */}
+                      {isText && (
+                        localQuestion.textType === 'long' ? (
+                          <Textarea
+                            placeholder="پاسخ خود را وارد کنید"
+                            disabled
+                            className="bg-gray-50 min-h-[100px]"
+                          />
+                        ) : (
+                          <Input
+                            placeholder="پاسخ خود را وارد کنید"
+                            disabled
+                            className="bg-gray-50"
+                          />
+                        )
                       )}
                       
-                      <div className="mt-3">
-                        {/* Text Question Preview */}
-                        {isText && (
-                          localQuestion.textType === 'long' ? (
-                            <Textarea
-                              placeholder="پاسخ خود را وارد کنید"
-                              disabled
-                              className="bg-gray-50 min-h-[100px]"
-                            />
-                          ) : (
-                            <Input
-                              placeholder="پاسخ خود را وارد کنید"
-                              disabled
-                              className="bg-gray-50"
-                            />
-                          )
-                        )}
-                        
-                        {/* Number Question Preview */}
-                        {isNumber && (
-                          <Input
-                            type="number"
-                            placeholder="عدد را وارد کنید"
-                            disabled
-                            className="bg-gray-50"
-                          />
-                        )}
-                        
-                        {/* Email Question Preview */}
-                        {isEmail && (
-                          <Input
-                            type="email"
-                            placeholder="ایمیل خود را وارد کنید"
-                            disabled
-                            className="bg-gray-50"
-                          />
-                        )}
+                      {/* Number Question Preview */}
+                      {isNumber && (
+                        <Input
+                          type="number"
+                          placeholder="عدد را وارد کنید"
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
+                      
+                      {/* Email Question Preview */}
+                      {isEmail && (
+                        <Input
+                          type="email"
+                          placeholder="ایمیل خود را وارد کنید"
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
 
-                        {/* Description Preview */}
-                        {isDescription && (
-                          <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-                            این یک متن بدون پاسخ است که فقط اطلاعات ارائه می‌دهد
+                      {/* Description Preview */}
+                      {isDescription && (
+                        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                          این یک متن بدون پاسخ است که فقط اطلاعات ارائه می‌دهد
+                        </div>
+                      )}
+
+                      {/* Scale Question Preview */}
+                      {isScale && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-sm text-gray-600">
+                            <span>{localQuestion.scaleLabels?.left || 'کم'}</span>
+                            <span>{localQuestion.scaleLabels?.center || 'متوسط'}</span>
+                            <span>{localQuestion.scaleLabels?.right || 'زیاد'}</span>
                           </div>
-                        )}
-
-                        {/* Scale Question Preview */}
-                        {isScale && (
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm text-gray-600">
-                              <span>{localQuestion.scaleLabels?.left || 'کم'}</span>
-                              <span>{localQuestion.scaleLabels?.center || 'متوسط'}</span>
-                              <span>{localQuestion.scaleLabels?.right || 'زیاد'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              {Array.from({ length: localQuestion.scaleMax || 5 }, (_, i) => (
-                                <label key={i} className="flex flex-col items-center cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name="scale-preview"
-                                    disabled
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
-                                  />
-                                  <span className="text-xs mt-1">{i + 1}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Rating Question Preview */}
-                        {isRating && (
-                          <div className="flex gap-2">
-                            {Array.from({ length: localQuestion.ratingMax || 5 }, (_, i) => (
-                              <button key={i} className="text-gray-300 hover:text-yellow-400 disabled:cursor-not-allowed" disabled>
-                                {localQuestion.ratingStyle === 'heart' && <Heart className="w-6 h-6" />}
-                                {localQuestion.ratingStyle === 'thumbs' && <ThumbsUp className="w-6 h-6" />}
-                                {(!localQuestion.ratingStyle || localQuestion.ratingStyle === 'star') && <Star className="w-6 h-6" />}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Dropdown Preview */}
-                        {isDropdown && (
-                          <Select disabled>
-                            <SelectTrigger className="bg-gray-50">
-                              <SelectValue placeholder="گزینه‌ای را انتخاب کنید" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                                <SelectItem key={index} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-
-                        {/* Matrix Preview */}
-                        {isMatrix && (
-                          <div className="overflow-x-auto">
-                            <table className="w-full border-collapse border border-gray-300">
-                              <thead>
-                                <tr>
-                                  <th className="border border-gray-300 p-2 bg-gray-50"></th>
-                                  {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
-                                    <th key={index} className="border border-gray-300 p-2 bg-gray-50 text-sm">
-                                      {column}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    <td className="border border-gray-300 p-2 bg-gray-50 text-sm">{row}</td>
-                                    {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((_, colIndex) => (
-                                      <td key={colIndex} className="border border-gray-300 p-2 text-center">
-                                        <input
-                                          type="radio"
-                                          name={`matrix-${rowIndex}`}
-                                          disabled
-                                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
-                                        />
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-
-                        {/* Priority Preview */}
-                        {isPriority && (
-                          <div className="space-y-2">
-                            {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                              <div key={index} className="flex items-center gap-3 p-2 border border-gray-200 rounded bg-gray-50 cursor-move">
-                                <GripVertical className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm">{index + 1}.</span>
-                                <span className="text-sm">{option}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Image Choice Preview */}
-                        {isImageChoice && (
-                          <div className="grid grid-cols-2 gap-4">
-                            {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
-                              <label key={index} className="cursor-pointer">
-                                <div className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
-                                  <input
-                                    type="radio"
-                                    name="image-choice-preview"
-                                    disabled
-                                    className="sr-only"
-                                  />
-                                  <div className="space-y-2">
-                                    {option.imageUrl ? (
-                                      <div className="w-full h-24 bg-gray-100 rounded overflow-hidden">
-                                        <img
-                                          src={option.imageUrl}
-                                          alt={option.text}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-full h-24 bg-gray-100 rounded flex items-center justify-center">
-                                        <ImageIcon className="w-8 h-8 text-gray-400" />
-                                      </div>
-                                    )}
-                                    <p className="text-sm text-center">{option.text}</p>
-                                  </div>
-                                </div>
+                          <div className="flex justify-between">
+                            {Array.from({ length: localQuestion.scaleMax || 5 }, (_, i) => (
+                              <label key={i} className="flex flex-col items-center cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="scale-preview"
+                                  disabled
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
+                                />
+                                <span className="text-xs mt-1">{i + 1}</span>
                               </label>
                             ))}
                           </div>
-                        )}
-                        
-                        {/* Multi-choice Preview */}
-                        {hasOptions && localQuestion.options && (
-                          <div className="space-y-3">
-                            {localQuestion.options.map((option, index) => (
-                              <div key={index} className="flex items-center gap-3">
-                                <input
-                                  type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
-                                  name="preview-options"
-                                  disabled
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                />
-                                <span className="text-sm text-gray-700">{option}</span>
-                              </div>
+                        </div>
+                      )}
+
+                      {/* Rating Question Preview */}
+                      {isRating && (
+                        <div className="flex gap-2">
+                          {Array.from({ length: localQuestion.ratingMax || 5 }, (_, i) => (
+                            <button key={i} className="text-gray-300 hover:text-yellow-400 disabled:cursor-not-allowed" disabled>
+                              {localQuestion.ratingStyle === 'heart' && <Heart className="w-6 h-6" />}
+                              {localQuestion.ratingStyle === 'thumbs' && <ThumbsUp className="w-6 h-6" />}
+                              {(!localQuestion.ratingStyle || localQuestion.ratingStyle === 'star') && <Star className="w-6 h-6" />}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Dropdown Preview */}
+                      {isDropdown && (
+                        <Select disabled>
+                          <SelectTrigger className="bg-gray-50">
+                            <SelectValue placeholder="گزینه‌ای را انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                              <SelectItem key={index} value={option}>
+                                {option}
+                              </SelectItem>
                             ))}
-                            
-                            {localQuestion.hasOther && (
-                              <div className="flex items-center gap-3">
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      {/* Matrix Preview */}
+                      {isMatrix && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse border border-gray-300">
+                            <thead>
+                              <tr>
+                                <th className="border border-gray-300 p-2 bg-gray-50"></th>
+                                {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
+                                  <th key={index} className="border border-gray-300 p-2 bg-gray-50 text-sm">
+                                    {column}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                  <td className="border border-gray-300 p-2 bg-gray-50 text-sm">{row}</td>
+                                  {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((_, colIndex) => (
+                                    <td key={colIndex} className="border border-gray-300 p-2 text-center">
+                                      <input
+                                        type="radio"
+                                        name={`matrix-${rowIndex}`}
+                                        disabled
+                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
+                                      />
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Priority Preview */}
+                      {isPriority && (
+                        <div className="space-y-2">
+                          {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                            <div key={index} className="flex items-center gap-3 p-2 border border-gray-200 rounded bg-gray-50 cursor-move">
+                              <GripVertical className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm">{index + 1}.</span>
+                              <span className="text-sm">{option}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Image Choice Preview */}
+                      {isImageChoice && (
+                        <div className="grid grid-cols-2 gap-4">
+                          {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
+                            <label key={index} className="cursor-pointer">
+                              <div className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
                                 <input
-                                  type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
-                                  name="preview-options"
+                                  type="radio"
+                                  name="image-choice-preview"
                                   disabled
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                                  className="sr-only"
                                 />
-                                <span className="text-sm text-gray-700">سایر:</span>
-                                <Input className="text-xs h-8 bg-gray-50" disabled placeholder="توضیح دهید..." />
+                                <div className="space-y-2">
+                                  {option.imageUrl ? (
+                                    <div className="w-full h-24 bg-gray-100 rounded overflow-hidden">
+                                      <img
+                                        src={option.imageUrl}
+                                        alt={option.text}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-full h-24 bg-gray-100 rounded flex items-center justify-center">
+                                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                  <p className="text-sm text-center">{option.text}</p>
+                                </div>
                               </div>
-                            )}
-                            
-                            {localQuestion.hasNone && (
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
-                                  name="preview-options"
-                                  disabled
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                />
-                                <span className="text-sm text-gray-700">هیچکدام</span>
-                              </div>
-                            )}
-                            
-                            {localQuestion.hasAll && (
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="checkbox"
-                                  disabled
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                />
-                                <span className="text-sm text-gray-700">همه موارد</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Multi-choice Preview */}
+                      {hasOptions && localQuestion.options && (
+                        <div className="space-y-3">
+                          {localQuestion.options.map((option, index) => (
+                            <div key={index} className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">{option}</span>
+                            </div>
+                          ))}
+                          
+                          {localQuestion.hasOther && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">سایر:</span>
+                              <Input className="text-xs h-8 bg-gray-50" disabled placeholder="توضیح دهید..." />
+                            </div>
+                          )}
+                          
+                          {localQuestion.hasNone && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">هیچکدام</span>
+                            </div>
+                          )}
+                          
+                          {localQuestion.hasAll && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">همه موارد</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Fixed footer buttons for right section - exactly 80px height */}
-            <div className="h-20 border-t border-gray-200 p-4 bg-white flex-shrink-0">
-              <div className="flex gap-2 justify-center">
-                <Button 
-                  onClick={handleSave} 
-                  className="px-8" 
-                  disabled={!hasChanges || !localQuestion.label.trim()}
-                >
-                  ذخیره
-                </Button>
-                <Button onClick={handleCancel} variant="outline" className="px-8">
-                  انصراف
-                </Button>
               </div>
             </div>
           </div>
