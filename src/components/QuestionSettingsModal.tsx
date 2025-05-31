@@ -219,7 +219,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl h-screen p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
+      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
         <div className="flex h-full">
           <Button
             variant="ghost"
@@ -255,8 +255,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             </div>
 
             {/* Scrollable content area */}
-            <ScrollArea className="flex-1">
-              <div className="p-6 pb-0">
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6 pb-20">
                 <div className="space-y-6">
                   {/* Question Description */}
                   {!isQuestionGroup && !isDescription && (
@@ -784,10 +784,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                   )}
                 </div>
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Fixed footer with save/cancel buttons */}
-            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
+            <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="flex gap-2">
                 <Button 
                   onClick={handleSave} 
