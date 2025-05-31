@@ -805,8 +805,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
           {/* Preview Section - restructured to have fixed buttons at bottom */}
           <div className="flex-1 flex flex-col h-full bg-white">
-            {/* Scrollable preview content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            {/* Scrollable preview content with percentage height */}
+            <div className="flex-1 h-[calc(100%-80px)] overflow-y-auto p-6">
               <div className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <h3 className="text-lg font-medium mb-6 text-gray-800 border-b border-gray-200 pb-3">پیش‌نمایش سوال</h3>
@@ -1061,8 +1061,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Fixed footer buttons for right section */}
-            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
+            {/* Fixed footer buttons for right section - exactly 80px height */}
+            <div className="h-20 border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="flex gap-2 justify-center">
                 <Button 
                   onClick={handleSave} 
