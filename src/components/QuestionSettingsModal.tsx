@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/accordion"
 import { Question } from '../pages/Index';
 import { toast } from "@/components/ui/use-toast"
-import { Copy, Trash2, Upload } from 'lucide-react';
+import { Copy, Trash2 } from 'lucide-react';
 
 interface QuestionSettingsModalProps {
   isOpen: boolean;
@@ -46,7 +46,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       id: '',
       type: '',
       label: '',
-      required: true, // Default to true as requested
     }
   );
   const [newDropdownOption, setNewDropdownOption] = useState('');
@@ -59,14 +58,12 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         id: '',
         type: '',
         label: '',
-        required: true, // Default to true as requested
       });
     }
   }, [question]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -116,12 +113,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   const handleSave = () => {
     if (!formData.label?.trim()) {
-      toast({
-        title: "خطا",
-        description: "لطفا عنوان سوال را وارد کنید",
-        variant: "destructive",
-      });
-      return;
+      return; // Don't save if label is empty
     }
     
     onSave(formData);
@@ -131,194 +123,75 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     onCancel();
   };
 
-  const handleImageUpload = () => {
-    // Create a file input element
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        // Create a URL for the uploaded image
-        const imageUrl = URL.createObjectURL(file);
-        setFormData(prev => ({
-          ...prev,
-          mediaUrl: imageUrl,
-          mediaType: 'image' as const,
-          hasMedia: true,
-        }));
-        toast({
-          title: "موفق",
-          description: "تصویر با موفقیت آپلود شد",
-        });
-      }
-    };
-    input.click();
-  };
-
-  const getQuestionTypeDisplay = (type: string) => {
-    const typeMap: { [key: string]: string } = {
-      'چندگزینه‌ای': 'چند گزینه‌ای',
-      'متنی': 'متنی',
-      'عددی': 'عددی',
-      'طیفی': 'طیفی',
-      'درجه‌بندی': 'درجه‌بندی',
-      'گروه سوال': 'گروه سوال',
-      'تاریخ': 'تاریخ',
-      'زمان': 'زمان',
-      'فایل': 'فایل',
-      'ماتریس': 'ماتریس',
-      'تصویری': 'تصویری',
-    };
-    return typeMap[type] || type;
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl" dir="rtl">
-        <DialogHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 -m-6 mb-4 rounded-t-lg">
-          <DialogTitle className="text-xl font-bold">
-            {isNewQuestion ? 'افزودن سوال جدید' : 'ویرایش سوال'}
-            {formData.type && (
-              <span className="text-blue-100 text-sm mr-2">({getQuestionTypeDisplay(formData.type)})</span>
-            )}
-          </DialogTitle>
-          <DialogDescription className="text-blue-100">
+      <DialogContent className="sm:max-w-[525px]" dir="rtl">
+        <DialogHeader>
+          <DialogTitle>{isNewQuestion ? 'افزودن سوال جدید' : 'ویرایش سوال'}</DialogTitle>
+          <DialogDescription>
             تنظیمات مربوط به سوال را در این قسمت وارد کنید.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
+        <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right font-semibold text-gray-700">
-              متن سوال *
+            <Label htmlFor="name" className="text-right">
+              متن سوال
             </Label>
-            <Input 
-              id="name" 
-              value={formData.label || ''} 
-              className="col-span-3 border-2 focus:border-blue-500 transition-colors" 
-              onChange={(e) => handleChange(e)} 
-              name="label"
-              placeholder={isNewQuestion ? "عنوان سوال خود را وارد کنید" : ""}
-              required
-            />
+            <Input id="name" value={formData.label || ''} className="col-span-3" onChange={(e) => handleChange(e)} name="label" />
           </div>
 
           {/* Common Settings */}
-          <Accordion type="single" collapsible className="w-full space-y-2">
-            <AccordionItem value="general" className="border border-gray-200 rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline text-gray-700 font-semibold">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  عمومی
-                </div>
-              </AccordionTrigger>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="general">
+              <AccordionTrigger>عمومی</AccordionTrigger>
               <AccordionContent>
-                <div className="grid gap-6 py-4 space-y-4">
+                <div className="grid gap-4 py-4">
                   {/* Required */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <Label htmlFor="required" className="font-medium text-gray-700">اجباری</Label>
-                    <Switch 
-                      id="required" 
-                      name="required" 
-                      checked={!!formData.required} 
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, required: checked }))} 
-                    />
+                  <div className="flex items-center space-x-2">
+                    <Switch id="required" name="required" checked={!!formData.required} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, required: checked }))} />
+                    <Label htmlFor="required">اجباری</Label>
                   </div>
 
                   {/* Description */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <Label htmlFor="hasDescription" className="font-medium text-gray-700">توضیحات</Label>
-                    <Switch 
-                      id="hasDescription" 
-                      name="hasDescription" 
-                      checked={!!formData.hasDescription} 
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasDescription: checked }))} 
-                    />
+                  <div className="flex items-center space-x-2">
+                    <Switch id="hasDescription" name="hasDescription" checked={!!formData.hasDescription} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasDescription: checked }))} />
+                    <Label htmlFor="hasDescription">توضیحات</Label>
                   </div>
 
                   {formData.hasDescription && (
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="description" className="text-right font-medium text-gray-700">
+                      <Label htmlFor="description" className="text-right">
                         توضیحات سوال
                       </Label>
-                      <Textarea 
-                        id="description" 
-                        value={formData.description || ''} 
-                        className="col-span-3 border-2 focus:border-blue-500 transition-colors" 
-                        onChange={(e) => handleChange(e)} 
-                        name="description"
-                        rows={3}
-                      />
+                      <Textarea id="description" value={formData.description || ''} className="col-span-3" onChange={(e) => handleChange(e)} name="description" />
                     </div>
                   )}
 
                   {/* Media */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <Label htmlFor="hasMedia" className="font-medium text-gray-700">رسانه</Label>
-                    <Switch 
-                      id="hasMedia" 
-                      name="hasMedia" 
-                      checked={!!formData.hasMedia} 
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasMedia: checked }))} 
-                    />
+                  <div className="flex items-center space-x-2">
+                    <Switch id="hasMedia" name="hasMedia" checked={!!formData.hasMedia} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasMedia: checked }))} />
+                    <Label htmlFor="hasMedia">رسانه</Label>
                   </div>
 
                   {formData.hasMedia && (
-                    <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="mediaType" className="text-right font-medium text-gray-700">
-                          نوع رسانه
-                        </Label>
-                        <Select 
-                          onValueChange={(value) => setFormData(prev => ({ 
-                            ...prev, 
-                            mediaType: value as 'image' | 'video'
-                          }))} 
-                          defaultValue={formData.mediaType || 'image'}
-                        >
-                          <SelectTrigger className="col-span-3 border-2 focus:border-blue-500">
-                            <SelectValue placeholder="انتخاب نوع رسانه" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="image">تصویر</SelectItem>
-                            <SelectItem value="video">ویدیو</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="mediaUrl" className="text-right">
+                        آدرس رسانه
+                      </Label>
+                      <Input id="mediaUrl" value={formData.mediaUrl || ''} className="col-span-3" onChange={(e) => handleChange(e)} name="mediaUrl" />
 
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="mediaUrl" className="text-right font-medium text-gray-700">
-                          آدرس رسانه
-                        </Label>
-                        <div className="col-span-3 flex gap-2">
-                          <Input 
-                            id="mediaUrl" 
-                            value={formData.mediaUrl || ''} 
-                            className="flex-1 border-2 focus:border-blue-500 transition-colors" 
-                            onChange={(e) => handleChange(e)} 
-                            name="mediaUrl"
-                            placeholder="آدرس تصویر یا ویدیو"
-                          />
-                          <Button 
-                            type="button" 
-                            onClick={handleImageUpload}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4"
-                            size="sm"
-                          >
-                            <Upload className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {formData.mediaUrl && formData.mediaType === 'image' && (
-                        <div className="mt-2">
-                          <img 
-                            src={formData.mediaUrl} 
-                            alt="پیش‌نمایش" 
-                            className="max-w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-                          />
-                        </div>
-                      )}
+                      <Label htmlFor="mediaType" className="text-right">
+                        نوع رسانه
+                      </Label>
+                      <Select onValueChange={(value) => setFormData(prev => ({ ...prev, mediaType: value }))} defaultValue={formData.mediaType || 'image'}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="انتخاب نوع رسانه" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="image">تصویر</SelectItem>
+                          <SelectItem value="video">ویدیو</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                 </div>
@@ -327,13 +200,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
             {/* Question Type Specific Settings */}
             {formData.type === 'چندگزینه‌ای' && (
-              <AccordionItem value="multipleChoice" className="border border-gray-200 rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline text-gray-700 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    چندگزینه‌ای
-                  </div>
-                </AccordionTrigger>
+              <AccordionItem value="multipleChoice">
+                <AccordionTrigger>چندگزینه‌ای</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 py-4">
                     <div className="flex items-center space-x-2">
@@ -417,13 +285,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             )}
 
             {formData.type === 'طیفی' && (
-              <AccordionItem value="scale" className="border border-gray-200 rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline text-gray-700 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    طیفی
-                  </div>
-                </AccordionTrigger>
+              <AccordionItem value="scale">
+                <AccordionTrigger>طیفی</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -509,13 +372,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             )}
 
             {formData.type === 'درجه‌بندی' && (
-              <AccordionItem value="rating" className="border border-gray-200 rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline text-gray-700 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    درجه‌بندی
-                  </div>
-                </AccordionTrigger>
+              <AccordionItem value="rating">
+                <AccordionTrigger>درجه‌بندی</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -555,13 +413,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             )}
 
             {formData.type === 'متنی' && (
-              <AccordionItem value="text" className="border border-gray-200 rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline text-gray-700 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                    متنی
-                  </div>
-                </AccordionTrigger>
+              <AccordionItem value="text">
+                <AccordionTrigger>متنی</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -616,13 +469,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             )}
 
             {formData.type === 'عددی' && (
-              <AccordionItem value="number" className="border border-gray-200 rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline text-gray-700 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    عددی
-                  </div>
-                </AccordionTrigger>
+              <AccordionItem value="number">
+                <AccordionTrigger>عددی</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -662,15 +510,13 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             )}
           </Accordion>
         </div>
-        <DialogFooter className="bg-gray-50 p-6 -m-6 mt-4 rounded-b-lg">
-          <div className="flex gap-3 w-full justify-end">
-            <Button type="button" variant="secondary" onClick={handleCancel} className="px-6">
-              انصراف
-            </Button>
-            <Button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white px-6">
-              ذخیره
-            </Button>
-          </div>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={handleCancel}>
+            انصراف
+          </Button>
+          <Button type="button" onClick={handleSave}>
+            ذخیره
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
