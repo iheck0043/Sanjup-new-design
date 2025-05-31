@@ -219,7 +219,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl h-screen p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
+      <DialogContent className="max-w-none max-h-none w-screen h-screen p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
         <div className="flex h-full">
           <Button
             variant="ghost"
