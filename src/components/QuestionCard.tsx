@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Button } from '@/components/ui/button';
-import { Trash2, GripVertical, Text, SquareCheck, ListCheck, Hash, Mail, Link, ArrowUp, ArrowDown, SquarePlus, BarChart3, CreditCard, Flag, Copy, GitBranch } from 'lucide-react';
+import { Trash2, GripVertical, Text, SquareCheck, ListCheck, Hash, Mail, Link, ArrowUp, ArrowDown, SquarePlus, BarChart3, CreditCard, Flag, Copy, GitBranch, Star } from 'lucide-react';
 import { Question } from '../pages/Index';
 
 interface QuestionCardProps {
@@ -15,6 +15,7 @@ interface QuestionCardProps {
   onAddQuestion: (type: string, insertIndex: number) => void;
   onDuplicate: (question: Question) => void;
   onConditionClick: (question: Question) => void;
+  isChild?: boolean;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -26,6 +27,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onAddQuestion,
   onDuplicate,
   onConditionClick,
+  isChild = false,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -95,6 +97,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       'چندگزینه‌ای تصویری': <SquareCheck className="w-4 h-4 text-yellow-600" />,
       'لیست کشویی': <ListCheck className="w-4 h-4 text-teal-600" />,
       'طیفی': <BarChart3 className="w-4 h-4 text-indigo-600" />,
+      'درجه‌بندی': <Star className="w-4 h-4 text-yellow-500" />,
       'درخت‌بندی': <ArrowDown className="w-4 h-4 text-orange-600" />,
       'اولویت‌دهی': <ArrowUp className="w-4 h-4 text-red-600" />,
       'لینک/وب‌سایت': <Link className="w-4 h-4 text-cyan-600" />,
@@ -103,8 +106,23 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       'عدد': <Hash className="w-4 h-4 text-blue-600" />,
       'ایمیل': <Mail className="w-4 h-4 text-red-600" />,
       'صفحه پایان': <Flag className="w-4 h-4 text-gray-600" />,
+      'ماتریسی': <SquareCheck className="w-4 h-4 text-purple-600" />,
     };
     return iconMap[type as keyof typeof iconMap] || <Text className="w-4 h-4 text-gray-600" />;
+  };
+
+  const getQuestionNumber = () => {
+    if (isChild) {
+      return `${index + 1}.1`;
+    }
+    return `${index + 1}`;
+  };
+
+  const getQuestionNumberBg = () => {
+    if (isChild) {
+      return 'bg-blue-100 text-blue-600';
+    }
+    return 'bg-gray-100 text-gray-600';
   };
 
   return (
@@ -113,7 +131,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       data-handler-id={handlerId}
       className={`group bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 hover:shadow-md hover:border-gray-300/70 cursor-pointer ${
         isDragging ? 'opacity-50' : ''
-      }`}
+      } ${isChild ? 'bg-blue-50/30' : ''}`}
       onClick={() => onClick(question)}
     >
       <div className="flex items-center p-3 gap-3">
@@ -126,8 +144,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
 
         <div className="flex-shrink-0">
-          <div className="w-5 h-5 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium">
-            {index + 1}
+          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium ${getQuestionNumberBg()}`}>
+            {getQuestionNumber()}
           </div>
         </div>
 
@@ -142,7 +160,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
 
         <div className="flex-shrink-0">
-          <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md font-medium">
+          <span className={`text-xs px-2 py-1 rounded-md font-medium ${
+            isChild 
+              ? 'text-blue-600 bg-blue-50' 
+              : 'text-gray-500 bg-gray-50'
+          }`}>
             {question.type}
           </span>
         </div>

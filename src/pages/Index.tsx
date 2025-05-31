@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -72,7 +71,8 @@ const Index = () => {
   const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
   const [conditionQuestion, setConditionQuestion] = useState<Question | null>(null);
   const [isNewQuestion, setIsNewQuestion] = useState(false);
-  const [pendingQuestionData, setPendingQuestionData] = useState<{type: string, insertIndex?: number} | null>(null);
+  const [pendingQuestionData, setPendingQuestionData] = useState<{type: string, insertIndex?: number, parentId?: string} | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
   const createQuestion = useCallback(async (questionData: Partial<Question>) => {
     // API call for creating question
@@ -86,14 +86,15 @@ const Index = () => {
     return updates;
   }, []);
 
-  const addQuestion = useCallback((questionType: string, insertIndex?: number) => {
-    console.log('Adding question:', questionType, 'at index:', insertIndex);
+  const addQuestion = useCallback((questionType: string, insertIndex?: number, parentId?: string) => {
+    console.log('Adding question:', questionType, 'at index:', insertIndex, 'parent:', parentId);
     
     const newQuestion: Question = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type: questionType,
       label: `سوال جدید`,
       required: false,
+      parentId: parentId,
     };
 
     if (questionType === 'چندگزینه‌ای') {
@@ -109,7 +110,7 @@ const Index = () => {
     // Set as new question and open modal
     setSelectedQuestion(newQuestion);
     setIsNewQuestion(true);
-    setPendingQuestionData({ type: questionType, insertIndex });
+    setPendingQuestionData({ type: questionType, insertIndex, parentId });
     setIsModalOpen(true);
   }, []);
 
@@ -119,7 +120,7 @@ const Index = () => {
       await createQuestion(questionData);
       
       setQuestions(prev => {
-        if (pendingQuestionData.insertIndex !== undefined) {
+        if (pendingQuestionData.insertIndex !== undefined && !pendingQuestionData.parentId) {
           const newQuestions = [...prev];
           newQuestions.splice(pendingQuestionData.insertIndex, 0, questionData);
           console.log('Questions after insert:', newQuestions.length);
@@ -128,6 +129,11 @@ const Index = () => {
         console.log('Questions after append:', [...prev, questionData].length);
         return [...prev, questionData];
       });
+
+      // If this is a group question, expand it by default
+      if (questionData.type === 'گروه سوال') {
+        setExpandedGroups(prev => [...prev, questionData.id]);
+      }
     } else {
       // Update existing question
       await updateQuestion(questionData.id, questionData);
@@ -166,7 +172,17 @@ const Index = () => {
   }, [questions]);
 
   const removeQuestion = useCallback((id: string) => {
-    setQuestions(prev => prev.filter(q => q.id !== id));
+    setQuestions(prev => {
+      // Also remove child questions if removing a group
+      const questionToRemove = prev.find(q => q.id === id);
+      if (questionToRemove?.type === 'گروه سوال') {
+        return prev.filter(q => q.id !== id && q.parentId !== id);
+      }
+      return prev.filter(q => q.id !== id);
+    });
+    
+    // Remove from expanded groups if it was a group
+    setExpandedGroups(prev => prev.filter(groupId => groupId !== id));
   }, []);
 
   const updateQuestionInList = useCallback((id: string, updates: Partial<Question>) => {
@@ -184,6 +200,24 @@ const Index = () => {
       newItems.splice(hoverIndex, 0, draggedItem);
       return newItems;
     });
+  }, []);
+
+  const moveToGroup = useCallback((questionId: string, groupId: string) => {
+    setQuestions(prev =>
+      prev.map(q => 
+        q.id === questionId 
+          ? { ...q, parentId: groupId }
+          : q
+      )
+    );
+  }, []);
+
+  const toggleGroup = useCallback((groupId: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(groupId)
+        ? prev.filter(id => id !== groupId)
+        : [...prev, groupId]
+    );
   }, []);
 
   const openQuestionSettings = useCallback((question: Question) => {
@@ -224,6 +258,9 @@ const Index = () => {
             onAddQuestion={addQuestion}
             onDuplicateQuestion={duplicateQuestion}
             onConditionClick={openConditionModal}
+            onMoveToGroup={moveToGroup}
+            expandedGroups={expandedGroups}
+            onToggleGroup={toggleGroup}
           />
           
           <QuestionSidebar onAddQuestion={addQuestion} />

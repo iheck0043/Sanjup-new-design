@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import QuestionCard from './QuestionCard';
+import QuestionGroup from './QuestionGroup';
 import { Question } from '../pages/Index';
 import { MousePointer2 } from 'lucide-react';
 
@@ -11,9 +12,12 @@ interface FormBuilderProps {
   onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
   onQuestionClick: (question: Question) => void;
-  onAddQuestion: (type: string, insertIndex?: number) => void;
+  onAddQuestion: (type: string, insertIndex?: number, parentId?: string) => void;
   onDuplicateQuestion: (question: Question) => void;
   onConditionClick: (question: Question) => void;
+  onMoveToGroup: (questionId: string, groupId: string) => void;
+  expandedGroups: string[];
+  onToggleGroup: (groupId: string) => void;
 }
 
 const FormBuilder: React.FC<FormBuilderProps> = ({
@@ -25,6 +29,9 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onAddQuestion,
   onDuplicateQuestion,
   onConditionClick,
+  onMoveToGroup,
+  expandedGroups,
+  onToggleGroup,
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -43,7 +50,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     }),
     hover: (item, monitor) => {
       if (!monitor.isOver({ shallow: true })) return;
-      // Set dragOverIndex to end of list when hovering over main container
       if (dragOverIndex === null) {
         setDragOverIndex(questions.length);
       }
@@ -80,9 +86,16 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     );
   };
 
-  // Reset dragOverIndex when drag ends
   const handleDragEnd = () => {
     setDragOverIndex(null);
+  };
+
+  // Separate top-level questions from grouped questions
+  const topLevelQuestions = questions.filter(q => !q.parentId);
+  const groupedQuestions = questions.filter(q => q.parentId);
+
+  const getChildQuestions = (groupId: string) => {
+    return groupedQuestions.filter(q => q.parentId === groupId);
   };
 
   return (
@@ -90,19 +103,18 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       <div
         ref={drop}
         className={`min-h-[500px] transition-all duration-200 p-6 max-w-4xl mx-auto ${
-          isOver && dragOverIndex === questions.length
+          isOver && dragOverIndex === topLevelQuestions.length
             ? 'bg-blue-50/50 border-2 border-dashed border-blue-300 rounded-xl'
             : ''
         }`}
         onDragEnd={handleDragEnd}
         onDragLeave={(e) => {
-          // Only reset if leaving the main container
           if (e.currentTarget === e.target) {
             setDragOverIndex(null);
           }
         }}
       >
-        {questions.length === 0 ? (
+        {topLevelQuestions.length === 0 ? (
           <>
             <DropZone index={0} />
             <div className="flex flex-col items-center justify-center h-96 text-gray-400">
@@ -118,19 +130,37 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         ) : (
           <div className="space-y-1">
             <DropZone index={0} />
-            {questions.map((question, index) => (
+            {topLevelQuestions.map((question, index) => (
               <React.Fragment key={question.id}>
-                <QuestionCard
-                  question={question}
-                  index={index}
-                  onRemove={onRemoveQuestion}
-                  onUpdate={onUpdateQuestion}
-                  onMove={onMoveQuestion}
-                  onClick={onQuestionClick}
-                  onAddQuestion={onAddQuestion}
-                  onDuplicate={onDuplicateQuestion}
-                  onConditionClick={onConditionClick}
-                />
+                {question.type === 'گروه سوال' ? (
+                  <QuestionGroup
+                    group={question}
+                    children={getChildQuestions(question.id)}
+                    index={index}
+                    onRemoveQuestion={onRemoveQuestion}
+                    onUpdateQuestion={onUpdateQuestion}
+                    onMoveQuestion={onMoveQuestion}
+                    onQuestionClick={onQuestionClick}
+                    onAddQuestion={onAddQuestion}
+                    onDuplicateQuestion={onDuplicateQuestion}
+                    onConditionClick={onConditionClick}
+                    onMoveToGroup={onMoveToGroup}
+                    isExpanded={expandedGroups.includes(question.id)}
+                    onToggleExpand={onToggleGroup}
+                  />
+                ) : (
+                  <QuestionCard
+                    question={question}
+                    index={index}
+                    onRemove={onRemoveQuestion}
+                    onUpdate={onUpdateQuestion}
+                    onMove={onMoveQuestion}
+                    onClick={onQuestionClick}
+                    onAddQuestion={onAddQuestion}
+                    onDuplicate={onDuplicateQuestion}
+                    onConditionClick={onConditionClick}
+                  />
+                )}
                 <DropZone index={index + 1} />
               </React.Fragment>
             ))}
