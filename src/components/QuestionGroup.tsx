@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import { ChevronDown, ChevronUp, SquarePlus, GripVertical } from 'lucide-react';
 import { Question } from '../pages/Index';
 import QuestionCard from './QuestionCard';
@@ -37,20 +37,8 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
   onToggleExpand,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<HTMLDivElement>(null);
-  const dropRef = useRef<HTMLDivElement>(null);
 
-  // Drag functionality for the group itself
-  const [{ isDragging }, drag, preview] = useDrag({
-    type: 'question-card',
-    item: () => ({ id: group.id, index }),
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  // Drop functionality for questions being dropped into the group
-  const [{ isOver, canDrop }, drop] = useDrop({
+  const [{ isOver }, drop] = useDrop(() => ({
     accept: ['question-card', 'question'],
     drop: (item: { type?: string; id?: string; index?: number }, monitor) => {
       if (monitor.didDrop()) return;
@@ -69,72 +57,19 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
     },
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
-      canDrop: monitor.canDrop(),
     }),
-  });
+  }));
 
-  // Drop functionality for moving the group itself
-  const [{ handlerId }, groupDrop] = useDrop({
-    accept: 'question-card',
-    collect(monitor) {
-      return {
-        handlerId: monitor.getHandlerId(),
-      };
-    },
-    drop(item: { id?: string; index?: number }, monitor) {
-      if (!ref.current || !item.id || item.index === undefined) return;
-      if (monitor.didDrop()) return;
-      
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      if (dragIndex === hoverIndex) return;
-      onMoveQuestion(dragIndex, hoverIndex);
-      item.index = hoverIndex;
-    },
-    hover(item: { index?: number }, monitor) {
-      if (!ref.current || item.index === undefined) return;
-      
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      if (dragIndex === hoverIndex) return;
-
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      if (!clientOffset) return;
-      
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
-
-      onMoveQuestion(dragIndex, hoverIndex);
-      item.index = hoverIndex;
-    },
-  });
-
-  drag(dragRef);
-  drop(dropRef);
-  groupDrop(preview(ref));
+  drop(ref);
 
   return (
-    <div
-      ref={ref}
-      data-handler-id={handlerId}
-      className={`bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200 ${
-        isDragging ? 'opacity-50' : ''
-      }`}
-    >
+    <div className="bg-white/90 backdrop-blur-sm border border-gray-200/70 rounded-lg transition-all duration-200">
       {/* Group Header */}
       <div
         className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50/50 rounded-t-lg"
         onClick={() => onQuestionClick(group)}
       >
-        <div 
-          ref={dragRef}
-          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
 
@@ -184,45 +119,33 @@ const QuestionGroup: React.FC<QuestionGroupProps> = ({
       {/* Group Content */}
       {isExpanded && (
         <div
-          ref={dropRef}
-          className={`border-t border-gray-200/50 p-3 space-y-2 transition-all duration-200 min-h-[60px] ${
-            isOver && canDrop ? 'bg-blue-50/50 border-2 border-dashed border-blue-400' : ''
+          ref={ref}
+          className={`border-t border-gray-200/50 p-3 space-y-2 transition-all duration-200 ${
+            isOver ? 'bg-blue-50/30' : ''
           }`}
         >
           {children.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <SquarePlus className="w-8 h-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">سوالات را به اینجا بکشید</p>
-              {isOver && canDrop && (
-                <div className="mt-2 text-blue-500 text-xs animate-pulse">
-                  رها کنید تا اضافه شود
-                </div>
-              )}
             </div>
           ) : (
-            <div className="space-y-2">
-              {children.map((question, childIndex) => (
-                <div key={question.id} className="pr-4 border-r-2 border-gray-200">
-                  <QuestionCard
-                    question={question}
-                    index={childIndex}
-                    onRemove={onRemoveQuestion}
-                    onUpdate={onUpdateQuestion}
-                    onMove={onMoveQuestion}
-                    onClick={onQuestionClick}
-                    onAddQuestion={onAddQuestion}
-                    onDuplicate={onDuplicateQuestion}
-                    onConditionClick={onConditionClick}
-                    isChild={true}
-                  />
-                </div>
-              ))}
-              {isOver && canDrop && (
-                <div className="text-center py-4 text-blue-500 text-xs animate-pulse border-2 border-dashed border-blue-400 rounded bg-blue-50">
-                  رها کنید تا اضافه شود
-                </div>
-              )}
-            </div>
+            children.map((question, childIndex) => (
+              <div key={question.id} className="pr-4 border-r-2 border-gray-200">
+                <QuestionCard
+                  question={question}
+                  index={childIndex}
+                  onRemove={onRemoveQuestion}
+                  onUpdate={onUpdateQuestion}
+                  onMove={onMoveQuestion}
+                  onClick={onQuestionClick}
+                  onAddQuestion={onAddQuestion}
+                  onDuplicate={onDuplicateQuestion}
+                  onConditionClick={onConditionClick}
+                  isChild={true}
+                />
+              </div>
+            ))
           )}
         </div>
       )}

@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { X, Upload, Plus, Trash2, ChevronUp, ChevronDown, Star, Heart, ThumbsUp } from 'lucide-react';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X, Plus, Trash2, GripVertical, Upload, Image as ImageIcon, Star, Heart, ThumbsUp, Play, Video } from 'lucide-react';
 import { Question } from '../pages/Index';
 
 interface QuestionSettingsModalProps {
@@ -26,133 +28,71 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   onCancel,
   isNewQuestion,
 }) => {
-  const [formData, setFormData] = useState<Question>({
-    id: '',
-    type: 'متنی با پاسخ کوتاه',
-    label: '',
-    required: true,
-    hasDescription: false,
-    description: '',
-    hasMedia: false,
-    mediaUrl: '',
-    mediaType: 'image',
-  });
-
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [localQuestion, setLocalQuestion] = useState<Question | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [newDropdownOption, setNewDropdownOption] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (question) {
-      if (isNewQuestion) {
-        // For new questions, start with empty label and placeholder
-        setFormData({
-          ...question,
-          label: '',
-          required: true,
-          hasDescription: false,
-          description: '',
-          hasMedia: false,
-          mediaUrl: '',
-          mediaType: 'image',
-        });
-      } else {
-        // For existing questions, load current data
-        setFormData(question);
-      }
+      setLocalQuestion({ ...question });
+      setHasChanges(isNewQuestion);
     }
-    setErrors({});
   }, [question, isNewQuestion]);
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    
-    if (!formData.label.trim()) {
-      newErrors.label = 'عنوان سوال اجباری است';
-    }
+  if (!localQuestion) return null;
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleUpdateField = (field: keyof Question, value: any) => {
+    const updated = { ...localQuestion, [field]: value };
+    setLocalQuestion(updated);
+    setHasChanges(true);
   };
 
   const handleSave = () => {
-    if (!validateForm()) {
-      return;
-    }
-    onSave(formData);
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFormData(prev => ({
-          ...prev,
-          mediaUrl: e.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
+    if (hasChanges && localQuestion) {
+      onSave(localQuestion);
+    } else {
+      onClose();
     }
   };
 
-  const handleOptionImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newOptions = [...(formData.imageOptions || [])];
-        newOptions[index] = {
-          ...newOptions[index],
-          imageUrl: e.target?.result as string,
-        };
-        setFormData(prev => ({
-          ...prev,
-          imageOptions: newOptions,
-        }));
-      };
-      reader.readAsDataURL(file);
+  const handleCancel = () => {
+    if (isNewQuestion) {
+      onCancel();
+    } else {
+      setHasChanges(false);
+      onClose();
     }
   };
 
   // Helper functions for different question types
   const addOption = () => {
-    const currentOptions = formData.options || ['گزینه ۱', 'گزینه ۲'];
+    const currentOptions = localQuestion.options || [];
     const newOptions = [...currentOptions, `گزینه ${currentOptions.length + 1}`];
-    setFormData(prev => ({
-      ...prev,
-      options: newOptions
-    }));
+    handleUpdateField('options', newOptions);
   };
 
   const removeOption = (index: number) => {
-    if (formData.options && formData.options.length > 2) {
-      const newOptions = formData.options.filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        options: newOptions
-      }));
+    if (localQuestion.options && localQuestion.options.length > 2) {
+      const newOptions = localQuestion.options.filter((_, i) => i !== index);
+      handleUpdateField('options', newOptions);
     }
   };
 
   const updateOption = (index: number, value: string) => {
-    if (formData.options) {
-      const newOptions = [...formData.options];
+    if (localQuestion.options) {
+      const newOptions = [...localQuestion.options];
       newOptions[index] = value;
-      setFormData(prev => ({
-        ...prev,
-        options: newOptions
-      }));
+      handleUpdateField('options', newOptions);
     }
   };
 
   // Dropdown options management
   const addDropdownOption = () => {
     if (newDropdownOption.trim()) {
-      const currentOptions = formData.options || [];
+      const currentOptions = localQuestion.options || [];
       const newOptions = [...currentOptions, newDropdownOption.trim()];
-      setFormData(prev => ({
-        ...prev,
-        options: newOptions
-      }));
+      handleUpdateField('options', newOptions);
       setNewDropdownOption('');
     }
   };
@@ -165,1032 +105,929 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const removeDropdownOption = (index: number) => {
-    if (formData.options && formData.options.length > 1) {
-      const newOptions = formData.options.filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        options: newOptions
-      }));
+    if (localQuestion.options && localQuestion.options.length > 1) {
+      const newOptions = localQuestion.options.filter((_, i) => i !== index);
+      handleUpdateField('options', newOptions);
     }
   };
 
   // Matrix functions - fixed to ensure minimum 2 items
   const addRow = () => {
-    const currentRows = formData.rows || ['سطر ۱', 'سطر ۲'];
+    const currentRows = localQuestion.rows || ['سطر ۱', 'سطر ۲'];
     const newRows = [...currentRows, `سطر ${currentRows.length + 1}`];
-    setFormData(prev => ({
-      ...prev,
-      rows: newRows
-    }));
+    handleUpdateField('rows', newRows);
   };
 
   const removeRow = (index: number) => {
-    if (formData.rows && formData.rows.length > 2) {
-      const newRows = formData.rows.filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        rows: newRows
-      }));
+    if (localQuestion.rows && localQuestion.rows.length > 2) {
+      const newRows = localQuestion.rows.filter((_, i) => i !== index);
+      handleUpdateField('rows', newRows);
     }
   };
 
   const updateRow = (index: number, value: string) => {
-    if (formData.rows) {
-      const newRows = [...formData.rows];
+    if (localQuestion.rows) {
+      const newRows = [...localQuestion.rows];
       newRows[index] = value;
-      setFormData(prev => ({
-        ...prev,
-        rows: newRows
-      }));
+      handleUpdateField('rows', newRows);
     }
   };
 
   const addColumn = () => {
-    const currentColumns = formData.columns || ['ستون ۱', 'ستون ۲'];
+    const currentColumns = localQuestion.columns || ['ستون ۱', 'ستون ۲'];
     const newColumns = [...currentColumns, `ستون ${currentColumns.length + 1}`];
-    setFormData(prev => ({
-      ...prev,
-      columns: newColumns
-    }));
+    handleUpdateField('columns', newColumns);
   };
 
   const removeColumn = (index: number) => {
-    if (formData.columns && formData.columns.length > 2) {
-      const newColumns = formData.columns.filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        columns: newColumns
-      }));
+    if (localQuestion.columns && localQuestion.columns.length > 2) {
+      const newColumns = localQuestion.columns.filter((_, i) => i !== index);
+      handleUpdateField('columns', newColumns);
     }
   };
 
   const updateColumn = (index: number, value: string) => {
-    if (formData.columns) {
-      const newColumns = [...formData.columns];
+    if (localQuestion.columns) {
+      const newColumns = [...localQuestion.columns];
       newColumns[index] = value;
-      setFormData(prev => ({
-        ...prev,
-        columns: newColumns
-      }));
+      handleUpdateField('columns', newColumns);
     }
   };
 
   // Image choice functions - fixed
   const addImageOption = () => {
-    const currentOptions = formData.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }];
+    const currentOptions = localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }];
     const newOptions = [...currentOptions, { text: `گزینه ${currentOptions.length + 1}`, imageUrl: '' }];
-    setFormData(prev => ({
-      ...prev,
-      imageOptions: newOptions
-    }));
+    handleUpdateField('imageOptions', newOptions);
   };
 
   const removeImageOption = (index: number) => {
-    if (formData.imageOptions && formData.imageOptions.length > 2) {
-      const newOptions = formData.imageOptions.filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        imageOptions: newOptions
-      }));
+    if (localQuestion.imageOptions && localQuestion.imageOptions.length > 2) {
+      const newOptions = localQuestion.imageOptions.filter((_, i) => i !== index);
+      handleUpdateField('imageOptions', newOptions);
     }
   };
 
   const updateImageOption = (index: number, field: 'text' | 'imageUrl', value: string) => {
-    if (formData.imageOptions) {
-      const newOptions = [...formData.imageOptions];
+    if (localQuestion.imageOptions) {
+      const newOptions = [...localQuestion.imageOptions];
       newOptions[index] = { ...newOptions[index], [field]: value };
-      setFormData(prev => ({
-        ...prev,
-        imageOptions: newOptions
-      }));
+      handleUpdateField('imageOptions', newOptions);
     }
   };
 
-  const addChip = (inputValue: string, field: 'options' | 'rows' | 'columns') => {
-    if (inputValue.trim()) {
-      const currentArray = formData[field] || [];
-      setFormData(prev => ({
-        ...prev,
-        [field]: [...currentArray, inputValue.trim()]
-      }));
-      return '';
-    }
-    return inputValue;
-  };
-
-  const removeChip = (index: number, field: 'options' | 'rows' | 'columns') => {
-    const currentArray = formData[field] || [];
-    setFormData(prev => ({
-      ...prev,
-      [field]: currentArray.filter((_, i) => i !== index)
-    }));
-  };
-
-  const ChipsInput: React.FC<{
-    label: string;
-    field: 'options' | 'rows' | 'columns';
-    placeholder: string;
-  }> = ({ label, field, placeholder }) => {
-    const [inputValue, setInputValue] = useState('');
-    const items = formData[field] || [];
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const newValue = addChip(inputValue, field);
-        setInputValue(newValue);
-      }
-    };
-
-    return (
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">{label}</Label>
-        <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg min-h-[80px] bg-gray-50">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm"
-            >
-              <span>{item}</span>
-              <button
-                onClick={() => removeChip(index, field)}
-                className="text-blue-500 hover:text-blue-700"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={placeholder}
-            className="flex-1 min-w-[120px] border-none shadow-none focus:ring-0 bg-transparent"
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const getQuestionTypeLabel = (type: string) => {
-    return type;
-  };
-
-  const renderPreview = () => {
-    const previewData = {
-      ...formData,
-      label: formData.label || 'پیش‌نمایش سوال'
-    };
-
-    switch (previewData.type) {
-      case 'متنی با پاسخ کوتاه':
-      case 'متنی با پاسخ بلند':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            {previewData.textType === 'long' ? (
-              <Textarea placeholder="پاسخ خود را اینجا بنویسید..." className="w-full" />
-            ) : (
-              <Input placeholder="پاسخ کوتاه..." className="w-full" />
-            )}
-            {(previewData.minChars || previewData.maxChars) && (
-              <p className="text-xs text-gray-500">
-                {previewData.minChars && `حداقل ${previewData.minChars} کاراکتر`}
-                {previewData.minChars && previewData.maxChars && ' - '}
-                {previewData.maxChars && `حداکثر ${previewData.maxChars} کاراکتر`}
-              </p>
-            )}
-          </div>
-        );
-
-      case 'چندگزینه‌ای':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <div className="space-y-2">
-              {(previewData.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                <label key={index} className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type={previewData.isMultiSelect ? 'checkbox' : 'radio'} 
-                    name="preview-option" 
-                    className="text-blue-600"
-                  />
-                  <span className="text-sm">{option}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'لیست کشویی':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <select className="w-full p-2 border border-gray-300 rounded-lg">
-              <option>انتخاب کنید...</option>
-              {(previewData.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                <option key={index}>{option}</option>
-              ))}
-            </select>
-          </div>
-        );
-
-      case 'طیفی':
-        const scaleRange = Array.from(
-          { length: (previewData.scaleMax || 5) - (previewData.scaleMin || 1) + 1 },
-          (_, i) => (previewData.scaleMin || 1) + i
-        );
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                {scaleRange.map((num) => (
-                  <label key={num} className="flex flex-col items-center gap-1 cursor-pointer">
-                    <input type="radio" name="scale" className="text-blue-600" />
-                    <span className="text-sm">{num}</span>
-                  </label>
-                ))}
-              </div>
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>{previewData.scaleLabels?.left || ''}</span>
-                <span>{previewData.scaleLabels?.center || ''}</span>
-                <span>{previewData.scaleLabels?.right || ''}</span>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'درجه‌بندی':
-        const ratingIcons = {
-          star: Star,
-          heart: Heart,
-          thumbs: ThumbsUp,
-        };
-        const RatingIcon = ratingIcons[previewData.ratingStyle || 'star'];
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <div className="flex gap-1">
-              {Array.from({ length: previewData.ratingMax || 5 }, (_, i) => (
-                <RatingIcon 
-                  key={i} 
-                  className="w-6 h-6 text-gray-300 hover:text-yellow-400 cursor-pointer" 
-                />
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'عدد':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <Input 
-              type="number" 
-              placeholder="عدد را وارد کنید..." 
-              min={previewData.minNumber}
-              max={previewData.maxNumber}
-              className="w-full" 
-            />
-            {(previewData.minNumber !== undefined || previewData.maxNumber !== undefined) && (
-              <p className="text-xs text-gray-500">
-                {previewData.minNumber !== undefined && `حداقل ${previewData.minNumber}`}
-                {previewData.minNumber !== undefined && previewData.maxNumber !== undefined && ' - '}
-                {previewData.maxNumber !== undefined && `حداکثر ${previewData.maxNumber}`}
-              </p>
-            )}
-          </div>
-        );
-
-      case 'ماتریسی':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <div className="overflow-x-auto">
-              <table className="w-full border border-gray-200">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="p-2 border border-gray-200"></th>
-                    {(previewData.columns || ['ستون ۱', 'ستون ۲']).map((col, index) => (
-                      <th key={index} className="p-2 border border-gray-200 text-sm">{col}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(previewData.rows || ['سطر ۱', 'سطر ۲']).map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      <td className="p-2 border border-gray-200 font-medium text-sm">{row}</td>
-                      {(previewData.columns || ['ستون ۱', 'ستون ۲']).map((_, colIndex) => (
-                        <td key={colIndex} className="p-2 border border-gray-200 text-center">
-                          <input type="radio" name={`matrix-${rowIndex}`} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-
-      case 'اولویت‌دهی':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <div className="space-y-2">
-              {(previewData.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 border border-gray-200 rounded-lg">
-                  <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                    {index + 1}
-                  </span>
-                  <span className="flex-1">{option}</span>
-                  <div className="flex gap-1">
-                    <ChevronUp className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
-                    <ChevronDown className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'چند‌گزینه‌ای تصویری':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              {(previewData.imageOptions || [{ text: 'گزینه ۱' }, { text: 'گزینه ۲' }]).map((option, index) => (
-                <label key={index} className="flex flex-col items-center gap-2 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                  {option.imageUrl ? (
-                    <img src={option.imageUrl} alt={option.text} className="w-16 h-16 object-cover rounded" />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">بدون تصویر</span>
-                    </div>
-                  )}
-                  <input type="checkbox" className="text-blue-600" />
-                  <span className="text-sm text-center">{option.text}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'متن بدون پاسخ':
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-          </div>
-        );
-
-      default:
-        return (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">{previewData.label}</h4>
-            {previewData.hasDescription && previewData.description && (
-              <p className="text-sm text-gray-600">{previewData.description}</p>
-            )}
-            <p className="text-sm text-gray-500">پیش‌نمایش برای این نوع سوال موجود نیست</p>
-          </div>
-        );
+  const handleImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        updateImageOption(index, 'imageUrl', imageUrl);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  if (!isOpen || !question) return null;
+  const hasOptions = localQuestion.type === 'چندگزینه‌ای';
+  const isMultiChoice = localQuestion.type === 'چندگزینه‌ای';
+  const isDropdown = localQuestion.type === 'لیست کشویی';
+  const isScale = localQuestion.type === 'طیفی';
+  const isText = localQuestion.type === 'متنی';
+  const isNumber = localQuestion.type === 'عددی';
+  const isMatrix = localQuestion.type === 'ماتریسی';
+  const isPriority = localQuestion.type === 'اولویت‌دهی';
+  const isImageChoice = localQuestion.type === 'چند‌گزینه‌ای تصویری';
+  const isQuestionGroup = localQuestion.type === 'گروه سوال';
+  const isDescription = localQuestion.type === 'متن بدون پاسخ';
+  const isRating = localQuestion.type === 'درجه‌بندی';
+  const isEmail = localQuestion.type === 'ایمیل';
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">
-            {isNewQuestion ? 'افزودن سوال جدید' : 'ویرایش سوال'}
-          </h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl h-screen p-0 m-0 rounded-none font-vazirmatn" dir="rtl">
+        <div className="flex h-full">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            className="absolute left-4 top-4 z-10 w-8 h-8 p-0 rounded-full bg-white shadow-md hover:bg-gray-50"
+          >
+            <X className="w-4 h-4" />
+          </Button>
 
-        <div className="flex h-[calc(90vh-140px)]">
-          {/* Settings Panel */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            {/* Question Type Display */}
-            <div className="mb-6">
-              <Label className="text-sm font-medium text-gray-700">نوع سوال</Label>
-              <div className="mt-1 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
-                {getQuestionTypeLabel(formData.type)}
-              </div>
-            </div>
-
-            {/* Question Title */}
-            <div className="mb-6">
-              <Label htmlFor="label" className="text-sm font-medium text-gray-700">
-                عنوان سوال *
-              </Label>
-              <Input
-                id="label"
-                value={formData.label}
-                onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-                placeholder="عنوان سوال خود را وارد کنید..."
-                className={`mt-1 ${errors.label ? 'border-red-500' : ''}`}
-              />
-              {errors.label && (
-                <p className="mt-1 text-sm text-red-600">{errors.label}</p>
-              )}
-            </div>
-
-            {/* Question Description */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium text-gray-700">توضیحات سوال</Label>
-                <Switch
-                  checked={formData.hasDescription}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasDescription: checked }))}
-                />
-              </div>
-              {formData.hasDescription && (
-                <Textarea
-                  value={formData.description || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="توضیحات اضافی برای سوال..."
-                  className="mt-2"
-                  rows={3}
-                />
-              )}
-            </div>
-
-            {/* Media Upload */}
-            {formData.type !== 'گروه سوال' && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium text-gray-700">
-                    {(formData.type === 'متن بدون پاسخ' || formData.type === 'گروه سوال') ? 'رسانه (تصویر/ویدیو)' : 'تصویر'}
+          <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="question-label" className="text-sm font-medium">
+                    {isQuestionGroup ? 'متن گروه سوال' : 'عنوان سوال'}
                   </Label>
-                  <Switch
-                    checked={formData.hasMedia}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasMedia: checked }))}
+                  <Input
+                    id="question-label"
+                    value={localQuestion.label}
+                    onChange={(e) => handleUpdateField('label', e.target.value)}
+                    className="mt-2"
                   />
                 </div>
-                {formData.hasMedia && (
+
+                {/* Question Description */}
+                {!isQuestionGroup && !isDescription && (
                   <div className="space-y-3">
-                    {(formData.type === 'متن بدون پاسخ' || formData.type === 'گروه سوال') && (
-                      <RadioGroup
-                        value={formData.mediaType}
-                        onValueChange={(value: 'image' | 'video') => setFormData(prev => ({ ...prev, mediaType: value }))}
-                        className="flex gap-4"
-                      >
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="image" id="image" />
-                          <Label htmlFor="image">تصویر</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="video" id="video" />
-                          <Label htmlFor="video">ویدیو</Label>
-                        </div>
-                      </RadioGroup>
-                    )}
-                    <div className="space-y-2">
-                      <input
-                        type="file"
-                        accept={formData.mediaType === 'video' ? 'video/*' : 'image/*'}
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="media-upload"
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">توضیحات سوال</Label>
+                      <Switch
+                        checked={localQuestion.hasDescription || false}
+                        onCheckedChange={(checked) => handleUpdateField('hasDescription', checked)}
                       />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('media-upload')?.click()}
-                        className="w-full"
-                      >
+                    </div>
+                    {localQuestion.hasDescription && (
+                      <Textarea
+                        value={localQuestion.description || ''}
+                        onChange={(e) => handleUpdateField('description', e.target.value)}
+                        placeholder="توضیحات اضافی برای سوال"
+                        className="min-h-[80px]"
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* Required field for non-description questions */}
+                {!isDescription && !isQuestionGroup && (
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="required-toggle" className="text-sm font-medium">
+                      سوال اجباری
+                    </Label>
+                    <Switch
+                      id="required-toggle"
+                      checked={localQuestion.required || false}
+                      onCheckedChange={(checked) => handleUpdateField('required', checked)}
+                    />
+                  </div>
+                )}
+
+                {/* Image/Video Upload for all question types */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">
+                      {isQuestionGroup || isDescription ? 'تصویر/ویدیو' : 'تصویر'}
+                    </Label>
+                    <Switch
+                      checked={localQuestion.hasMedia || false}
+                      onCheckedChange={(checked) => handleUpdateField('hasMedia', checked)}
+                    />
+                  </div>
+                  {localQuestion.hasMedia && (
+                    <div className="space-y-2">
+                      <Button variant="outline" size="sm" className="w-full">
                         <Upload className="w-4 h-4 ml-2" />
-                        {formData.mediaType === 'video' ? 'آپلود ویدیو' : 'آپلود تصویر'}
+                        آپلود تصویر
                       </Button>
-                      {formData.mediaUrl && (
-                        <div className="mt-2">
-                          {formData.mediaType === 'video' ? (
-                            <video src={formData.mediaUrl} controls className="w-full max-h-48 rounded-lg" />
-                          ) : (
-                            <img src={formData.mediaUrl} alt="Uploaded" className="w-full max-h-48 object-cover rounded-lg" />
+                      {(isQuestionGroup || isDescription) && (
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Video className="w-4 h-4 ml-2" />
+                          آپلود ویدیو
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Scale Question Settings */}
+                {isScale && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium mb-3 block">تنظیم طیف</Label>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1 block">تعداد گزینه‌ها</Label>
+                          <Slider
+                            value={[localQuestion.scaleMax || 5]}
+                            onValueChange={(value) => handleUpdateField('scaleMax', value[0])}
+                            min={3}
+                            max={11}
+                            step={2}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>3</span>
+                            <span>11</span>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
+                          <Input
+                            type="number"
+                            value={localQuestion.scaleMax || 5}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value);
+                              if (value >= 3 && value <= 11 && value % 2 === 1) {
+                                handleUpdateField('scaleMax', value);
+                              }
+                            }}
+                            min={3}
+                            max={11}
+                            step={2}
+                            className="w-24"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">برچسب‌های طیف</Label>
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="برچسب چپ"
+                          value={localQuestion.scaleLabels?.left || ''}
+                          onChange={(e) => handleUpdateField('scaleLabels', {
+                            ...localQuestion.scaleLabels,
+                            left: e.target.value
+                          })}
+                        />
+                        <Input
+                          placeholder="برچسب وسط"
+                          value={localQuestion.scaleLabels?.center || ''}
+                          onChange={(e) => handleUpdateField('scaleLabels', {
+                            ...localQuestion.scaleLabels,
+                            center: e.target.value
+                          })}
+                        />
+                        <Input
+                          placeholder="برچسب راست"
+                          value={localQuestion.scaleLabels?.right || ''}
+                          onChange={(e) => handleUpdateField('scaleLabels', {
+                            ...localQuestion.scaleLabels,
+                            right: e.target.value
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rating Question Settings */}
+                {isRating && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium mb-3 block">تنظیم درجه</Label>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1 block">تعداد درجه‌ها (1-10)</Label>
+                          <Slider
+                            value={[localQuestion.ratingMax || 5]}
+                            onValueChange={(value) => handleUpdateField('ratingMax', value[0])}
+                            min={1}
+                            max={10}
+                            step={1}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1</span>
+                            <span>10</span>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1 block">یا وارد کنید</Label>
+                          <Input
+                            type="number"
+                            value={localQuestion.ratingMax || 5}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value);
+                              if (value >= 1 && value <= 10) {
+                                handleUpdateField('ratingMax', value);
+                              }
+                            }}
+                            min={1}
+                            max={10}
+                            className="w-24"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">شکل درجه‌بندی</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { type: 'star', icon: <Star className="w-5 h-5" />, label: 'ستاره' },
+                          { type: 'heart', icon: <Heart className="w-5 h-5" />, label: 'قلب' },
+                          { type: 'thumbs', icon: <ThumbsUp className="w-5 h-5" />, label: 'لایک' }
+                        ].map(({ type, icon, label }) => (
+                          <button
+                            key={type}
+                            className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
+                              localQuestion.ratingStyle === type
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => handleUpdateField('ratingStyle', type)}
+                          >
+                            {icon}
+                            <span className="text-xs mt-1">{label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Text Question Settings */}
+                {isText && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">نوع متن</Label>
+                      <Select value={localQuestion.textType || 'short'} onValueChange={(value) => handleUpdateField('textType', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="short">متن کوتاه</SelectItem>
+                          <SelectItem value="long">متن بلند</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-medium">حداقل کاراکتر</Label>
+                        <Input
+                          type="number"
+                          value={localQuestion.minChars || ''}
+                          onChange={(e) => handleUpdateField('minChars', parseInt(e.target.value) || 0)}
+                          min={0}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">حداکثر کاراکتر</Label>
+                        <Input
+                          type="number"
+                          value={localQuestion.maxChars || ''}
+                          onChange={(e) => handleUpdateField('maxChars', parseInt(e.target.value) || 0)}
+                          min={0}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Number Question Settings */}
+                {isNumber && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-sm font-medium">حداقل عدد</Label>
+                      <Input
+                        type="number"
+                        value={localQuestion.minNumber || ''}
+                        onChange={(e) => handleUpdateField('minNumber', parseInt(e.target.value) || 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">حداکثر عدد</Label>
+                      <Input
+                        type="number"
+                        value={localQuestion.maxNumber || ''}
+                        onChange={(e) => handleUpdateField('maxNumber', parseInt(e.target.value) || 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Matrix Question Settings */}
+                {isMatrix && (
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-medium">سطرها</Label>
+                        <Button size="sm" variant="outline" onClick={addRow} className="h-8 px-2">
+                          <Plus className="w-4 h-4 ml-1" />
+                          افزودن
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Input
+                              value={row}
+                              onChange={(e) => updateRow(index, e.target.value)}
+                              className="flex-1"
+                            />
+                            {(localQuestion.rows?.length || 2) > 2 && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeRow(index)}
+                                className="h-8 w-8 p-0 text-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-medium">ستون‌ها</Label>
+                        <Button size="sm" variant="outline" onClick={addColumn} className="h-8 px-2">
+                          <Plus className="w-4 h-4 ml-1" />
+                          افزودن
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Input
+                              value={column}
+                              onChange={(e) => updateColumn(index, e.target.value)}
+                              className="flex-1"
+                            />
+                            {(localQuestion.columns?.length || 2) > 2 && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeColumn(index)}
+                                className="h-8 w-8 p-0 text-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Priority Question Settings */}
+                {isPriority && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium">گزینه‌ها</Label>
+                      <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
+                        <Plus className="w-4 h-4 ml-1" />
+                        افزودن
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+                          <Input
+                            value={option}
+                            onChange={(e) => updateOption(index, e.target.value)}
+                            className="flex-1"
+                          />
+                          {(localQuestion.options?.length || 2) > 2 && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeOption(index)}
+                              className="h-8 w-8 p-0 text-red-500"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Image Choice Question Settings */}
+                {isImageChoice && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium">گزینه‌ها</Label>
+                      <Button size="sm" variant="outline" onClick={addImageOption} className="h-8 px-2">
+                        <Plus className="w-4 h-4 ml-1" />
+                        افزودن
+                      </Button>
+                    </div>
+                    <div className="space-y-3">
+                      {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={option.text}
+                              onChange={(e) => updateImageOption(index, 'text', e.target.value)}
+                              placeholder={`گزینه ${index + 1}`}
+                              className="flex-1"
+                            />
+                            {(localQuestion.imageOptions?.length || 2) > 2 && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeImageOption(index)}
+                                className="h-8 w-8 p-0 text-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(index, e)}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                              <Button variant="outline" size="sm" className="w-full">
+                                <Upload className="w-4 h-4 ml-2" />
+                                آپلود تصویر
+                              </Button>
+                            </div>
+                            {option.imageUrl && (
+                              <div className="w-full h-20 bg-gray-100 rounded-md overflow-hidden">
+                                <img
+                                  src={option.imageUrl}
+                                  alt={`Preview ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Regular Options for Multi-choice */}
+                {hasOptions && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium">گزینه‌ها</Label>
+                      <Button size="sm" variant="outline" onClick={addOption} className="h-8 px-2">
+                        <Plus className="w-4 h-4 ml-1" />
+                        افزودن
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+                          <Input
+                            value={option}
+                            onChange={(e) => updateOption(index, e.target.value)}
+                            className="flex-1"
+                          />
+                          {(localQuestion.options?.length || 2) > 2 && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeOption(index)}
+                              className="h-8 w-8 p-0 text-red-500"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Dropdown Options */}
+                {isDropdown && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium">گزینه‌ها</Label>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="border border-gray-200 rounded-lg p-3">
+                        <Input
+                          ref={inputRef}
+                          value={newDropdownOption}
+                          onChange={(e) => setNewDropdownOption(e.target.value)}
+                          onKeyPress={handleDropdownKeyPress}
+                          placeholder="گزینه جدید را تایپ کنید و Enter بزنید"
+                          className="mb-2"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {(localQuestion.options || []).map((option, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+                            >
+                              <span>{option}</span>
+                              <button
+                                onClick={() => removeDropdownOption(index)}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Advanced Multi-choice Settings */}
+                {isMultiChoice && (
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-900">تنظیمات پیشرفته</h4>
+                    
+                    <div className="space-y-3">
+                      {[
+                        { key: 'hasOther', label: 'گزینه سایر' },
+                        { key: 'hasNone', label: 'گزینه هیچکدام' },
+                        { key: 'hasAll', label: 'گزینه همه موارد' },
+                        { key: 'isRequired', label: 'پاسخ اجباری باشد' },
+                        { key: 'isMultiSelect', label: 'سوال چند انتخابی' },
+                        { key: 'randomizeOptions', label: 'گزینه‌های تصادفی' }
+                      ].map(({ key, label }) => (
+                        <div key={key} className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">{label}</Label>
+                          <Switch
+                            checked={localQuestion[key as keyof Question] as boolean || false}
+                            onCheckedChange={(checked) => handleUpdateField(key as keyof Question, checked)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 p-4 bg-white">
+              <div className="flex gap-2">
+                <Button onClick={handleSave} className="flex-1" disabled={!hasChanges}>
+                  ذخیره
+                </Button>
+                <Button onClick={handleCancel} variant="outline" className="flex-1">
+                  انصراف
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Preview Section */}
+          <div className="flex-1 p-6 bg-white overflow-y-auto">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-medium mb-6 text-gray-800 border-b border-gray-200 pb-3">پیش‌نمایش سوال</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium text-gray-900">
+                      {localQuestion.label}
+                      {(localQuestion.required || localQuestion.isRequired) && <span className="text-red-500 mr-1">*</span>}
+                    </Label>
+                    
+                    {localQuestion.hasDescription && localQuestion.description && (
+                      <p className="text-sm text-gray-600 mt-1 mb-3">{localQuestion.description}</p>
+                    )}
+                    
+                    <div className="mt-3">
+                      {/* Text Question Preview */}
+                      {isText && (
+                        localQuestion.textType === 'long' ? (
+                          <Textarea
+                            placeholder="پاسخ خود را وارد کنید"
+                            disabled
+                            className="bg-gray-50 min-h-[100px]"
+                          />
+                        ) : (
+                          <Input
+                            placeholder="پاسخ خود را وارد کنید"
+                            disabled
+                            className="bg-gray-50"
+                          />
+                        )
+                      )}
+                      
+                      {/* Number Question Preview */}
+                      {isNumber && (
+                        <Input
+                          type="number"
+                          placeholder="عدد را وارد کنید"
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
+                      
+                      {/* Email Question Preview */}
+                      {isEmail && (
+                        <Input
+                          type="email"
+                          placeholder="ایمیل خود را وارد کنید"
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      )}
+
+                      {/* Description Preview */}
+                      {isDescription && (
+                        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                          این یک متن بدون پاسخ است که فقط اطلاعات ارائه می‌دهد
+                        </div>
+                      )}
+
+                      {/* Scale Question Preview */}
+                      {isScale && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-sm text-gray-600">
+                            <span>{localQuestion.scaleLabels?.left || 'کم'}</span>
+                            <span>{localQuestion.scaleLabels?.center || 'متوسط'}</span>
+                            <span>{localQuestion.scaleLabels?.right || 'زیاد'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            {Array.from({ length: localQuestion.scaleMax || 5 }, (_, i) => (
+                              <label key={i} className="flex flex-col items-center cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="scale-preview"
+                                  disabled
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
+                                />
+                                <span className="text-xs mt-1">{i + 1}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Rating Question Preview */}
+                      {isRating && (
+                        <div className="flex gap-2">
+                          {Array.from({ length: localQuestion.ratingMax || 5 }, (_, i) => (
+                            <button key={i} className="text-gray-300 hover:text-yellow-400 disabled:cursor-not-allowed" disabled>
+                              {localQuestion.ratingStyle === 'heart' && <Heart className="w-6 h-6" />}
+                              {localQuestion.ratingStyle === 'thumbs' && <ThumbsUp className="w-6 h-6" />}
+                              {(!localQuestion.ratingStyle || localQuestion.ratingStyle === 'star') && <Star className="w-6 h-6" />}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Dropdown Preview */}
+                      {isDropdown && (
+                        <Select disabled>
+                          <SelectTrigger className="bg-gray-50">
+                            <SelectValue placeholder="گزینه‌ای را انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                              <SelectItem key={index} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      {/* Matrix Preview */}
+                      {isMatrix && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse border border-gray-300">
+                            <thead>
+                              <tr>
+                                <th className="border border-gray-300 p-2 bg-gray-50"></th>
+                                {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((column, index) => (
+                                  <th key={index} className="border border-gray-300 p-2 bg-gray-50 text-sm">
+                                    {column}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(localQuestion.rows || ['سطر ۱', 'سطر ۲']).map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                  <td className="border border-gray-300 p-2 bg-gray-50 text-sm">{row}</td>
+                                  {(localQuestion.columns || ['ستون ۱', 'ستون ۲']).map((_, colIndex) => (
+                                    <td key={colIndex} className="border border-gray-300 p-2 text-center">
+                                      <input
+                                        type="radio"
+                                        name={`matrix-${rowIndex}`}
+                                        disabled
+                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
+                                      />
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Priority Preview */}
+                      {isPriority && (
+                        <div className="space-y-2">
+                          {(localQuestion.options || ['گزینه ۱', 'گزینه ۲']).map((option, index) => (
+                            <div key={index} className="flex items-center gap-3 p-2 border border-gray-200 rounded bg-gray-50 cursor-move">
+                              <GripVertical className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm">{index + 1}.</span>
+                              <span className="text-sm">{option}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Image Choice Preview */}
+                      {isImageChoice && (
+                        <div className="grid grid-cols-2 gap-4">
+                          {(localQuestion.imageOptions || [{ text: 'گزینه ۱', imageUrl: '' }, { text: 'گزینه ۲', imageUrl: '' }]).map((option, index) => (
+                            <label key={index} className="cursor-pointer">
+                              <div className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+                                <input
+                                  type="radio"
+                                  name="image-choice-preview"
+                                  disabled
+                                  className="sr-only"
+                                />
+                                <div className="space-y-2">
+                                  {option.imageUrl ? (
+                                    <div className="w-full h-24 bg-gray-100 rounded overflow-hidden">
+                                      <img
+                                        src={option.imageUrl}
+                                        alt={option.text}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-full h-24 bg-gray-100 rounded flex items-center justify-center">
+                                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                  <p className="text-sm text-center">{option.text}</p>
+                                </div>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Multi-choice Preview */}
+                      {hasOptions && localQuestion.options && (
+                        <div className="space-y-3">
+                          {localQuestion.options.map((option, index) => (
+                            <div key={index} className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">{option}</span>
+                            </div>
+                          ))}
+                          
+                          {localQuestion.hasOther && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">سایر:</span>
+                              <Input className="text-xs h-8 bg-gray-50" disabled placeholder="توضیح دهید..." />
+                            </div>
+                          )}
+                          
+                          {localQuestion.hasNone && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type={localQuestion.isMultiSelect ? 'checkbox' : 'radio'}
+                                name="preview-options"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">هیچکدام</span>
+                            </div>
+                          )}
+                          
+                          {localQuestion.hasAll && (
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                disabled
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                              />
+                              <span className="text-sm text-gray-700">همه موارد</span>
+                            </div>
                           )}
                         </div>
                       )}
                     </div>
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Required Switch */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">سوال اجباری</Label>
-                <Switch
-                  checked={formData.required}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, required: checked }))}
-                />
-              </div>
-            </div>
-
-            {/* Type-specific settings */}
-            {formData.type === 'چندگزینه‌ای' && (
-              <div className="space-y-4">
-                <ChipsInput
-                  label="گزینه‌ها"
-                  field="options"
-                  placeholder="گزینه جدید را تایپ کنید و Enter بزنید..."
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-gray-700">چندانتخابی</Label>
-                    <Switch
-                      checked={formData.isMultiSelect}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isMultiSelect: checked }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-gray-700">گزینه "سایر"</Label>
-                    <Switch
-                      checked={formData.hasOther}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasOther: checked }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-gray-700">گزینه "هیچ‌کدام"</Label>
-                    <Switch
-                      checked={formData.hasNone}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasNone: checked }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-gray-700">گزینه "همه"</Label>
-                    <Switch
-                      checked={formData.hasAll}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasAll: checked }))}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">ترتیب تصادفی</Label>
-                  <Switch
-                    checked={formData.randomizeOptions}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, randomizeOptions: checked }))}
-                  />
                 </div>
               </div>
-            )}
-
-            {formData.type === 'لیست کشویی' && (
-              <ChipsInput
-                label="گزینه‌ها"
-                field="options"
-                placeholder="گزینه جدید را تایپ کنید و Enter بزنید..."
-              />
-            )}
-
-            {formData.type === 'طیفی' && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">تنظیم طیف</Label>
-                  <div className="mt-2 space-y-3">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-600">محدوده: {formData.scaleMin || 1} تا {formData.scaleMax || 5}</span>
-                      </div>
-                      <Slider
-                        value={[formData.scaleMax || 5]}
-                        onValueChange={([value]) => {
-                          const newMax = value % 2 === 1 ? value : value - 1;
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            scaleMax: Math.max(3, Math.min(11, newMax)),
-                            scaleMin: 1
-                          }));
-                        }}
-                        min={3}
-                        max={11}
-                        step={2}
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700">یا مقدار دستی وارد کنید:</Label>
-                      <Input
-                        type="number"
-                        value={formData.scaleMax || 5}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          if (value >= 3 && value <= 11 && value % 2 === 1) {
-                            setFormData(prev => ({ ...prev, scaleMax: value, scaleMin: 1 }));
-                          }
-                        }}
-                        min={3}
-                        max={11}
-                        step={2}
-                        className="mt-1 w-32"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">فقط اعداد فرد بین 3 تا 11</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">برچسب راست</Label>
-                    <Input
-                      value={formData.scaleLabels?.right || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        scaleLabels: { ...prev.scaleLabels, right: e.target.value }
-                      }))}
-                      placeholder="مثل: خیلی بد"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">برچسب وسط</Label>
-                    <Input
-                      value={formData.scaleLabels?.center || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        scaleLabels: { ...prev.scaleLabels, center: e.target.value }
-                      }))}
-                      placeholder="مثل: متوسط"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">برچسب چپ</Label>
-                    <Input
-                      value={formData.scaleLabels?.left || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        scaleLabels: { ...prev.scaleLabels, left: e.target.value }
-                      }))}
-                      placeholder="مثل: خیلی خوب"
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {formData.type === 'درجه‌بندی' && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">تنظیم درجه</Label>
-                  <div className="mt-2 space-y-3">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-600">تعداد درجه: {formData.ratingMax || 5}</span>
-                      </div>
-                      <Slider
-                        value={[formData.ratingMax || 5]}
-                        onValueChange={([value]) => setFormData(prev => ({ ...prev, ratingMax: value }))}
-                        min={1}
-                        max={10}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">شکل درجه‌بندی</Label>
-                  <RadioGroup
-                    value={formData.ratingStyle || 'star'}
-                    onValueChange={(value: 'star' | 'heart' | 'thumbs') => setFormData(prev => ({ ...prev, ratingStyle: value }))}
-                    className="mt-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="star" id="star" />
-                      <Label htmlFor="star" className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-500" />
-                        ستاره
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="heart" id="heart" />
-                      <Label htmlFor="heart" className="flex items-center gap-2">
-                        <Heart className="w-4 h-4 text-red-500" />
-                        قلب
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="thumbs" id="thumbs" />
-                      <Label htmlFor="thumbs" className="flex items-center gap-2">
-                        <ThumbsUp className="w-4 h-4 text-blue-500" />
-                        لایک
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </div>
-            )}
-
-            {(formData.type === 'متنی با پاسخ کوتاه' || formData.type === 'متنی با پاسخ بلند') && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">نوع متن</Label>
-                  <RadioGroup
-                    value={formData.textType || 'short'}
-                    onValueChange={(value: 'short' | 'long') => setFormData(prev => ({ ...prev, textType: value }))}
-                    className="mt-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="short" id="short" />
-                      <Label htmlFor="short">متن کوتاه</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="long" id="long" />
-                      <Label htmlFor="long">متن بلند</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">حداقل کاراکتر</Label>
-                    <Input
-                      type="number"
-                      value={formData.minChars || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, minChars: parseInt(e.target.value) || undefined }))}
-                      placeholder="0"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">حداکثر کاراکتر</Label>
-                    <Input
-                      type="number"
-                      value={formData.maxChars || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, maxChars: parseInt(e.target.value) || undefined }))}
-                      placeholder="1000"
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {formData.type === 'عدد' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">حداقل عدد</Label>
-                  <Input
-                    type="number"
-                    value={formData.minNumber || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, minNumber: parseInt(e.target.value) || undefined }))}
-                    placeholder="0"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">حداکثر عدد</Label>
-                  <Input
-                    type="number"
-                    value={formData.maxNumber || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxNumber: parseInt(e.target.value) || undefined }))}
-                    placeholder="100"
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            )}
-
-            {formData.type === 'ماتریسی' && (
-              <div className="space-y-4">
-                <ChipsInput
-                  label="سطرها"
-                  field="rows"
-                  placeholder="سطر جدید را تایپ کنید و Enter بزنید..."
-                />
-                <ChipsInput
-                  label="ستون‌ها"
-                  field="columns"
-                  placeholder="ستون جدید را تایپ کنید و Enter بزنید..."
-                />
-              </div>
-            )}
-
-            {formData.type === 'اولویت‌دهی' && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">گزینه‌ها</Label>
-                  <div className="mt-2 space-y-2">
-                    {(formData.options || []).map((option, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium">
-                          {index + 1}
-                        </span>
-                        <Input
-                          value={option}
-                          onChange={(e) => {
-                            const newOptions = [...(formData.options || [])];
-                            newOptions[index] = e.target.value;
-                            setFormData(prev => ({ ...prev, options: newOptions }));
-                          }}
-                          className="flex-1"
-                        />
-                        <button
-                          onClick={() => {
-                            if (index > 0) {
-                              const newOptions = [...(formData.options || [])];
-                              [newOptions[index], newOptions[index - 1]] = [newOptions[index - 1], newOptions[index]];
-                              setFormData(prev => ({ ...prev, options: newOptions }));
-                            }
-                          }}
-                          disabled={index === 0}
-                          className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                        >
-                          <ChevronUp className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (index < (formData.options || []).length - 1) {
-                              const newOptions = [...(formData.options || [])];
-                              [newOptions[index], newOptions[index + 1]] = [newOptions[index + 1], newOptions[index]];
-                              setFormData(prev => ({ ...prev, options: newOptions }));
-                            }
-                          }}
-                          disabled={index === (formData.options || []).length - 1}
-                          className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                        >
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const newOptions = (formData.options || []).filter((_, i) => i !== index);
-                            if (newOptions.length >= 2) {
-                              setFormData(prev => ({ ...prev, options: newOptions }));
-                            }
-                          }}
-                          disabled={(formData.options || []).length <= 2}
-                          className="p-1 text-red-400 hover:text-red-600 disabled:opacity-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const currentOptions = formData.options || ['گزینه ۱', 'گزینه ۲'];
-                        setFormData(prev => ({
-                          ...prev,
-                          options: [...currentOptions, `گزینه ${currentOptions.length + 1}`]
-                        }));
-                      }}
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 ml-2" />
-                      افزودن گزینه
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {formData.type === 'چند‌گزینه‌ای تصویری' && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">گزینه‌ها</Label>
-                  <div className="mt-2 space-y-3">
-                    {(formData.imageOptions || []).map((option, index) => (
-                      <div key={index} className="p-3 border border-gray-200 rounded-lg space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={option.text}
-                            onChange={(e) => {
-                              const newOptions = [...(formData.imageOptions || [])];
-                              newOptions[index] = { ...newOptions[index], text: e.target.value };
-                              setFormData(prev => ({ ...prev, imageOptions: newOptions }));
-                            }}
-                            placeholder="متن گزینه..."
-                            className="flex-1"
-                          />
-                          <button
-                            onClick={() => {
-                              const newOptions = (formData.imageOptions || []).filter((_, i) => i !== index);
-                              if (newOptions.length >= 1) {
-                                setFormData(prev => ({ ...prev, imageOptions: newOptions }));
-                              }
-                            }}
-                            disabled={(formData.imageOptions || []).length <= 1}
-                            className="p-2 text-red-400 hover:text-red-600 disabled:opacity-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleOptionImageUpload(index, e)}
-                            className="hidden"
-                            id={`option-image-${index}`}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById(`option-image-${index}`)?.click()}
-                            className="w-full"
-                          >
-                            <Upload className="w-4 h-4 ml-2" />
-                            آپلود تصویر
-                          </Button>
-                          
-                          {option.imageUrl && (
-                            <div className="mt-2">
-                              <img 
-                                src={option.imageUrl} 
-                                alt={option.text} 
-                                className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const currentOptions = formData.imageOptions || [{ text: 'گزینه ۱' }];
-                        setFormData(prev => ({
-                          ...prev,
-                          imageOptions: [...currentOptions, { text: `گزینه ${currentOptions.length + 1}` }]
-                        }));
-                      }}
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 ml-2" />
-                      افزودن گزینه
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Preview Panel */}
-          <div className="w-80 border-r border-gray-200 bg-gray-50 p-6 overflow-y-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">پیش‌نمایش</h3>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              {renderPreview()}
             </div>
           </div>
         </div>
-
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
-          <Button variant="outline" onClick={onCancel}>
-            انصراف
-          </Button>
-          <Button onClick={handleSave}>
-            {isNewQuestion ? 'افزودن سوال' : 'ذخیره تغییرات'}
-          </Button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
