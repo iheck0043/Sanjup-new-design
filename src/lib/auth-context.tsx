@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -76,12 +77,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ phone, code }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "خطا در تایید کد");
+        // Check if it's a 400 error with new user information
+        if (response.status === 400 && data.info?.attrs?.is_verified && data.info?.attrs?.is_new_user) {
+          // This is a new user case, throw a special error that can be caught
+          const newUserError = new Error("User not found. Redirect to signup form.");
+          (newUserError as any).isNewUser = true;
+          (newUserError as any).responseData = data;
+          throw newUserError;
+        }
+        throw new Error(data.info?.message || data.message || "خطا در تایید کد");
       }
 
-      const data = await response.json();
       if (data.info.status === 200 && data.data) {
         const userData = data.data;
         setUser(userData);
@@ -94,7 +103,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      toast.error(error instanceof Error ? error.message : "خطا در تایید کد");
+      
+      // Don't show toast error for new user case
+      if (!(error as any).isNewUser) {
+        toast.error(error instanceof Error ? error.message : "خطا در تایید کد");
+      }
+      
       throw error;
     }
   };

@@ -26,7 +26,7 @@ import {
   Play,
   Video,
 } from "lucide-react";
-import { Question } from "../pages/Index";
+import { Question } from "../pages/QuestionnaireForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface QuestionSettingsModalProps {
