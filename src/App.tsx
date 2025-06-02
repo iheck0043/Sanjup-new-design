@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -5,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth-context";
+import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Surveys from "./pages/Surveys";
 import QuestionnaireForm from "./pages/QuestionnaireForm";
@@ -28,26 +30,17 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
-            path="/"
+            path="/*"
             element={
               <PrivateRoute>
-                <Surveys />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/questionnaire/new"
-            element={
-              <PrivateRoute>
-                <QuestionnaireForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/questionnaire/:id"
-            element={
-              <PrivateRoute>
-                <QuestionnaireForm />
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Surveys />} />
+                    <Route path="/questionnaire/new" element={<QuestionnaireForm />} />
+                    <Route path="/questionnaire/:id" element={<QuestionnaireForm />} />
+                    <Route path="/profile" element={<div className="p-6">صفحه پروفایل</div>} />
+                  </Routes>
+                </Layout>
               </PrivateRoute>
             }
           />
