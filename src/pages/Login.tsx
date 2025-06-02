@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
@@ -46,7 +45,7 @@ export default function Login() {
     } catch (error: any) {
       console.error("OTP verification error in Login:", error);
       console.log("Error message:", error?.message);
-      
+
       // Check if it's a new user that needs signup
       if (error?.message === "NEW_USER_SIGNUP_REQUIRED") {
         console.log("New user detected, showing signup form");
@@ -62,7 +61,7 @@ export default function Login() {
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!firstName.trim() || !lastName.trim()) {
       toast.error("لطفا نام و نام خانوادگی را وارد کنید");
       return;
@@ -82,11 +81,25 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "خطا در ثبت نام");
+        throw new Error(data.info?.message || data.message || "خطا در ثبت نام");
+      }
+
+      // Store the tokens and user data
+      if (data.data?.access_token) {
+        localStorage.setItem("access_token", data.data.access_token);
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: data.data.user_id,
+            phone: data.data.phone,
+            access_token: data.data.access_token,
+            refresh_token: data.data.refresh_token,
+          })
+        );
       }
 
       toast.success("ثبت نام با موفقیت انجام شد");
-      navigate("/");
+      navigate("/"); // Navigate to surveys page
     } catch (error) {
       console.error("Registration error:", error);
       toast.error(error instanceof Error ? error.message : "خطا در ثبت نام");
@@ -131,8 +144,8 @@ export default function Login() {
                 onChange={(e) => setLastName(e.target.value)}
                 required
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full"
                 style={{ backgroundColor: "rgba(4, 102, 200, 1)" }}
               >
@@ -157,8 +170,8 @@ export default function Login() {
                 dir="ltr"
                 className="text-left"
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full"
                 style={{ backgroundColor: "rgba(4, 102, 200, 1)" }}
               >
@@ -175,8 +188,8 @@ export default function Login() {
                 dir="ltr"
                 className="text-left"
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full"
                 style={{ backgroundColor: "rgba(4, 102, 200, 1)" }}
               >
