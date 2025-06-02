@@ -782,17 +782,15 @@ const Index = () => {
         <div className="flex flex-1 h-[calc(100vh-80px)] relative">
           <FormBuilder
             questions={questions}
-            onRemoveQuestion={removeQuestion}
-            onUpdateQuestion={updateQuestionInList}
-            onMoveQuestion={moveQuestion}
-            onQuestionClick={openQuestionSettings}
-            onAddQuestion={addQuestion}
-            onDuplicateQuestion={duplicateQuestion}
-            onConditionClick={openConditionModal}
-            onMoveToGroup={moveToGroup}
+            addQuestion={addQuestion}
+            updateQuestion={updateQuestionInList}
+            duplicateQuestion={duplicateQuestion}
+            removeQuestion={removeQuestion}
+            moveQuestion={moveQuestion}
+            moveToGroup={moveToGroup}
             expandedGroups={expandedGroups}
-            onToggleGroup={toggleGroup}
-            renderQuestionTitle={renderQuestionTitle}
+            toggleGroup={toggleGroup}
+            openQuestionSettings={openQuestionSettings}
           />
 
           <QuestionSidebar onAddQuestion={addQuestion} />

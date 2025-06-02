@@ -152,7 +152,7 @@ const FormBuilder = ({
   return (
     <div
       ref={drop}
-      className="flex-1 p-6 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-indigo-50/20"
+      className="flex-1 p-6 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-indigo-50/20 ml-96"
       style={{ position: "relative" }}
     >
       {isOver && (
@@ -164,7 +164,7 @@ const FormBuilder = ({
         />
       )}
       
-      <div className="space-y-4">
+      <div className="space-y-3">
         {groupedQuestions.root.length === 0 ? (
           <div className="text-center py-20 text-gray-400 animate-fade-in">
             <div className="mb-4">
