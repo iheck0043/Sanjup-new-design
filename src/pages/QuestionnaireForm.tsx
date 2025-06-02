@@ -531,10 +531,14 @@ const Index = () => {
 
   const duplicateQuestion = useCallback(
     (question: Question) => {
-      const duplicatedQuestion: Question = {
-        ...question,
+      // Convert to API question format for duplication
+      const duplicatedQuestion: ApiQuestion = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        label: `کپی ${question.label}`,
+        type: mapQuestionType(question.type),
+        title: `کپی ${question.label}`,
+        is_required: question.required,
+        order: questions.length + 1,
+        parentId: question.parentId,
       };
 
       const questionIndex = questions.findIndex((q) => q.id === question.id);
@@ -562,9 +566,9 @@ const Index = () => {
   }, []);
 
   const updateQuestionInList = useCallback(
-    (id: string, updates: Partial<Question>) => {
+    (id: string, field: string, value: any) => {
       setQuestions((prev) =>
-        prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
+        prev.map((q) => (q.id === id ? { ...q, [field]: value } : q))
       );
     },
     []

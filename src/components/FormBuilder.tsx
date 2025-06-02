@@ -152,7 +152,7 @@ const FormBuilder = ({
   return (
     <div
       ref={drop}
-      className="flex-1 p-6 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-indigo-50/20 ml-96"
+      className="flex-1 p-6 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-indigo-50/20"
       style={{ position: "relative" }}
     >
       {isOver && (
