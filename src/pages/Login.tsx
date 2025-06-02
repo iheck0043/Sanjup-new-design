@@ -45,8 +45,8 @@ export default function Login() {
     } catch (error: any) {
       console.error("OTP verification error in Login:", error);
       
-      // Check if it's a 400 error with specific message for new user
-      if (error?.message?.includes("User not found. Redirect to signup form.")) {
+      // Check if it's a new user that needs signup
+      if (error?.message === "NEW_USER_SIGNUP_REQUIRED") {
         setShowSignupForm(true);
         setShowOtpInput(false);
         toast.info("لطفا اطلاعات خود را تکمیل کنید");

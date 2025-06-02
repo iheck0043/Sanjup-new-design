@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -76,12 +77,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ phone, code }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "خطا در تایید کد");
+        // Check if it's a 400 error with new user message
+        if (response.status === 400 && data.message === "User not found. Redirect to signup form.") {
+          // Don't throw error, let Login component handle this
+          throw new Error("NEW_USER_SIGNUP_REQUIRED");
+        }
+        throw new Error(data.message || "خطا در تایید کد");
       }
 
-      const data = await response.json();
       if (data.info.status === 200 && data.data) {
         const userData = data.data;
         setUser(userData);
@@ -94,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      toast.error(error instanceof Error ? error.message : "خطا در تایید کد");
+      // Re-throw the error to let Login component handle it
       throw error;
     }
   };
