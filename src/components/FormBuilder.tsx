@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useDrop } from "react-dnd";
 import QuestionCard from "./QuestionCard";
@@ -17,8 +16,8 @@ interface FormBuilderProps {
     insertIndex?: number,
     parentId?: string
   ) => void;
-  onDuplicateQuestion: (id: string) => void;
-  onConditionClick: (id: string) => void;
+  onDuplicateQuestion: (question: Question) => void;
+  onConditionClick: (question: Question) => void;
   onMoveToGroup: (questionId: string, groupId: string) => void;
   expandedGroups: string[];
   onToggleGroup: (groupId: string) => void;
@@ -125,11 +124,11 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   };
 
   // Separate top-level questions from grouped questions
-  const topLevelQuestions = questions.filter((q) => !q.related_group);
-  const groupedQuestions = questions.filter((q) => q.related_group);
+  const topLevelQuestions = questions.filter((q) => !q.parentId);
+  const groupedQuestions = questions.filter((q) => q.parentId);
 
   const getChildQuestions = (groupId: string) => {
-    return groupedQuestions.filter((q) => q.related_group === groupId);
+    return groupedQuestions.filter((q) => q.parentId === groupId);
   };
 
   const renderQuestion = (question: ApiQuestion, index: number) => {
@@ -155,6 +154,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             </button>
           </div>
         </div>
+        {/* Rest of the question rendering */}
       </div>
     );
   };
@@ -198,35 +198,33 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             {topLevelQuestions.map((question, index) => (
               <React.Fragment key={question.id}>
                 <div className="transform transition-all duration-300 ease-out animate-fade-in">
-                  {question.type === "question_group" ? (
+                  {question.type === "گروه سوال" ? (
                     <QuestionGroup
-                      group={{
-                        id: question.id,
-                        title: question.title,
-                        questions: getChildQuestions(question.id).map(q => ({
-                          id: q.id,
-                          title: q.title,
-                          type: q.type,
-                          required: q.is_required,
-                        }))
-                      }}
-                      onEditGroup={() => onQuestionClick(question)}
-                      onDeleteGroup={() => onRemoveQuestion(question.id)}
-                      onEditQuestion={(groupId: string, questionId: string) => {
-                        const childQuestion = questions.find(q => q.id === questionId);
-                        if (childQuestion) onQuestionClick(childQuestion);
-                      }}
-                      onDeleteQuestion={(groupId: string, questionId: string) => onRemoveQuestion(questionId)}
-                      onDuplicateQuestion={(groupId: string, questionId: string) => onDuplicateQuestion(questionId)}
+                      group={question}
+                      children={getChildQuestions(question.id)}
+                      index={index}
+                      onRemoveQuestion={onRemoveQuestion}
+                      onUpdateQuestion={onUpdateQuestion}
+                      onMoveQuestion={onMoveQuestion}
+                      onQuestionClick={onQuestionClick}
+                      onAddQuestion={onAddQuestion}
+                      onDuplicateQuestion={onDuplicateQuestion}
+                      onConditionClick={onConditionClick}
+                      onMoveToGroup={onMoveToGroup}
+                      isExpanded={expandedGroups.includes(question.id)}
+                      onToggleExpand={onToggleGroup}
                     />
                   ) : (
                     <QuestionCard
-                      id={question.id}
-                      title={question.title}
-                      type={question.type}
-                      onSettings={() => onQuestionClick(question)}
-                      onDelete={() => onRemoveQuestion(question.id)}
-                      onDuplicate={() => onDuplicateQuestion(question.id)}
+                      question={question}
+                      index={index}
+                      onRemove={onRemoveQuestion}
+                      onUpdate={onUpdateQuestion}
+                      onMove={onMoveQuestion}
+                      onClick={onQuestionClick}
+                      onAddQuestion={onAddQuestion}
+                      onDuplicate={onDuplicateQuestion}
+                      onConditionClick={onConditionClick}
                     />
                   )}
                 </div>
