@@ -6,10 +6,11 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth-context";
-import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Surveys from "./pages/Surveys";
 import QuestionnaireForm from "./pages/QuestionnaireForm";
+import Profile from "./pages/Profile";
+import Layout from "./components/Layout";
 import { Toaster } from "sonner";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -30,20 +31,18 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
-            path="/*"
+            path="/"
             element={
               <PrivateRoute>
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<Surveys />} />
-                    <Route path="/questionnaire/new" element={<QuestionnaireForm />} />
-                    <Route path="/questionnaire/:id" element={<QuestionnaireForm />} />
-                    <Route path="/profile" element={<div className="p-6">صفحه پروفایل</div>} />
-                  </Routes>
-                </Layout>
+                <Layout />
               </PrivateRoute>
             }
-          />
+          >
+            <Route index element={<Surveys />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="questionnaire/new" element={<QuestionnaireForm />} />
+            <Route path="questionnaire/:id" element={<QuestionnaireForm />} />
+          </Route>
         </Routes>
         <Toaster position="top-center" />
       </AuthProvider>

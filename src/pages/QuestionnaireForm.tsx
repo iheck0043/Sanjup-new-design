@@ -31,7 +31,6 @@ export interface ApiQuestion {
   style?: string;
   attachment_type?: string;
   related_group?: string;
-  parentId?: string;
   order: number;
   options?: string[];
   has_other?: boolean;
@@ -307,7 +306,6 @@ const Index = () => {
             ? questionData.mediaType
             : null,
           related_group: questionData.parentId || null,
-          parentId: questionData.parentId || null,
         };
 
         console.log("Sending to API:", apiData);
@@ -412,7 +410,7 @@ const Index = () => {
       "متنی بلند": "text_question",
       اعداد: "number_descriptive",
       "گروه سوال": "question_group",
-      "توضیحی": "statement",
+      توضیحی: "statement",
       "انتخاب تصویر (چند جواب)": "select_multi_image",
       "انتخاب تصویر (تک جواب)": "select_single_image",
       "بله/خیر": "yes_no",
@@ -531,14 +529,10 @@ const Index = () => {
 
   const duplicateQuestion = useCallback(
     (question: Question) => {
-      // Convert to API question format for duplication
-      const duplicatedQuestion: ApiQuestion = {
+      const duplicatedQuestion: Question = {
+        ...question,
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        type: mapQuestionType(question.type),
-        title: `کپی ${question.label}`,
-        is_required: question.required,
-        order: questions.length + 1,
-        parentId: question.parentId,
+        label: `کپی ${question.label}`,
       };
 
       const questionIndex = questions.findIndex((q) => q.id === question.id);
@@ -566,9 +560,9 @@ const Index = () => {
   }, []);
 
   const updateQuestionInList = useCallback(
-    (id: string, field: string, value: any) => {
+    (id: string, updates: Partial<Question>) => {
       setQuestions((prev) =>
-        prev.map((q) => (q.id === id ? { ...q, [field]: value } : q))
+        prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
       );
     },
     []
@@ -786,15 +780,17 @@ const Index = () => {
         <div className="flex flex-1 h-[calc(100vh-80px)] relative">
           <FormBuilder
             questions={questions}
-            addQuestion={addQuestion}
-            updateQuestion={updateQuestionInList}
-            duplicateQuestion={duplicateQuestion}
-            removeQuestion={removeQuestion}
-            moveQuestion={moveQuestion}
-            moveToGroup={moveToGroup}
+            onRemoveQuestion={removeQuestion}
+            onUpdateQuestion={updateQuestionInList}
+            onMoveQuestion={moveQuestion}
+            onQuestionClick={openQuestionSettings}
+            onAddQuestion={addQuestion}
+            onDuplicateQuestion={duplicateQuestion}
+            onConditionClick={openConditionModal}
+            onMoveToGroup={moveToGroup}
             expandedGroups={expandedGroups}
-            toggleGroup={toggleGroup}
-            openQuestionSettings={openQuestionSettings}
+            onToggleGroup={toggleGroup}
+            renderQuestionTitle={renderQuestionTitle}
           />
 
           <QuestionSidebar onAddQuestion={addQuestion} />

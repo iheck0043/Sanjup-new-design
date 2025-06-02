@@ -1,181 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Plus, Trash2 } from 'lucide-react';
-import { Question } from '../pages/QuestionnaireForm';
+import { useState } from "react";
+import { X, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Condition {
-  id: string;
-  sourceOption: string;
-  targetQuestionId: string;
+    id: string;
+    questionId: string;
+    operator: string;
+    value: string;
 }
 
 interface ConditionalLogicModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  question: Question | null;
-  questions: Question[];
-  onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
+    open: boolean;
+    onClose: () => void;
+    onSave: (conditions: Condition[]) => void;
+    initialConditions: Condition[];
+    questionOptions: { value: string; label: string }[];
 }
 
-const ConditionalLogicModal: React.FC<ConditionalLogicModalProps> = ({
-  isOpen,
-  onClose,
-  question,
-  questions,
-  onUpdateQuestion,
-}) => {
-  const [conditions, setConditions] = useState<Condition[]>([]);
+export function ConditionalLogicModal({ open, onClose, onSave, initialConditions, questionOptions }: ConditionalLogicModalProps) {
+    const [conditions, setConditions] = useState<Condition[]>(initialConditions);
 
-  useEffect(() => {
-    if (question?.conditions) {
-      setConditions([...question.conditions]);
-    } else {
-      setConditions([]);
-    }
-  }, [question]);
-
-  if (!question) return null;
-
-  const hasOptions = question.type === 'چندگزینه‌ای' || question.type === 'چندگزینه‌ای تصویری' || question.type === 'لیست کشویی';
-
-  const addCondition = () => {
-    const newCondition: Condition = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      sourceOption: '',
-      targetQuestionId: '',
+    const addCondition = () => {
+        const newCondition: Condition = {
+            id: Math.random().toString(36).substring(7),
+            questionId: "",
+            operator: "equals",
+            value: "",
+        };
+        setConditions([...conditions, newCondition]);
     };
-    setConditions(prev => [...prev, newCondition]);
-  };
 
-  const removeCondition = (conditionId: string) => {
-    setConditions(prev => prev.filter(c => c.id !== conditionId));
-  };
+    const updateCondition = (id: string, field: string, value: string) => {
+        setConditions(
+            conditions.map((condition) =>
+                condition.id === id ? { ...condition, [field]: value } : condition
+            )
+        );
+    };
 
-  const updateCondition = (conditionId: string, field: keyof Condition, value: string) => {
-    setConditions(prev => prev.map(c => 
-      c.id === conditionId ? { ...c, [field]: value } : c
-    ));
-  };
+    const removeCondition = (id: string) => {
+        setConditions(conditions.filter((condition) => condition.id !== id));
+    };
 
-  const handleSave = () => {
-    onUpdateQuestion(question.id, { conditions });
-    onClose();
-  };
+    const handleSave = () => {
+        onSave(conditions);
+        onClose();
+    };
 
-  const targetQuestions = questions.filter((q, index) => {
-    const currentIndex = questions.findIndex(iq => iq.id === question.id);
-    return index > currentIndex;
-  });
+    return (
+        <div className={`fixed inset-0 z-50 ${open ? "block" : "hidden"}`}>
+            <div className="fixed inset-0 bg-black/50" onClick={onClose}></div>
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+                <div className="bg-white rounded-lg p-6 z-50 w-full max-w-md shadow-lg">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold">Conditional Logic</h2>
+                        <Button variant="ghost" onClick={onClose}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    {conditions.map((condition) => (
+                        <div key={condition.id} className="mb-4 p-4 border rounded-md">
+                            <div className="grid gap-2">
+                                <Label htmlFor={`question-${condition.id}`}>Question</Label>
+                                <Select
+                                    id={`question-${condition.id}`}
+                                    value={condition.questionId}
+                                    onValueChange={(value) => updateCondition(condition.id, "questionId", value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a question" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {questionOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl" dir="rtl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">شرط‌گذاری سوال</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="w-8 h-8 p-0 rounded-full"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+                                <Label htmlFor={`operator-${condition.id}`}>Operator</Label>
+                                <Select
+                                    id={`operator-${condition.id}`}
+                                    value={condition.operator}
+                                    onValueChange={(value) => updateCondition(condition.id, "operator", value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select an operator" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="equals">Equals</SelectItem>
+                                        <SelectItem value="notEquals">Not Equals</SelectItem>
+                                        {/* Add more operators as needed */}
+                                    </SelectContent>
+                                </Select>
 
-        {!hasOptions ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">این نوع سوال امکان شرط‌گذاری ندارد</p>
-            <p className="text-sm text-gray-400 mt-2">فقط سوالات چندگزینه‌ای امکان شرط‌گذاری دارند</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div>
-              <Label className="text-base font-medium">سوال: {question.label}</Label>
-            </div>
-
-            <div className="space-y-4">
-              {conditions.map((condition) => (
-                <div key={condition.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-medium text-sm">شرط جدید</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeCondition(condition.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 w-8 h-8 p-0"
-                    >
-                      <Trash2 className="w-4 h-4" />
+                                <Label htmlFor={`value-${condition.id}`}>Value</Label>
+                                <Input
+                                    type="text"
+                                    id={`value-${condition.id}`}
+                                    value={condition.value}
+                                    onChange={(e) => updateCondition(condition.id, "value", e.target.value)}
+                                />
+                            </div>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="mt-2"
+                                onClick={() => removeCondition(condition.id)}
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Remove
+                            </Button>
+                        </div>
+                    ))}
+                    <Button variant="secondary" onClick={addCondition} className="mb-4">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Condition
                     </Button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm">اگر گزینه:</Label>
-                      <Select 
-                        value={condition.sourceOption} 
-                        onValueChange={(value) => updateCondition(condition.id, 'sourceOption', value)}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="انتخاب گزینه" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {question.options?.map((option, index) => (
-                            <SelectItem key={index} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex justify-end">
+                        <Button variant="ghost" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave}>Save</Button>
                     </div>
-
-                    <div>
-                      <Label className="text-sm">انتخاب شد، برو به سوال:</Label>
-                      <Select 
-                        value={condition.targetQuestionId} 
-                        onValueChange={(value) => updateCondition(condition.id, 'targetQuestionId', value)}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="انتخاب سوال" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {targetQuestions.map((targetQuestion, index) => (
-                            <SelectItem key={targetQuestion.id} value={targetQuestion.id}>
-                              {targetQuestion.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
                 </div>
-              ))}
-
-              <Button 
-                onClick={addCondition}
-                variant="outline" 
-                className="w-full border-dashed"
-              >
-                <Plus className="w-4 h-4 ml-2" />
-                افزودن شرط جدید
-              </Button>
             </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button onClick={handleSave} className="flex-1">
-                ذخیره شرط‌ها
-              </Button>
-              <Button onClick={onClose} variant="outline" className="flex-1">
-                انصراف
-              </Button>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export default ConditionalLogicModal;
+        </div>
+    );
+}
