@@ -412,7 +412,7 @@ const Index = () => {
       "متنی بلند": "text_question",
       اعداد: "number_descriptive",
       "گروه سوال": "question_group",
-      توضیحی": "statement",
+      "توضیحی": "statement",
       "انتخاب تصویر (چند جواب)": "select_multi_image",
       "انتخاب تصویر (تک جواب)": "select_single_image",
       "بله/خیر": "yes_no",
