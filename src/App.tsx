@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,8 +8,6 @@ import { AuthProvider, useAuth } from "./lib/auth-context";
 import Login from "./pages/Login";
 import Surveys from "./pages/Surveys";
 import QuestionnaireForm from "./pages/QuestionnaireForm";
-import Profile from "./pages/Profile";
-import Layout from "./components/Layout";
 import { Toaster } from "sonner";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -34,15 +31,26 @@ function App() {
             path="/"
             element={
               <PrivateRoute>
-                <Layout />
+                <Surveys />
               </PrivateRoute>
             }
-          >
-            <Route index element={<Surveys />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="questionnaire/new" element={<QuestionnaireForm />} />
-            <Route path="questionnaire/:id" element={<QuestionnaireForm />} />
-          </Route>
+          />
+          <Route
+            path="/questionnaire/new"
+            element={
+              <PrivateRoute>
+                <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/questionnaire/:id"
+            element={
+              <PrivateRoute>
+                <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
         </Routes>
         <Toaster position="top-center" />
       </AuthProvider>
