@@ -118,9 +118,7 @@ const FormBuilder = ({
             onAddChild={(type) => addQuestion(type, undefined, question.id)}
             parentId={parentId}
           >
-            {childQuestions.map((child, childIndex) =>
-              renderQuestion(child, childIndex, question.id)
-            )}
+            {childQuestions}
           </QuestionGroup>
         );
       }
@@ -154,25 +152,35 @@ const FormBuilder = ({
   return (
     <div
       ref={drop}
-      className="flex-1 p-4"
+      className="flex-1 p-6 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-indigo-50/20"
       style={{ position: "relative" }}
     >
       {isOver && (
         <div
+          className="absolute inset-0 bg-blue-400/10 border-2 border-dashed border-blue-400 rounded-lg animate-pulse"
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            height: "100%",
-            width: "100%",
             zIndex: 1,
-            backgroundColor: "rgba(0, 100, 200, 0.1)",
           }}
         />
       )}
-      {groupedQuestions.root.map((question, index) =>
-        renderQuestion(question, index)
-      )}
+      
+      <div className="space-y-4">
+        {groupedQuestions.root.length === 0 ? (
+          <div className="text-center py-20 text-gray-400 animate-fade-in">
+            <div className="mb-4">
+              <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-500 mb-2">هنوز سوالی اضافه نشده</h3>
+            <p className="text-sm text-gray-400">سوالات را از نوار کناری به اینجا بکشید</p>
+          </div>
+        ) : (
+          groupedQuestions.root.map((question, index) =>
+            renderQuestion(question, index)
+          )
+        )}
+      </div>
     </div>
   );
 };
