@@ -4,8 +4,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import FormBuilder from "../components/FormBuilder";
 import QuestionSidebar from "../components/QuestionSidebar";
 import FormHeader from "../components/FormHeader";
-import { QuestionSettingsModal } from "../components/QuestionSettingsModal";
-import { ConditionalLogicModal } from "../components/ConditionalLogicModal";
+import QuestionSettingsModal from "../components/QuestionSettingsModal";
+import ConditionalLogicModal from "../components/ConditionalLogicModal";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -797,18 +797,20 @@ const Index = () => {
         </div>
 
         <QuestionSettingsModal
-          open={isModalOpen}
+          isOpen={isModalOpen}
           onClose={closeQuestionSettings}
           question={selectedQuestion}
           onSave={handleQuestionSave}
+          onCancel={handleQuestionCancel}
+          isNewQuestion={isNewQuestion}
         />
 
         <ConditionalLogicModal
-          open={isConditionModalOpen}
+          isOpen={isConditionModalOpen}
           onClose={closeConditionModal}
-          initialConditions={[]}
-          onSave={() => {}}
-          questionOptions={[]}
+          question={conditionQuestion}
+          questions={questions}
+          onUpdateQuestion={updateQuestionInList}
         />
       </div>
     </DndProvider>
