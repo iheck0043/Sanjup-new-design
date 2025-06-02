@@ -1,34 +1,61 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./lib/auth-context";
+import Login from "./pages/Login";
 import Surveys from "./pages/Surveys";
-import Audience from "./pages/Audience";
-import Results from "./pages/Results";
-import NotFound from "./pages/NotFound";
+import QuestionnaireForm from "./pages/QuestionnaireForm";
+import { Toaster } from "sonner";
 
-const queryClient = new QueryClient();
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { accessToken } = useAuth();
+  const storedToken = localStorage.getItem("access_token");
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+  if (!accessToken && !storedToken) {
+    return <Navigate to="/login" />;
+  }
+
+  return <>{children}</>;
+}
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/surveys" element={<Surveys />} />
-          <Route path="/audience" element={<Audience />} />
-          <Route path="/results" element={<Results />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Surveys />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/questionnaire/new"
+            element={
+              <PrivateRoute>
+                <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/questionnaire/:id"
+            element={
+              <PrivateRoute>
+                <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        <Toaster position="top-center" />
+      </AuthProvider>
+    </Router>
+  );
+}
 
 export default App;

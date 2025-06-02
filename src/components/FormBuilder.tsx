@@ -1,23 +1,27 @@
-
-import React, { useState } from 'react';
-import { useDrop } from 'react-dnd';
-import QuestionCard from './QuestionCard';
-import QuestionGroup from './QuestionGroup';
-import { Question } from '../pages/Index';
-import { MousePointer2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useDrop } from "react-dnd";
+import QuestionCard from "./QuestionCard";
+import QuestionGroup from "./QuestionGroup";
+import { Question, ApiQuestion } from "../pages/QuestionnaireForm";
+import { MousePointer2 } from "lucide-react";
 
 interface FormBuilderProps {
-  questions: Question[];
+  questions: ApiQuestion[];
   onRemoveQuestion: (id: string) => void;
   onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
-  onQuestionClick: (question: Question) => void;
-  onAddQuestion: (type: string, insertIndex?: number, parentId?: string) => void;
+  onQuestionClick: (question: ApiQuestion) => void;
+  onAddQuestion: (
+    type: string,
+    insertIndex?: number,
+    parentId?: string
+  ) => void;
   onDuplicateQuestion: (question: Question) => void;
   onConditionClick: (question: Question) => void;
   onMoveToGroup: (questionId: string, groupId: string) => void;
   expandedGroups: string[];
   onToggleGroup: (groupId: string) => void;
+  renderQuestionTitle: (question: ApiQuestion) => React.ReactNode;
 }
 
 const FormBuilder: React.FC<FormBuilderProps> = ({
@@ -32,17 +36,24 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onMoveToGroup,
   expandedGroups,
   onToggleGroup,
+  renderQuestionTitle,
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isDraggingFromSidebar, setIsDraggingFromSidebar] = useState(false);
 
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: 'question',
+    accept: "question",
     drop: (item: { type: string }, monitor) => {
       if (monitor.didDrop()) return;
-      
-      console.log('Dropped question type:', item.type, 'at index:', dragOverIndex);
-      const targetIndex = dragOverIndex !== null ? dragOverIndex : questions.length;
+
+      console.log(
+        "Dropped question type:",
+        item.type,
+        "at index:",
+        dragOverIndex
+      );
+      const targetIndex =
+        dragOverIndex !== null ? dragOverIndex : questions.length;
       onAddQuestion(item.type, targetIndex);
       setDragOverIndex(null);
       setIsDraggingFromSidebar(false);
@@ -59,12 +70,20 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     },
   }));
 
-  const DropZone: React.FC<{ index: number; isVisible?: boolean }> = ({ index, isVisible = false }) => {
+  const DropZone: React.FC<{ index: number; isVisible?: boolean }> = ({
+    index,
+    isVisible = false,
+  }) => {
     const [{ isOver: isZoneOver }, zoneDrop] = useDrop(() => ({
-      accept: 'question',
+      accept: "question",
       drop: (item: { type: string }, monitor) => {
         if (monitor.didDrop()) return;
-        console.log('Dropped in zone at index:', index, 'question type:', item.type);
+        console.log(
+          "Dropped in zone at index:",
+          index,
+          "question type:",
+          item.type
+        );
         onAddQuestion(item.type, index);
         setDragOverIndex(null);
         setIsDraggingFromSidebar(false);
@@ -86,8 +105,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         ref={zoneDrop}
         className={`transition-all duration-300 ease-out ${
           shouldShow
-            ? 'h-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4 flex items-center justify-center opacity-100 scale-100'
-            : 'h-2 opacity-0 scale-95'
+            ? "h-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-400 rounded-lg mb-2 mx-4 flex items-center justify-center opacity-100 scale-100"
+            : "h-2 opacity-0 scale-95"
         }`}
       >
         {shouldShow && (
@@ -105,11 +124,39 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   };
 
   // Separate top-level questions from grouped questions
-  const topLevelQuestions = questions.filter(q => !q.parentId);
-  const groupedQuestions = questions.filter(q => q.parentId);
+  const topLevelQuestions = questions.filter((q) => !q.parentId);
+  const groupedQuestions = questions.filter((q) => q.parentId);
 
   const getChildQuestions = (groupId: string) => {
-    return groupedQuestions.filter(q => q.parentId === groupId);
+    return groupedQuestions.filter((q) => q.parentId === groupId);
+  };
+
+  const renderQuestion = (question: ApiQuestion, index: number) => {
+    return (
+      <div
+        key={question.id}
+        className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-4"
+      >
+        <div className="flex items-center justify-between mb-4">
+          {renderQuestionTitle(question)}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onQuestionClick(question)}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              ویرایش
+            </button>
+            <button
+              onClick={() => onRemoveQuestion(question.id)}
+              className="text-red-600 hover:text-red-700"
+            >
+              حذف
+            </button>
+          </div>
+        </div>
+        {/* Rest of the question rendering */}
+      </div>
+    );
   };
 
   return (
@@ -118,8 +165,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         ref={drop}
         className={`min-h-[500px] transition-all duration-300 ease-out p-6 max-w-4xl mx-auto ${
           isOver && dragOverIndex === topLevelQuestions.length
-            ? 'bg-gradient-to-br from-blue-50/80 to-indigo-50/80 border-2 border-dashed border-blue-300 rounded-xl scale-[1.02]'
-            : ''
+            ? "bg-gradient-to-br from-blue-50/80 to-indigo-50/80 border-2 border-dashed border-blue-300 rounded-xl scale-[1.02]"
+            : ""
         }`}
         onDragEnd={handleDragEnd}
         onDragLeave={(e) => {
@@ -136,9 +183,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4 hover-scale">
                 <MousePointer2 className="w-7 h-7 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium mb-2 text-gray-600">شروع ساخت فرم</h3>
+              <h3 className="text-lg font-medium mb-2 text-gray-600">
+                شروع ساخت فرم
+              </h3>
               <p className="text-center max-w-sm text-gray-500 text-sm">
-                سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها کلیک کنید
+                سوالات خود را از سایدبار سمت راست به اینجا بکشید یا روی آنها
+                کلیک کنید
               </p>
             </div>
           </>
@@ -148,7 +198,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             {topLevelQuestions.map((question, index) => (
               <React.Fragment key={question.id}>
                 <div className="transform transition-all duration-300 ease-out animate-fade-in">
-                  {question.type === 'گروه سوال' ? (
+                  {question.type === "گروه سوال" ? (
                     <QuestionGroup
                       group={question}
                       children={getChildQuestions(question.id)}
