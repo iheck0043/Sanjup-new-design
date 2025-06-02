@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Minus, X, Settings, Star, StarOff } from "lucide-react";
+import { Plus, Minus, X, Settings, Star, StarOff, Trash2 } from "lucide-react";
 import { ConditionalLogicModal } from "./ConditionalLogicModal";
 
 interface QuestionSettingsModalProps {
@@ -220,8 +221,9 @@ export function QuestionSettingsModal({ open, onClose, question, onSave }: Quest
       <ConditionalLogicModal
         open={showConditionalLogicModal}
         onClose={handleCloseConditionalLogicModal}
-        conditionalLogic={conditionalLogic}
+        initialConditions={conditionalLogic}
         onSave={handleSaveConditionalLogic}
+        questionOptions={[]}
       />
     </Dialog>
   );

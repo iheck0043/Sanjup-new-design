@@ -1,10 +1,10 @@
+
 import { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
 interface Condition {
     id: string;
@@ -17,11 +17,17 @@ interface ConditionalLogicModalProps {
     open: boolean;
     onClose: () => void;
     onSave: (conditions: Condition[]) => void;
-    initialConditions: Condition[];
+    initialConditions?: Condition[];
     questionOptions: { value: string; label: string }[];
 }
 
-export function ConditionalLogicModal({ open, onClose, onSave, initialConditions, questionOptions }: ConditionalLogicModalProps) {
+export function ConditionalLogicModal({ 
+    open, 
+    onClose, 
+    onSave, 
+    initialConditions = [], 
+    questionOptions 
+}: ConditionalLogicModalProps) {
     const [conditions, setConditions] = useState<Condition[]>(initialConditions);
 
     const addCondition = () => {
@@ -57,7 +63,7 @@ export function ConditionalLogicModal({ open, onClose, onSave, initialConditions
             <div className="fixed inset-0 flex items-center justify-center p-4">
                 <div className="bg-white rounded-lg p-6 z-50 w-full max-w-md shadow-lg">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold">Conditional Logic</h2>
+                        <h2 className="text-lg font-semibold">منطق شرطی</h2>
                         <Button variant="ghost" onClick={onClose}>
                             <X className="h-4 w-4" />
                         </Button>
@@ -65,14 +71,13 @@ export function ConditionalLogicModal({ open, onClose, onSave, initialConditions
                     {conditions.map((condition) => (
                         <div key={condition.id} className="mb-4 p-4 border rounded-md">
                             <div className="grid gap-2">
-                                <Label htmlFor={`question-${condition.id}`}>Question</Label>
+                                <Label htmlFor={`question-${condition.id}`}>سوال</Label>
                                 <Select
-                                    id={`question-${condition.id}`}
                                     value={condition.questionId}
                                     onValueChange={(value) => updateCondition(condition.id, "questionId", value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a question" />
+                                        <SelectValue placeholder="انتخاب سوال" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {questionOptions.map((option) => (
@@ -83,26 +88,23 @@ export function ConditionalLogicModal({ open, onClose, onSave, initialConditions
                                     </SelectContent>
                                 </Select>
 
-                                <Label htmlFor={`operator-${condition.id}`}>Operator</Label>
+                                <Label htmlFor={`operator-${condition.id}`}>عملگر</Label>
                                 <Select
-                                    id={`operator-${condition.id}`}
                                     value={condition.operator}
                                     onValueChange={(value) => updateCondition(condition.id, "operator", value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select an operator" />
+                                        <SelectValue placeholder="انتخاب عملگر" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="equals">Equals</SelectItem>
-                                        <SelectItem value="notEquals">Not Equals</SelectItem>
-                                        {/* Add more operators as needed */}
+                                        <SelectItem value="equals">برابر</SelectItem>
+                                        <SelectItem value="notEquals">نابرابر</SelectItem>
                                     </SelectContent>
                                 </Select>
 
-                                <Label htmlFor={`value-${condition.id}`}>Value</Label>
+                                <Label htmlFor={`value-${condition.id}`}>مقدار</Label>
                                 <Input
                                     type="text"
-                                    id={`value-${condition.id}`}
                                     value={condition.value}
                                     onChange={(e) => updateCondition(condition.id, "value", e.target.value)}
                                 />
@@ -114,19 +116,19 @@ export function ConditionalLogicModal({ open, onClose, onSave, initialConditions
                                 onClick={() => removeCondition(condition.id)}
                             >
                                 <Trash2 className="h-4 w-4 mr-2" />
-                                Remove
+                                حذف
                             </Button>
                         </div>
                     ))}
                     <Button variant="secondary" onClick={addCondition} className="mb-4">
                         <Plus className="h-4 w-4 mr-2" />
-                        Add Condition
+                        افزودن شرط
                     </Button>
                     <div className="flex justify-end">
                         <Button variant="ghost" onClick={onClose}>
-                            Cancel
+                            انصراف
                         </Button>
-                        <Button onClick={handleSave}>Save</Button>
+                        <Button onClick={handleSave}>ذخیره</Button>
                     </div>
                 </div>
             </div>
