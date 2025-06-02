@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { ChevronDown, ChevronUp, SquarePlus, GripVertical, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Question } from '../pages/Index';
+import { Question } from '../pages/QuestionnaireForm';
 import QuestionCard from './QuestionCard';
 
 interface QuestionGroupProps {

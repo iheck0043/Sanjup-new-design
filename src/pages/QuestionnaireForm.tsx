@@ -31,6 +31,7 @@ export interface ApiQuestion {
   style?: string;
   attachment_type?: string;
   related_group?: string;
+  parentId?: string;
   order: number;
   options?: string[];
   has_other?: boolean;
@@ -306,6 +307,7 @@ const Index = () => {
             ? questionData.mediaType
             : null,
           related_group: questionData.parentId || null,
+          parentId: questionData.parentId || null,
         };
 
         console.log("Sending to API:", apiData);
@@ -410,7 +412,7 @@ const Index = () => {
       "متنی بلند": "text_question",
       اعداد: "number_descriptive",
       "گروه سوال": "question_group",
-      توضیحی: "statement",
+      توضیحی": "statement",
       "انتخاب تصویر (چند جواب)": "select_multi_image",
       "انتخاب تصویر (تک جواب)": "select_single_image",
       "بله/خیر": "yes_no",

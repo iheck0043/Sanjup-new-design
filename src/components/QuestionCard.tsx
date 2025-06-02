@@ -20,7 +20,7 @@ import {
   GitBranch,
   Star,
 } from "lucide-react";
-import { Question } from "../pages/Index";
+import { Question } from "../pages/QuestionnaireForm";
 
 interface QuestionCardProps {
   question: Question;

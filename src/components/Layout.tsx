@@ -1,7 +1,12 @@
-import { Outlet } from "react-router-dom";
+
+import { ReactNode } from "react";
 import UserMenu from "./UserMenu";
 
-export default function Layout() {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 font-['Vazirmatn']" dir="rtl">
       {/* Header */}
@@ -17,7 +22,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <main>
-        <Outlet />
+        {children}
       </main>
     </div>
   );
