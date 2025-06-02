@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -69,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyOTP = async (phone: string, code: string) => {
     try {
+      console.log("Verifying OTP for phone:", phone, "code:", code);
       const response = await fetch(`${BASE_URL}/api/v1/auth/sanjup/verify`, {
         method: "POST",
         headers: {
@@ -78,15 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const data = await response.json();
+      console.log("Verify API response:", { status: response.status, data });
 
       if (!response.ok) {
         // Check specifically for the new user case
         if (response.status === 400 && 
-            data.message === "User not found. Redirect to signup form." &&
+            data.info?.message === "User not found. Redirect to signup form." &&
             data.info?.attrs?.is_new_user === true) {
+          console.log("New user signup required - throwing special error");
           throw new Error("NEW_USER_SIGNUP_REQUIRED");
         }
-        throw new Error(data.message || "خطا در تایید کد");
+        throw new Error(data.info?.message || data.message || "خطا در تایید کد");
       }
 
       if (data.info.status === 200 && data.data) {

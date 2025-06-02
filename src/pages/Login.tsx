@@ -39,11 +39,13 @@ export default function Login() {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log("Submitting OTP:", otp);
       await verifyOTP(phone, otp);
       toast.success("ورود موفقیت آمیز");
       navigate("/");
     } catch (error: any) {
       console.error("OTP verification error in Login:", error);
+      console.log("Error message:", error?.message);
       
       // Check if it's a new user that needs signup
       if (error?.message === "NEW_USER_SIGNUP_REQUIRED") {
@@ -52,6 +54,7 @@ export default function Login() {
         setShowOtpInput(false);
         toast.info("لطفا اطلاعات خود را تکمیل کنید");
       } else {
+        console.log("Regular error, showing error toast");
         toast.error(error?.message || "کد تایید نامعتبر است");
       }
     }
