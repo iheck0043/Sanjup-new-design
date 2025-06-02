@@ -80,9 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        // Check if it's a 400 error with new user message
-        if (response.status === 400 && data.message === "User not found. Redirect to signup form.") {
-          // Don't throw error, let Login component handle this
+        // Check specifically for the new user case
+        if (response.status === 400 && 
+            data.message === "User not found. Redirect to signup form." &&
+            data.info?.attrs?.is_new_user === true) {
           throw new Error("NEW_USER_SIGNUP_REQUIRED");
         }
         throw new Error(data.message || "خطا در تایید کد");
@@ -100,7 +101,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      // Re-throw the error to let Login component handle it
       throw error;
     }
   };

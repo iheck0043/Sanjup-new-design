@@ -47,13 +47,12 @@ export default function Login() {
       
       // Check if it's a new user that needs signup
       if (error?.message === "NEW_USER_SIGNUP_REQUIRED") {
+        console.log("New user detected, showing signup form");
         setShowSignupForm(true);
         setShowOtpInput(false);
         toast.info("لطفا اطلاعات خود را تکمیل کنید");
-      } else if (error instanceof Error) {
-        toast.error(error.message);
       } else {
-        toast.error("کد تایید نامعتبر است");
+        toast.error(error?.message || "کد تایید نامعتبر است");
       }
     }
   };
