@@ -1,3 +1,4 @@
+
 import React, {
   useCallback,
   useEffect,
@@ -117,10 +118,9 @@ const FormBuilder = ({
             onAddChild={(type) => addQuestion(type, undefined, question.id)}
             parentId={parentId}
           >
-            {isExpanded &&
-              childQuestions.map((child, childIndex) =>
-                renderQuestion(child, childIndex, question.id)
-              )}
+            {childQuestions.map((child, childIndex) =>
+              renderQuestion(child, childIndex, question.id)
+            )}
           </QuestionGroup>
         );
       }
