@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,19 +10,8 @@ import QuestionCard from "./QuestionCard";
 interface Question {
   id: string;
   title: string;
-  description?: string;
   type: string;
   required: boolean;
-  options?: { id: string; text: string }[];
-  conditionalLogic?: {
-    enabled: boolean;
-    conditions: {
-      questionId: string;
-      operator: string;
-      value: string;
-    }[];
-    action: string;
-  };
 }
 
 interface QuestionGroupProps {
@@ -97,8 +87,10 @@ export default function QuestionGroup({
         {group.questions.map((question) => (
           <QuestionCard
             key={question.id}
-            question={question}
-            onEdit={() => onEditQuestion(group.id, question.id)}
+            id={question.id}
+            title={question.title}
+            type={question.type}
+            onSettings={() => onEditQuestion(group.id, question.id)}
             onDelete={() => onDeleteQuestion(group.id, question.id)}
             onDuplicate={() => onDuplicateQuestion(group.id, question.id)}
           />

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,9 @@ interface QuestionCardProps {
   id: string;
   title: string;
   type: string;
-  onSettings: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDuplicate: (id: string) => void;
+  onSettings: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -38,7 +39,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <Card ref={setNodeRef} style={style} className="mb-4">
-      <CardContent className="flex items-center justify-between">
+      <CardContent className="flex items-center justify-between p-4">
         <div className="flex items-center">
           <GripVertical
             {...attributes}
@@ -54,14 +55,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onDuplicate(id)}
+            onClick={onDuplicate}
           >
             <Copy className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => onSettings(id)}>
+          <Button variant="outline" size="icon" onClick={onSettings}>
             <Settings className="h-4 w-4" />
           </Button>
-          <Button variant="destructive" size="icon" onClick={() => onDelete(id)}>
+          <Button variant="destructive" size="icon" onClick={onDelete}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
