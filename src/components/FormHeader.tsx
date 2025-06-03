@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { ArrowLeft, Eye, Edit3 } from 'lucide-react';
-import { Button } from './ui/button';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from "react";
+import { ArrowLeft, Eye, Edit3 } from "lucide-react";
+import { Button } from "./ui/button";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface FormHeaderProps {
   formTitle: string;
@@ -14,14 +13,14 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
   const location = useLocation();
 
   const steps = [
-    { id: 1, title: 'طراحی نظرسنجی', path: '/' },
-    { id: 2, title: 'انتخاب مخاطب', path: '/audience' },
-    { id: 3, title: 'گزارش نتایج', path: '/results' }
+    { id: 1, title: "طراحی نظرسنجی", path: "/" },
+    { id: 2, title: "انتخاب مخاطب", path: "/audience" },
+    { id: 3, title: "گزارش نتایج", path: "/results" },
   ];
 
   const getCurrentStep = () => {
     const currentPath = location.pathname;
-    const step = steps.find(s => s.path === currentPath);
+    const step = steps.find((s) => s.path === currentPath);
     return step ? step.id : 1;
   };
 
@@ -33,14 +32,14 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/surveys')}
+          onClick={() => navigate("/surveys")}
           className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        
+
         <div className="h-8 w-px bg-gray-300"></div>
-        
+
         <div className="group relative">
           <input
             type="text"
@@ -56,13 +55,13 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
       {/* Centered Steps */}
       <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
         {steps.map((step, index) => (
-          <React.Fragment key={step.id}>
+          <div key={step.id} className="flex items-center">
             <button
               onClick={() => navigate(step.path)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 currentStep === step.id
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? "bg-blue-500 text-white shadow-sm"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               <span className="ml-2">{step.id}</span>
@@ -71,12 +70,12 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
             {index < steps.length - 1 && (
               <div className="w-8 h-px bg-gray-300 mx-1"></div>
             )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
 
       {/* Preview Button */}
-      <Button 
+      <Button
         variant="outline"
         className="flex items-center gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
       >
