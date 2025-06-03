@@ -39,7 +39,7 @@ const QuestionType: React.FC<QuestionTypeProps> = ({
   index,
 }) => {
   return (
-    <Draggable draggableId={String(index)} index={index}>
+    <Draggable draggableId={type} index={index}>
       {(provided, snapshot) => (
         <>
           <div
@@ -92,6 +92,20 @@ interface QuestionSidebarProps {
 const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
   const questionTypes = [
     {
+      type: "text_question_short",
+      label: "متنی با پاسخ کوتاه",
+      icon: <Type className="w-4 h-4 text-purple-600" />,
+      color:
+        "bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200",
+    },
+    {
+      type: "text_question_long",
+      label: "متنی با پاسخ بلند",
+      icon: <Type className="w-4 h-4 text-purple-600" />,
+      color:
+        "bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200",
+    },
+    {
       type: "چندگزینه‌ای",
       label: "چندگزینه‌ای",
       icon: <SquareCheck className="w-4 h-4 text-blue-600" />,
@@ -118,13 +132,6 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
       icon: <FileText className="w-4 h-4 text-gray-600" />,
       color:
         "bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200",
-    },
-    {
-      type: "متنی",
-      label: "متنی",
-      icon: <Type className="w-4 h-4 text-purple-600" />,
-      color:
-        "bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200",
     },
     {
       type: "عددی",

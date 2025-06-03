@@ -131,24 +131,24 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const handleDragEnd = (result: any) => {
-    setDragOverIndex(null);
-    const { source, destination, draggableId } = result;
+  // const handleDragEnd = (result: any) => {
+  //   setDragOverIndex(null);
+  //   const { source, destination, draggableId } = result;
 
-    if (!destination) return;
+  //   if (!destination) return;
 
-    if (
-      source.droppableId === "questionTypes" &&
-      destination.droppableId === "formQuestions"
-    ) {
-      onAddQuestion(draggableId, destination.index);
-      return;
-    }
+  //   if (
+  //     source.droppableId === "questionTypes" &&
+  //     destination.droppableId === "formQuestions"
+  //   ) {
+  //     onAddQuestion(draggableId, destination.index);
+  //     return;
+  //   }
 
-    if (source.droppableId === destination.droppableId) {
-      onMoveQuestion(source.index, destination.index);
-    }
-  };
+  //   if (source.droppableId === destination.droppableId) {
+  //     onMoveQuestion(source.index, destination.index);
+  //   }
+  // };
 
   const renderQuestion = (question: ApiQuestion, index: number) => {
     const isGroup = question.type === "question_group";

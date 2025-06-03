@@ -531,6 +531,9 @@ const Index = () => {
   // Helper function to map question types to API types
   const mapQuestionType = (type: string): string => {
     switch (type) {
+      case "text_question_short":
+      case "text_question_long":
+        return "text_question";
       case "چندگزینه‌ای":
       case "چندگزینه‌ای (چند جواب)":
       case "چندگزینه‌ای (تک جواب)":
@@ -572,9 +575,9 @@ const Index = () => {
   // Helper function to get question style
   const getQuestionStyle = (type: string): string | undefined => {
     switch (type) {
-      case "متنی کوتاه":
+      case "text_question_short":
         return "short";
-      case "متنی بلند":
+      case "text_question_long":
         return "long";
       case "ایمیل":
         return "email";
@@ -594,24 +597,16 @@ const Index = () => {
         parentId
       );
 
-      const newQuestion: ApiQuestion = {
+      const newQuestion: Question = {
         id: uuidv4(),
         type: questionType,
-        text: "",
+        label: "",
         title: "",
-        is_required: false,
+        isRequired: false,
         order: questions.length + 1,
-        style: getQuestionStyle(questionType),
-        attachment_type: questionType === "image" ? "image" : undefined,
-        related_group: parentId,
+        parentId: parentId,
+        textType: questionType === "text_question_long" ? "long" : "short",
       };
-
-      if (questionType === "چندگزینه‌ای") {
-        newQuestion.options = ["گزینه ۱", "گزینه ۲"];
-        newQuestion.is_required = false;
-        newQuestion.is_multiple_select = false;
-        newQuestion.randomize_options = false;
-      }
 
       // Set as new question and open modal
       setSelectedQuestion(newQuestion);
@@ -619,7 +614,7 @@ const Index = () => {
       setPendingQuestionData({ type: questionType, insertIndex, parentId });
       setIsModalOpen(true);
     },
-    []
+    [questions.length]
   );
 
   const handleQuestionSave = useCallback(
@@ -743,7 +738,10 @@ const Index = () => {
 
     const mappedQuestion: Question = {
       id: question.id,
-      type: mapApiQuestionType(question.type, question.style),
+      type:
+        isNewQuestion && pendingQuestionData
+          ? pendingQuestionData.type
+          : mapApiQuestionType(question.type, question.style),
       label: question.text,
       title: question.title,
       isRequired: question.is_required,
@@ -801,16 +799,6 @@ const Index = () => {
         question.type === "select_multi_image" && question.is_multiple_select,
     };
 
-    // Set specific flags based on question type
-    if (
-      question.type === "select_single_image" ||
-      question.type === "select_multi_image"
-    ) {
-      mappedQuestion.type = "چند‌گزینه‌ای تصویری";
-      mappedQuestion.isMultiImage =
-        question.type === "select_multi_image" && question.is_multiple_select;
-    }
-
     console.log("Mapped question:", mappedQuestion);
     setSelectedQuestion(mappedQuestion);
     setIsModalOpen(true);
@@ -821,13 +809,13 @@ const Index = () => {
     if (type === "text_question") {
       switch (style) {
         case "short":
-          return "متنی کوتاه";
+          return "text_question_short";
         case "long":
-          return "متنی بلند";
+          return "text_question_long";
         case "email":
           return "ایمیل";
         default:
-          return "متنی کوتاه";
+          return "text_question_short";
       }
     }
 
@@ -858,7 +846,7 @@ const Index = () => {
       case "range_slider":
         return "طیفی";
       default:
-        return "متنی کوتاه";
+        return "text_question_short";
     }
   };
 
@@ -892,6 +880,7 @@ const Index = () => {
   };
 
   const handleDragEnd = (result: DropResult) => {
+    console.log("ههووی", result);
     const { source, destination, type } = result;
 
     // If dropped outside a droppable area
@@ -900,7 +889,7 @@ const Index = () => {
     // If it's a question type being dragged from the sidebar
     if (type === "QUESTION_TYPE" && source.droppableId === "questionTypes") {
       // Add the question at the destination index
-      addQuestion(result.draggableId, destination.index);
+      addQuestion(result.type, destination.index, result.draggableId);
       return;
     }
 

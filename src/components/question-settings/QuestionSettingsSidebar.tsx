@@ -249,4 +249,3 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
 };
 
 export default QuestionSettingsSidebar;
- 
