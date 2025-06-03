@@ -306,7 +306,8 @@ const QuestionnaireList = () => {
             <div
               key={questionnaire.id}
               ref={isLast ? lastQuestionnaireRef : null}
-              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
+              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              onClick={() => navigate(`/questionnaire/${questionnaire.id}`)}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -328,16 +329,20 @@ const QuestionnaireList = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() =>
-                      navigate(`/questionnaire/${questionnaire.id}`)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/questionnaire/${questionnaire.id}`);
+                    }}
                   >
                     <Eye className="w-5 h-5 text-gray-500" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDeleteSurvey(questionnaire.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSurvey(questionnaire.id);
+                    }}
                   >
                     <Trash2 className="w-5 h-5 text-red-500" />
                   </Button>
@@ -360,7 +365,10 @@ const QuestionnaireList = () => {
                 </div>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/questionnaire/${questionnaire.id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/questionnaire/${questionnaire.id}`);
+                  }}
                 >
                   ویرایش
                 </Button>
