@@ -898,13 +898,13 @@ const Index = () => {
     if (!destination) return;
 
     // If it's a question type being dragged from the sidebar
-    if (type === "QUESTION_TYPE") {
+    if (type === "QUESTION_TYPE" && source.droppableId === "questionTypes") {
       // Add the question at the destination index
       addQuestion(result.draggableId, destination.index);
       return;
     }
 
-    // If it's a question being reordered
+    // If it's a question being reordered within the form
     if (source.droppableId === destination.droppableId) {
       moveQuestion(source.index, destination.index);
     }
@@ -933,33 +933,31 @@ const Index = () => {
           <QuestionSidebar onAddQuestion={addQuestion} />
 
           <div className="flex-1 mr-96">
-            <div className="h-full overflow-y-auto">
-              <FormBuilder
-                questions={questions}
-                onRemoveQuestion={removeQuestion}
-                onUpdateQuestion={updateQuestionInList}
-                onMoveQuestion={moveQuestion}
-                onQuestionClick={openQuestionSettings}
-                onAddQuestion={addQuestion}
-                onDuplicateQuestion={duplicateQuestion}
-                onConditionClick={(question: ApiQuestion) => {
-                  const mappedQuestion: Question = {
-                    id: question.id,
-                    type: question.type,
-                    label: question.title,
-                    title: question.title,
-                    isRequired: question.is_required,
-                    order: question.order,
-                    parentId: question.related_group,
-                  };
-                  openConditionModal(mappedQuestion);
-                }}
-                onMoveToGroup={moveToGroup}
-                expandedGroups={expandedGroups}
-                onToggleGroup={toggleGroup}
-                renderQuestionTitle={renderQuestionTitle}
-              />
-            </div>
+            <FormBuilder
+              questions={questions}
+              onRemoveQuestion={removeQuestion}
+              onUpdateQuestion={updateQuestionInList}
+              onMoveQuestion={moveQuestion}
+              onQuestionClick={openQuestionSettings}
+              onAddQuestion={addQuestion}
+              onDuplicateQuestion={duplicateQuestion}
+              onConditionClick={(question: ApiQuestion) => {
+                const mappedQuestion: Question = {
+                  id: question.id,
+                  type: question.type,
+                  label: question.title,
+                  title: question.title,
+                  isRequired: question.is_required,
+                  order: question.order,
+                  parentId: question.related_group,
+                };
+                openConditionModal(mappedQuestion);
+              }}
+              onMoveToGroup={moveToGroup}
+              expandedGroups={expandedGroups}
+              onToggleGroup={toggleGroup}
+              renderQuestionTitle={renderQuestionTitle}
+            />
           </div>
         </div>
       </DragDropContext>

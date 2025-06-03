@@ -41,15 +41,15 @@ const QuestionType: React.FC<QuestionTypeProps> = ({
   return (
     <Draggable draggableId={String(index)} index={index}>
       {(provided, snapshot) => (
-        <React.Fragment>
+        <>
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             style={{
               ...provided.draggableProps.style,
-              left: "auto !important",
-              top: "auto !important",
+              left: "unset !important",
+              top: "unset !important",
 
               transform: snapshot.isDragging
                 ? provided.draggableProps.style?.transform
@@ -79,7 +79,7 @@ const QuestionType: React.FC<QuestionTypeProps> = ({
               </div>
             </div>
           )}
-        </React.Fragment>
+        </>
       )}
     </Draggable>
   );
@@ -177,8 +177,8 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
   ];
 
   return (
-    <div className="w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200/70 h-[calc(100vh-80px)] flex flex-col fixed top-20 right-0">
-      <div className="p-4 border-b border-gray-200/50">
+    <div className="w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200/70 h-[calc(100vh-80px)] fixed top-20 right-0 flex flex-col">
+      <div className="p-4 border-b border-gray-200/50 flex-shrink-0">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
             <Sparkles className="w-3 h-3 text-white" />
@@ -190,38 +190,40 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         <p className="text-xs text-gray-500">سوال مورد نظر را انتخاب کنید</p>
       </div>
 
-      <div className="flex-1  p-4">
-        <Droppable
-          droppableId="questionTypes"
-          type="QUESTION_TYPE"
-          isDropDisabled={true}
-        >
-          {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="flex flex-wrap gap-2"
-            >
-              {questionTypes.map((questionType, index) => (
-                <div
-                  key={questionType.type + "_" + index}
-                  className="w-[calc(50%-4px)]"
-                >
-                  <QuestionType
-                    type={questionType.type}
-                    label={questionType.label}
-                    icon={questionType.icon}
-                    color={questionType.color}
-                    onAdd={() => onAddQuestion(questionType.type)}
-                    index={index}
-                  />
-                </div>
-              ))}
+      <Droppable
+        droppableId="questionTypes"
+        type="QUESTION_TYPE"
+        isDropDisabled={true}
+      >
+        {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className="flex-1 "
+          >
+            <div className="p-4">
+              <div className="flex flex-wrap gap-2">
+                {questionTypes.map((questionType, index) => (
+                  <div
+                    key={questionType.type + "_" + index}
+                    className="w-[calc(50%-4px)]"
+                  >
+                    <QuestionType
+                      type={questionType.type}
+                      label={questionType.label}
+                      icon={questionType.icon}
+                      color={questionType.color}
+                      onAdd={() => onAddQuestion(questionType.type)}
+                      index={index}
+                    />
+                  </div>
+                ))}
+              </div>
               {provided.placeholder}
             </div>
-          )}
-        </Droppable>
-      </div>
+          </div>
+        )}
+      </Droppable>
     </div>
   );
 };
