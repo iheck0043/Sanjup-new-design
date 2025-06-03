@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, Eye, Edit3 } from "lucide-react";
+import { ArrowLeft, Eye, Edit3, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -32,10 +32,10 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate("/surveys")}
+          onClick={() => navigate("/")}
           className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowRight className="w-5 h-5" />
         </Button>
 
         <div className="h-8 w-px bg-gray-300"></div>
