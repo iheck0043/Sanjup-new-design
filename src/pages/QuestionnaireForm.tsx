@@ -20,24 +20,60 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { v4 as uuidv4 } from "uuid";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export interface ApiQuestion {
   id: string;
   type: string;
+  text: string;
   title: string;
   is_required: boolean;
+  order: number;
   style?: string;
   attachment_type?: string;
   related_group?: string;
-  order: number;
-  options?: string[];
-  has_other?: boolean;
-  has_none?: boolean;
-  has_all?: boolean;
-  is_multi_select?: boolean;
+  limit?: number;
+  min_value?: number;
+  max_value?: number;
+  options?: Array<{
+    id?: number;
+    question?: number;
+    depend_questionnaire?: string;
+    priority: number;
+    score: number;
+    value: string;
+    type: string;
+    label: string;
+    option_kind: string;
+    text: string;
+    is_other?: boolean;
+    is_none?: boolean;
+    is_all?: boolean;
+    image_url?: string;
+  }>;
+  is_other?: boolean;
+  is_none?: boolean;
+  is_all?: boolean;
   randomize_options?: boolean;
+  is_multiple_select?: boolean;
+  min_selectable_choices?: number;
+  max_selectable_choices?: number;
+  rows?: Array<{
+    id: number;
+    value: string;
+    order: number;
+  }>;
+  columns?: Array<{
+    id: number;
+    value: string;
+    order: number;
+  }>;
+  shuffle_rows?: boolean;
+  shuffle_columns?: boolean;
+  count?: number;
+  shape?: string;
   scale_min?: number;
   scale_max?: number;
   scale_labels?: {
@@ -45,48 +81,65 @@ export interface ApiQuestion {
     center: string;
     right: string;
   };
-  rating_max?: number;
-  rating_style?: "star" | "heart" | "thumbs";
-  min_chars?: number;
-  max_chars?: number;
-  rows?: string[];
-  columns?: string[];
-  is_multi_image?: boolean;
-  is_single_image?: boolean;
-  is_prioritize?: boolean;
-  is_combobox?: boolean;
-  is_grading?: boolean;
-  is_number?: boolean;
-  is_statement?: boolean;
-  is_yes_no?: boolean;
-  is_website?: boolean;
-  is_range_slider?: boolean;
-  is_email?: boolean;
-  min_value?: number;
-  max_value?: number;
+  left_label?: string;
+  middle_label?: string;
+  right_label?: string;
+  description?: string;
   step?: number;
-  default_value?: number;
-  validation?: {
-    min?: number;
-    max?: number;
-    pattern?: string;
-    required?: boolean;
-  };
+}
+
+export interface QuestionOption {
+  id?: number;
+  question?: number;
+  depend_questionnaire?: string | null;
+  priority: number;
+  score: number;
+  value: string;
+  type: string;
+  label: string | null;
+  option_kind: string;
+  is_other?: boolean;
+  is_none?: boolean;
+  is_all?: boolean;
+  image_url?: string;
+  text?: string;
 }
 
 export interface Question {
   id: string;
   type: string;
+  title: string;
   label: string;
-  placeholder?: string;
+  isRequired: boolean;
   required?: boolean;
+  order: number;
+  attachmentType?: string;
+  textType?: "short" | "long";
+  maxChars?: number;
+  minChars?: number;
+  minNumber?: number;
+  maxNumber?: number;
   options?: string[];
+  optionValues?: string[];
+  rawOptions?: QuestionOption[];
   hasOther?: boolean;
   hasNone?: boolean;
   hasAll?: boolean;
-  isRequired?: boolean;
-  isMultiSelect?: boolean;
   randomizeOptions?: boolean;
+  isMultiSelect?: boolean;
+  minSelectableChoices?: number;
+  maxSelectableChoices?: number;
+  rows?: string[];
+  columns?: string[];
+  shuffleRows?: boolean;
+  shuffleColumns?: boolean;
+  ratingMax?: number;
+  ratingStyle?: "star" | "heart" | "thumbs";
+  hasMedia?: boolean;
+  mediaType?: "image" | "video";
+  mediaUrl?: string;
+  parentId?: string;
+  children?: string[];
   conditions?: Array<{
     id: string;
     sourceOption: string;
@@ -101,24 +154,10 @@ export interface Question {
     center: string;
     right: string;
   };
-  ratingMax?: number;
-  ratingStyle?: "star" | "heart" | "thumbs";
-  textType?: "short" | "long";
-  minChars?: number;
-  maxChars?: number;
-  minNumber?: number;
-  maxNumber?: number;
-  rows?: string[];
-  columns?: string[];
   imageOptions?: Array<{
     text: string;
     imageUrl?: string;
   }>;
-  hasMedia?: boolean;
-  mediaUrl?: string;
-  mediaType?: "image" | "video";
-  parentId?: string;
-  children?: string[];
   isMultiImage?: boolean;
   isSingleImage?: boolean;
   isPrioritize?: boolean;
@@ -256,7 +295,10 @@ const Index = () => {
       }
 
       const data = await response.json();
+      console.log("Questions API Response:", data);
+
       if (data.info.status === 200) {
+        console.log("Questions data:", data.data);
         setQuestions(data.data as ApiQuestion[]);
       } else {
         throw new Error(data.info.message);
@@ -350,32 +392,121 @@ const Index = () => {
   const updateQuestion = useCallback(
     async (id: string, updates: Partial<Question>) => {
       try {
-        if (!accessToken) {
-          throw new Error("Missing access token");
+        if (!accessToken || !questionnaire?.id) {
+          throw new Error("Missing access token or questionnaire ID");
+        }
+
+        // Base API data
+        const apiData: any = {
+          id: id,
+          is_required: updates.required || false,
+          title: updates.label || "",
+          attachment_type: updates.hasMedia ? updates.mediaType : null,
+          related_group: updates.parentId || null,
+        };
+
+        // Handle different question types
+        switch (updates.type) {
+          case "چندگزینه‌ای":
+          case "اولویت‌دهی":
+          case "اولویت دهی":
+            apiData.type =
+              updates.type === "اولویت‌دهی" || updates.type === "اولویت دهی"
+                ? "prioritize"
+                : updates.isMultiSelect
+                ? "multi_select"
+                : "single_select";
+            apiData.options =
+              updates.options?.map((text, index) => ({
+                text,
+                value: updates.optionValues?.[index] || "",
+                priority: index + 1,
+                score: 0,
+                type: "option",
+                label: text,
+                option_kind: "normal",
+              })) || [];
+            apiData.has_other = updates.hasOther || false;
+            apiData.has_none = updates.hasNone || false;
+            apiData.has_all = updates.hasAll || false;
+            apiData.is_multi_select = updates.isMultiSelect || false;
+            apiData.randomize_options = updates.randomizeOptions || false;
+            break;
+
+          case "چند‌گزینه‌ای تصویری":
+            apiData.type = "select_multi_image";
+            apiData.options =
+              updates.imageOptions?.map((opt, index) => ({
+                text: opt.text,
+                value: opt.imageUrl,
+                priority: index + 1,
+                score: {
+                  source: "0.0",
+                  parsedValue: 0,
+                },
+                type: "image",
+                label: opt.text,
+                option_kind: "usual",
+              })) || [];
+            apiData.is_multi_select = updates.isMultiImage || false;
+            break;
+
+          case "متنی کوتاه":
+          case "متنی بلند":
+            apiData.type = "text_question";
+            apiData.style = updates.textType === "long" ? "long" : "short";
+            apiData.limit = updates.maxChars || 200;
+            break;
+
+          case "عددی":
+            apiData.type = "number_descriptive";
+            apiData.min_value = updates.minNumber || 0;
+            apiData.max_value = updates.maxNumber || 5000;
+            apiData.step = updates.step || 1;
+            break;
+
+          case "متن بدون پاسخ":
+            apiData.type = "statement";
+            // Only allow one media type at a time
+            if (updates.hasMedia) {
+              apiData.attachment_type = updates.mediaType;
+            }
+            break;
+
+          case "طیفی":
+            apiData.type = "range_slider";
+            // Generate options for range slider
+            const range = updates.scaleMax || 5;
+            apiData.options = Array.from({ length: range }, (_, i) => ({
+              value: String(i + 1),
+              priority: 1,
+              type: "integer",
+              option_kind: "usual",
+            }));
+            apiData.left_label = updates.scaleLabels?.left || "کم";
+            apiData.middle_label = updates.scaleLabels?.center || "متوسط";
+            apiData.right_label = updates.scaleLabels?.right || "زیاد";
+            break;
+
+          default:
+            apiData.type = mapQuestionType(updates.type || "");
         }
 
         const response = await fetch(
-          `${BASE_URL}/api/v1/questionnaire/10138/questions/update/`,
+          `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/update/`,
           {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({
-              id: id,
-              is_required: updates.required || false,
-              type: mapQuestionType(updates.type || ""),
-              title: updates.label || "",
-              attachment_type: updates.hasMedia ? updates.mediaType : null,
-              related_group: updates.parentId || null,
-              style: updates.textType === "long" ? "long" : "short",
-            }),
+            body: JSON.stringify(apiData),
           }
         );
 
         if (!response.ok) {
-          throw new Error("خطا در بروزرسانی سوال");
+          const errorData = await response.json();
+          throw new Error(errorData.info?.message || "خطا در بروزرسانی سوال");
         }
 
         const data = await response.json();
@@ -393,48 +524,48 @@ const Index = () => {
         throw error;
       }
     },
-    [accessToken]
+    [accessToken, questionnaire?.id]
   );
 
   // Helper function to map question types to API types
   const mapQuestionType = (type: string): string => {
-    console.log("Mapping question type:", type);
-    const typeMap: { [key: string]: string } = {
-      "چندگزینه‌ای (چند جواب)": "multi_select",
-      "چندگزینه‌ای (تک جواب)": "single_select",
-      ماتریسی: "matrix",
-      "اولویت دهی": "prioritize",
-      "لیست کشویی": "combobox",
-      "درجه بندی": "grading",
-      "متنی کوتاه": "text_question",
-      "متنی بلند": "text_question",
-      اعداد: "number_descriptive",
-      "گروه سوال": "question_group",
-      توضیحی: "statement",
-      "انتخاب تصویر (چند جواب)": "select_multi_image",
-      "انتخاب تصویر (تک جواب)": "select_single_image",
-      "بله/خیر": "yes_no",
-      "وب سایت": "website",
-      طیفی: "range_slider",
-      ایمیل: "email",
-      // اضافه کردن مپینگ‌های جدید
-      چندگزینه‌ای: "single_select", // برای حالت پیش‌فرض چندگزینه‌ای
-      متنی: "text_question", // برای حالت پیش‌فرض متنی
-    };
-
-    const mappedType = typeMap[type];
-    console.log("Mapped to:", mappedType);
-
-    if (!mappedType) {
-      console.warn(
-        "Unknown question type:",
-        type,
-        "defaulting to text_question"
-      );
-      return "text_question";
+    switch (type) {
+      case "چندگزینه‌ای":
+      case "چندگزینه‌ای (چند جواب)":
+      case "چندگزینه‌ای (تک جواب)":
+        return "single_select";
+      case "ماتریسی":
+        return "matrix";
+      case "اولویت دهی":
+      case "اولویت‌دهی":
+        return "prioritize";
+      case "لیست کشویی":
+        return "combobox";
+      case "درجه بندی":
+        return "grading";
+      case "متنی کوتاه":
+      case "متنی بلند":
+      case "ایمیل":
+        return "text_question";
+      case "عددی":
+        return "number_descriptive";
+      case "گروه سوال":
+        return "question_group";
+      case "متن بدون پاسخ":
+        return "statement";
+      case "چند‌گزینه‌ای تصویری":
+      case "انتخاب تصویر (تک جواب)":
+      case "انتخاب تصویر (چند جواب)":
+        return "select_multi_image";
+      case "بله/خیر":
+        return "yes_no";
+      case "وب سایت":
+        return "website";
+      case "طیفی":
+        return "range_slider";
+      default:
+        return "text_question";
     }
-
-    return mappedType;
   };
 
   // Helper function to get question style
@@ -444,6 +575,8 @@ const Index = () => {
         return "short";
       case "متنی بلند":
         return "long";
+      case "ایمیل":
+        return "email";
       default:
         return undefined;
     }
@@ -461,10 +594,13 @@ const Index = () => {
       );
 
       const newQuestion: Question = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        id: uuidv4(),
         type: questionType,
         label: `سوال جدید`,
+        title: `سوال جدید`,
+        isRequired: false,
         required: false,
+        order: questions.length + 1,
         parentId: parentId,
       };
 
@@ -531,8 +667,9 @@ const Index = () => {
     (question: Question) => {
       const duplicatedQuestion: Question = {
         ...question,
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        id: uuidv4(),
         label: `کپی ${question.label}`,
+        title: `کپی ${question.title}`,
       };
 
       const questionIndex = questions.findIndex((q) => q.id === question.id);
@@ -593,137 +730,127 @@ const Index = () => {
     );
   }, []);
 
-  const openQuestionSettings = useCallback((question: ApiQuestion) => {
-    // Map API question data to our question format
+  const openQuestionSettings = (question: ApiQuestion) => {
+    console.log("Opening question settings:", question);
+    console.log("Scale labels from API:", question.scale_labels);
+    console.log("Scale labels type:", typeof question.scale_labels);
+
     const mappedQuestion: Question = {
       id: question.id,
-      type: mapApiQuestionType(question.type),
-      label: question.title,
-      required: question.is_required,
-      textType: question.style === "long" ? "long" : "short",
-      hasMedia: !!question.attachment_type,
-      mediaType: question.attachment_type as "image" | "video",
+      type: mapApiQuestionType(question.type, question.style),
+      label: question.title || question.text,
+      title: question.title || question.text,
+      isRequired: question.is_required,
+      order: question.order,
+      textType: question.style === "short" ? "short" : "long",
+      hasMedia: question.attachment_type === "image",
+      mediaType: "image",
       parentId: question.related_group,
-      // Map other fields based on question type
-      ...(question.type === "multi_select" && {
-        options: question.options || [],
-        hasOther: question.has_other || false,
-        hasNone: question.has_none || false,
-        hasAll: question.has_all || false,
-        isMultiSelect: true,
-        randomizeOptions: question.randomize_options || false,
-      }),
-      ...(question.type === "single_select" && {
-        options: question.options || [],
-        hasOther: question.has_other || false,
-        hasNone: question.has_none || false,
-        hasAll: question.has_all || false,
-        isMultiSelect: false,
-        randomizeOptions: question.randomize_options || false,
-      }),
-      ...(question.type === "matrix" && {
-        rows: question.rows || [],
-        columns: question.columns || [],
-      }),
-      ...(question.type === "prioritize" && {
-        options: question.options || [],
-        isPrioritize: true,
-      }),
-      ...(question.type === "combobox" && {
-        options: question.options || [],
-        isCombobox: true,
-      }),
-      ...(question.type === "grading" && {
-        ratingMax: question.rating_max,
-        ratingStyle: question.rating_style,
-        isGrading: true,
-      }),
-      ...(question.type === "text_question" && {
-        textType: question.style === "long" ? "long" : "short",
-        minChars: question.min_chars,
-        maxChars: question.max_chars,
-      }),
-      ...(question.type === "number_descriptive" && {
-        isNumber: true,
-        minNumber: question.min_value,
-        maxNumber: question.max_value,
-        step: question.step,
-        defaultValue: question.default_value,
-      }),
-      ...(question.type === "select_multi_image" && {
-        isMultiImage: true,
-        imageOptions: question.options?.map((opt) => ({ text: opt })) || [],
-      }),
-      ...(question.type === "select_single_image" && {
-        isSingleImage: true,
-        imageOptions: question.options?.map((opt) => ({ text: opt })) || [],
-      }),
-      ...(question.type === "yes_no" && {
-        isYesNo: true,
-      }),
-      ...(question.type === "website" && {
-        isWebsite: true,
-        validation: {
-          pattern: "^https?://.+",
-          required: question.is_required,
-        },
-      }),
-      ...(question.type === "range_slider" && {
-        isRangeSlider: true,
-        minValue: question.min_value,
-        maxValue: question.max_value,
-        step: question.step,
-        defaultValue: question.default_value,
-      }),
-      ...(question.type === "email" && {
-        isEmail: true,
-        validation: {
-          pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-          required: question.is_required,
-        },
-      }),
+      maxChars: question.limit,
+      minChars: question.min_value,
+      minNumber: question.min_value,
+      maxNumber: question.max_value,
+      options:
+        question.type === "select_multi_image" ||
+        question.type === "select_single_image"
+          ? question.options?.map((opt) => opt.label) || []
+          : question.options?.map((opt) => opt.value) || [],
+      optionValues:
+        question.type === "select_multi_image" ||
+        question.type === "select_single_image"
+          ? question.options?.map((opt) => opt.value) || []
+          : question.options?.map((opt) => opt.value) || [],
+      rawOptions: question.options || [],
+      hasOther: question.is_other,
+      hasNone: question.is_none,
+      hasAll: question.is_all,
+      randomizeOptions: question.randomize_options,
+      isMultiSelect: question.is_multiple_select,
+      minSelectableChoices: question.min_selectable_choices,
+      maxSelectableChoices: question.max_selectable_choices,
+      rows: question.rows?.map((row) => row.value) || [],
+      columns: question.columns?.map((col) => col.value) || [],
+      shuffleRows: question.shuffle_rows,
+      shuffleColumns: question.shuffle_columns,
+      ratingMax: question.count,
+      ratingStyle: question.shape as "star" | "heart" | "thumbs",
+      scaleMin: question.scale_min,
+      scaleMax: question.scale_max || question.options?.length || 5,
+      scaleLabels: {
+        left: question.scale_labels?.left || question.left_label || "",
+        center: question.scale_labels?.center || question.middle_label || "",
+        right: question.scale_labels?.right || question.right_label || "",
+      },
+      description: question.description,
+      hasDescription: !!question.description,
+      imageOptions:
+        question.type === "select_multi_image" ||
+        question.type === "select_single_image"
+          ? question.options?.map((opt) => ({
+              text: opt.label,
+              imageUrl: opt.value,
+            }))
+          : [],
+      isMultiImage:
+        question.type === "select_multi_image" && question.is_multiple_select,
     };
 
+    // Set specific flags based on question type
+    if (
+      question.type === "select_single_image" ||
+      question.type === "select_multi_image"
+    ) {
+      mappedQuestion.type = "چند‌گزینه‌ای تصویری";
+      mappedQuestion.isMultiImage =
+        question.type === "select_multi_image" && question.is_multiple_select;
+    }
+
+    console.log("Mapped question:", mappedQuestion);
     setSelectedQuestion(mappedQuestion);
-    setIsNewQuestion(false);
     setIsModalOpen(true);
-  }, []);
+  };
 
   // Helper function to map API question types to our format
-  const mapApiQuestionType = (type: string): string => {
+  const mapApiQuestionType = (type: string, style?: string): string => {
+    if (type === "text_question") {
+      switch (style) {
+        case "short":
+          return "متنی کوتاه";
+        case "long":
+          return "متنی بلند";
+        case "email":
+          return "ایمیل";
+        default:
+          return "متنی کوتاه";
+      }
+    }
+
     switch (type) {
       case "multi_select":
-        return "چندگزینه‌ای (چند جواب)";
       case "single_select":
-        return "چندگزینه‌ای (تک جواب)";
+        return "چندگزینه‌ای";
       case "matrix":
         return "ماتریسی";
       case "prioritize":
-        return "اولویت دهی";
+        return "اولویت‌دهی";
       case "combobox":
         return "لیست کشویی";
       case "grading":
         return "درجه بندی";
-      case "text_question":
-        return "متنی کوتاه";
       case "number_descriptive":
-        return "اعداد";
+        return "عددی";
       case "question_group":
         return "گروه سوال";
       case "statement":
-        return "توضیحی";
+        return "متن بدون پاسخ";
       case "select_multi_image":
-        return "انتخاب تصویر (چند جواب)";
-      case "select_single_image":
-        return "انتخاب تصویر (تک جواب)";
+        return "چند‌گزینه‌ای تصویری";
       case "yes_no":
         return "بله/خیر";
       case "website":
         return "وب سایت";
       case "range_slider":
         return "طیفی";
-      case "email":
-        return "ایمیل";
       default:
         return "متنی کوتاه";
     }
