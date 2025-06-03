@@ -1,25 +1,12 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { AuthProvider, useAuth } from "./lib/auth-context";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./lib/auth-context";
+import PrivateRoute from "./components/PrivateRoute";
 import Login from "./pages/Login";
-import Surveys from "./pages/Surveys";
+import Register from "./pages/Register";
 import QuestionnaireForm from "./pages/QuestionnaireForm";
+import QuestionnaireList from "./pages/QuestionnaireList";
 import { Toaster } from "sonner";
-
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { accessToken } = useAuth();
-  const storedToken = localStorage.getItem("access_token");
-
-  if (!accessToken && !storedToken) {
-    return <Navigate to="/login" />;
-  }
-
-  return <>{children}</>;
-}
 
 function App() {
   return (
@@ -27,14 +14,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Surveys />
-              </PrivateRoute>
-            }
-          />
+          <Route path="/register" element={<Register />} />
           <Route
             path="/questionnaire/new"
             element={
@@ -48,6 +28,14 @@ function App() {
             element={
               <PrivateRoute>
                 <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <QuestionnaireList />
               </PrivateRoute>
             }
           />

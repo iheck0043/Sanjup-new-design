@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { v4 as uuidv4 } from "uuid";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -215,7 +216,7 @@ const Index = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
     null
   );
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<ApiQuestion[]>([]);
   const [formTitle, setFormTitle] = useState("بدون عنوان");
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
     null
@@ -593,25 +594,23 @@ const Index = () => {
         parentId
       );
 
-      const newQuestion: Question = {
+      const newQuestion: ApiQuestion = {
         id: uuidv4(),
         type: questionType,
-        label: `سوال جدید`,
-        title: `سوال جدید`,
-        isRequired: false,
-        required: false,
+        text: "",
+        title: "",
+        is_required: false,
         order: questions.length + 1,
-        parentId: parentId,
+        style: getQuestionStyle(questionType),
+        attachment_type: questionType === "image" ? "image" : undefined,
+        related_group: parentId,
       };
 
       if (questionType === "چندگزینه‌ای") {
         newQuestion.options = ["گزینه ۱", "گزینه ۲"];
-        newQuestion.hasOther = false;
-        newQuestion.hasNone = false;
-        newQuestion.hasAll = false;
-        newQuestion.isRequired = false;
-        newQuestion.isMultiSelect = false;
-        newQuestion.randomizeOptions = false;
+        newQuestion.is_required = false;
+        newQuestion.is_multiple_select = false;
+        newQuestion.randomize_options = false;
       }
 
       // Set as new question and open modal
@@ -664,12 +663,17 @@ const Index = () => {
   }, []);
 
   const duplicateQuestion = useCallback(
-    (question: Question) => {
-      const duplicatedQuestion: Question = {
+    (question: ApiQuestion) => {
+      const duplicatedQuestion: ApiQuestion = {
         ...question,
         id: uuidv4(),
-        label: `کپی ${question.label}`,
-        title: `کپی ${question.title}`,
+        text: question.text,
+        title: question.title,
+        is_required: question.is_required,
+        order: question.order,
+        style: question.style,
+        attachment_type: question.attachment_type,
+        related_group: question.related_group,
       };
 
       const questionIndex = questions.findIndex((q) => q.id === question.id);
@@ -686,8 +690,8 @@ const Index = () => {
     setQuestions((prev) => {
       // Also remove child questions if removing a group
       const questionToRemove = prev.find((q) => q.id === id);
-      if (questionToRemove?.type === "گروه سوال") {
-        return prev.filter((q) => q.id !== id && q.parentId !== id);
+      if (questionToRemove?.related_group) {
+        return prev.filter((q) => q.id !== id && q.related_group !== id);
       }
       return prev.filter((q) => q.id !== id);
     });
@@ -697,7 +701,7 @@ const Index = () => {
   }, []);
 
   const updateQuestionInList = useCallback(
-    (id: string, updates: Partial<Question>) => {
+    (id: string, updates: Partial<ApiQuestion>) => {
       setQuestions((prev) =>
         prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
       );
@@ -718,7 +722,9 @@ const Index = () => {
 
   const moveToGroup = useCallback((questionId: string, groupId: string) => {
     setQuestions((prev) =>
-      prev.map((q) => (q.id === questionId ? { ...q, parentId: groupId } : q))
+      prev.map((q) =>
+        q.id === questionId ? { ...q, related_group: groupId } : q
+      )
     );
   }, []);
 
@@ -738,8 +744,8 @@ const Index = () => {
     const mappedQuestion: Question = {
       id: question.id,
       type: mapApiQuestionType(question.type, question.style),
-      label: question.title || question.text,
-      title: question.title || question.text,
+      label: question.text,
+      title: question.title,
       isRequired: question.is_required,
       order: question.order,
       textType: question.style === "short" ? "short" : "long",
@@ -885,6 +891,25 @@ const Index = () => {
     );
   };
 
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, type } = result;
+
+    // If dropped outside a droppable area
+    if (!destination) return;
+
+    // If it's a question type being dragged from the sidebar
+    if (type === "QUESTION_TYPE") {
+      // Add the question at the destination index
+      addQuestion(result.draggableId, destination.index);
+      return;
+    }
+
+    // If it's a question being reordered
+    if (source.droppableId === destination.droppableId) {
+      moveQuestion(source.index, destination.index);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -894,53 +919,68 @@ const Index = () => {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div
-        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn'] overflow-x-hidden"
-        dir="rtl"
-      >
-        <FormHeader
-          formTitle={questionnaire?.title || "پرسشنامه جدید"}
-          setFormTitle={setFormTitle}
-        />
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn'] overflow-x-hidden"
+      dir="rtl"
+    >
+      <FormHeader
+        formTitle={questionnaire?.title || "پرسشنامه جدید"}
+        setFormTitle={setFormTitle}
+      />
 
-        <div className="flex flex-1 h-[calc(100vh-80px)] relative">
-          <FormBuilder
-            questions={questions}
-            onRemoveQuestion={removeQuestion}
-            onUpdateQuestion={updateQuestionInList}
-            onMoveQuestion={moveQuestion}
-            onQuestionClick={openQuestionSettings}
-            onAddQuestion={addQuestion}
-            onDuplicateQuestion={duplicateQuestion}
-            onConditionClick={openConditionModal}
-            onMoveToGroup={moveToGroup}
-            expandedGroups={expandedGroups}
-            onToggleGroup={toggleGroup}
-            renderQuestionTitle={renderQuestionTitle}
-          />
-
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex flex-1 h-[calc(100vh-80px)] mt-20">
           <QuestionSidebar onAddQuestion={addQuestion} />
+
+          <div className="flex-1 mr-96">
+            <div className="h-full overflow-y-auto">
+              <FormBuilder
+                questions={questions}
+                onRemoveQuestion={removeQuestion}
+                onUpdateQuestion={updateQuestionInList}
+                onMoveQuestion={moveQuestion}
+                onQuestionClick={openQuestionSettings}
+                onAddQuestion={addQuestion}
+                onDuplicateQuestion={duplicateQuestion}
+                onConditionClick={(question: ApiQuestion) => {
+                  const mappedQuestion: Question = {
+                    id: question.id,
+                    type: question.type,
+                    label: question.title,
+                    title: question.title,
+                    isRequired: question.is_required,
+                    order: question.order,
+                    parentId: question.related_group,
+                  };
+                  openConditionModal(mappedQuestion);
+                }}
+                onMoveToGroup={moveToGroup}
+                expandedGroups={expandedGroups}
+                onToggleGroup={toggleGroup}
+                renderQuestionTitle={renderQuestionTitle}
+              />
+            </div>
+          </div>
         </div>
+      </DragDropContext>
 
-        <QuestionSettingsModal
-          isOpen={isModalOpen}
-          onClose={closeQuestionSettings}
-          question={selectedQuestion}
-          onSave={handleQuestionSave}
-          onCancel={handleQuestionCancel}
-          isNewQuestion={isNewQuestion}
-        />
+      <QuestionSettingsModal
+        isOpen={isModalOpen}
+        onClose={closeQuestionSettings}
+        question={selectedQuestion}
+        onSave={handleQuestionSave}
+        onCancel={handleQuestionCancel}
+        isNewQuestion={isNewQuestion}
+      />
 
-        <ConditionalLogicModal
-          isOpen={isConditionModalOpen}
-          onClose={closeConditionModal}
-          question={conditionQuestion}
-          questions={questions}
-          onUpdateQuestion={updateQuestionInList}
-        />
-      </div>
-    </DndProvider>
+      <ConditionalLogicModal
+        isOpen={isConditionModalOpen}
+        onClose={closeConditionModal}
+        question={conditionQuestion}
+        questions={questions}
+        onUpdateQuestion={updateQuestionInList}
+      />
+    </div>
   );
 };
 
