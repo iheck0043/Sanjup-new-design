@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -25,12 +25,59 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   isNewQuestion,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [localQuestion, setLocalQuestion] = useState<Question>(question);
 
   useEffect(() => {
-    if (isOpen && isNewQuestion && inputRef.current) {
-      inputRef.current.focus();
+    console.log("QuestionSettingsModal - Question prop changed:", question);
+    setLocalQuestion(question);
+  }, [question]);
+
+  const handleUpdateField = (field: keyof Question, value: any) => {
+    console.log(
+      "QuestionSettingsModal - Updating field:",
+      field,
+      "with value:",
+      value
+    );
+    const updated = { ...localQuestion, [field]: value };
+    console.log("QuestionSettingsModal - Updated question:", updated);
+    setLocalQuestion(updated);
+    onUpdateField(field, value);
+  };
+
+  useEffect(() => {
+    if (question) {
+      if (isNewQuestion) {
+        console.log("QuestionSettingsModal - Initializing new question");
+        const initialQuestion = {
+          ...question,
+          title: "سوال جدید",
+          label: "سوال جدید",
+          required: true,
+          hasMedia: false,
+          mediaType: undefined,
+          mediaUrl: undefined,
+        };
+        setLocalQuestion(initialQuestion);
+        onUpdateField("title", initialQuestion.title);
+        onUpdateField("label", initialQuestion.label);
+        onUpdateField("required", initialQuestion.required);
+        onUpdateField("hasMedia", initialQuestion.hasMedia);
+        onUpdateField("mediaType", initialQuestion.mediaType);
+        onUpdateField("mediaUrl", initialQuestion.mediaUrl);
+      } else {
+        console.log("QuestionSettingsModal - Updating existing question");
+        const updatedQuestion = {
+          ...question,
+          label: question.title || question.label || "",
+        };
+        setLocalQuestion(updatedQuestion);
+        onUpdateField("label", updatedQuestion.label);
+      }
     }
-  }, [isOpen, isNewQuestion]);
+  }, [question, isNewQuestion]);
+
+  console.log("QuestionSettingsModal - Current localQuestion:", localQuestion);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -39,10 +86,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           <div className="flex-1 flex flex-col">
             <div className="flex items-center justify-between p-6 border-b">
               <QuestionHeader
-                question={question}
+                question={localQuestion}
                 isNewQuestion={isNewQuestion}
                 inputRef={inputRef}
-                onUpdateField={onUpdateField}
+                onUpdateField={handleUpdateField}
               />
               <Button
                 variant="ghost"
@@ -58,12 +105,12 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               <div className="grid grid-cols-2 h-full">
                 <div className="border-l p-6">
                   <QuestionSettingsSidebar
-                    question={question}
-                    onUpdateField={onUpdateField}
+                    question={localQuestion}
+                    onUpdateField={handleUpdateField}
                   />
                 </div>
                 <div className="p-6">
-                  <QuestionPreview question={question} />
+                  <QuestionPreview question={localQuestion} />
                 </div>
               </div>
             </div>

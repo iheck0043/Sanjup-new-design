@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +16,12 @@ import MultiChoiceQuestionSettings from "./question-types/MultiChoiceQuestionSet
 import DropdownQuestionSettings from "./question-types/DropdownQuestionSettings";
 import MatrixQuestionSettings from "./question-types/MatrixQuestionSettings";
 import ComboboxQuestionSettings from "./question-types/ComboboxQuestionSettings";
+import QuestionGroupSettings from "./question-types/QuestionGroupSettings";
+import DescriptionQuestionSettings from "./question-types/DescriptionQuestionSettings";
+import EmailQuestionSettings from "./question-types/EmailQuestionSettings";
+import { toast } from "sonner";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 interface QuestionSettingsSidebarProps {
   question: Question;
@@ -26,78 +32,117 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
   question,
   onUpdateField,
 }) => {
+  const [isMediaEnabled, setIsMediaEnabled] = useState(
+    question.hasMedia === true
+  );
+
+  useEffect(() => {
+    setIsMediaEnabled(question.hasMedia === true);
+  }, [question.hasMedia]);
+
+  console.log("QuestionSettingsSidebar - Full question object:", question);
+  console.log("QuestionSettingsSidebar - hasMedia:", question.hasMedia);
+  console.log("QuestionSettingsSidebar - mediaType:", question.mediaType);
+
   const renderQuestionTypeSettings = () => {
-    console.log("Question Type:", question.type);
+    console.log("QuestionSettingsSidebar - Question Type:", question.type);
+    console.log("QuestionSettingsSidebar - Question:", question);
 
     switch (question.type) {
-      case "طیفی":
-        return (
-          <ScaleQuestionSettings
-            question={question}
-            onUpdateField={onUpdateField}
-          />
-        );
-      case "اولویت‌دهی":
-        return (
-          <PriorityQuestionSettings
-            question={question}
-            onUpdateField={onUpdateField}
-          />
-        );
-      case "درجه‌بندی":
-      case "درجه بندی":
-        return (
-          <RatingQuestionSettings
-            question={question}
-            onUpdateField={onUpdateField}
-          />
-        );
-      case "متنی کوتاه":
-      case "متنی بلند":
+      case "text_question_short":
+      case "text_question_long":
+      case "text_question_email":
         return (
           <TextQuestionSettings
             question={question}
             onUpdateField={onUpdateField}
           />
         );
-      case "اعداد":
-        return (
-          <NumberQuestionSettings
-            question={question}
-            onUpdateField={onUpdateField}
-          />
-        );
-      case "چندگزینه‌ای":
+      case "single_select":
+      case "multi_select":
         return (
           <MultiChoiceQuestionSettings
             question={question}
             onUpdateField={onUpdateField}
           />
         );
-      case "چند‌گزینه‌ای تصویری":
-        return (
-          <ImageChoiceQuestionSettings
-            question={question}
-            onUpdateField={onUpdateField}
-          />
-        );
-      case "لیست کشویی":
+      case "combobox":
         return (
           <ComboboxQuestionSettings
             question={question}
             onUpdateField={onUpdateField}
           />
         );
-      case "ماتریسی":
+      case "range_slider":
+        return (
+          <ScaleQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
+      case "number_descriptive":
+        return (
+          <NumberQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
+      case "matrix":
         return (
           <MatrixQuestionSettings
             question={question}
             onUpdateField={onUpdateField}
           />
         );
+      case "prioritize":
+        return (
+          <PriorityQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
+      case "select_single_image":
+      case "select_multi_image":
+        return (
+          <ImageChoiceQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
+      case "grading":
+        return (
+          <RatingQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
+      case "email":
+        return (
+          <TextQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
+      case "question_group":
+        return (
+          <div className="p-4 text-sm text-gray-500">
+            تنظیمات برای این نوع سوال در دسترس نیست.
+          </div>
+        );
+      case "statement":
+        return (
+          <DescriptionQuestionSettings
+            question={question}
+            onUpdateField={onUpdateField}
+          />
+        );
       default:
-        console.log("No matching question type found");
-        return null;
+        console.log("QuestionSettingsSidebar - Unknown type:", question.type);
+        return (
+          <div className="p-4 text-sm text-gray-500">
+            تنظیمات برای این نوع سوال در دسترس نیست.
+          </div>
+        );
     }
   };
 
@@ -123,124 +168,103 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
 
       {renderQuestionTypeSettings()}
 
-      {["توضیحی", "متنی کوتاه", "متنی بلند", "اعداد"].includes(
-        question.type
-      ) && (
+      {!["statement"].includes(question.type) && (
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium">آپلود تصویر</Label>
             <Switch
-              checked={question.allowImageUpload || false}
-              onCheckedChange={(checked) =>
-                onUpdateField("allowImageUpload", checked)
-              }
+              checked={isMediaEnabled}
+              onCheckedChange={(checked) => {
+                console.log("Switch changed to:", checked);
+                console.log("Current question state:", question);
+                setIsMediaEnabled(checked);
+                if (checked) {
+                  onUpdateField("hasMedia", true);
+                  onUpdateField("mediaType", "image");
+                  onUpdateField("attachmentType", "image");
+                } else {
+                  onUpdateField("hasMedia", false);
+                  onUpdateField("mediaType", undefined);
+                  onUpdateField("mediaUrl", undefined);
+                  onUpdateField("attachment", undefined);
+                  onUpdateField("attachmentType", undefined);
+                }
+                console.log("After switch update - hasMedia:", checked);
+              }}
             />
           </div>
 
-          {question.allowImageUpload && (
+          {isMediaEnabled && (
             <Button
               variant="outline"
               className="w-full"
               onClick={() => {
-                // Handle image upload
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.onchange = async (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (!file) return;
+
+                  try {
+                    const formData = new FormData();
+                    formData.append("image", file);
+
+                    const response = await fetch(
+                      `${BASE_URL}/api/v1/uploader/images/`,
+                      {
+                        method: "POST",
+                        headers: {
+                          Authorization: `Bearer ${localStorage.getItem(
+                            "access_token"
+                          )}`,
+                        },
+                        body: formData,
+                      }
+                    );
+
+                    const data = await response.json();
+                    if (data.info.status === 201) {
+                      console.log("Image upload response:", data);
+                      console.log("Setting mediaUrl to:", data.data.image_url);
+                      console.log("Current question state:", question);
+
+                      // First set hasMedia and mediaType
+                      onUpdateField("hasMedia", true);
+                      onUpdateField("mediaType", "image");
+                      onUpdateField("attachmentType", "image");
+
+                      // Then set the URLs
+                      onUpdateField("mediaUrl", data.data.image_url);
+                      onUpdateField("attachment", data.data.image_url);
+
+                      console.log("After image upload - question state:", {
+                        hasMedia: true,
+                        mediaType: "image",
+                        mediaUrl: data.data.image_url,
+                        attachment: data.data.image_url,
+                        attachmentType: "image",
+                      });
+
+                      toast.success("تصویر با موفقیت آپلود شد");
+                    } else {
+                      throw new Error(data.info.message);
+                    }
+                  } catch (error) {
+                    console.error("Error uploading image:", error);
+                    toast.error(
+                      error instanceof Error
+                        ? error.message
+                        : "خطا در آپلود تصویر"
+                    );
+                  }
+                };
+                input.click();
               }}
             >
               <ImagePlus className="w-4 h-4 ml-2" />
               انتخاب تصویر
             </Button>
-          )}
-        </div>
-      )}
-
-      {question.type === "توضیحی" && (
-        <div className="space-y-3 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">آپلود ویدیو</Label>
-            <Switch
-              checked={question.allowVideoUpload || false}
-              onCheckedChange={(checked) =>
-                onUpdateField("allowVideoUpload", checked)
-              }
-            />
-          </div>
-
-          {question.allowVideoUpload && (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                // Handle video upload
-              }}
-            >
-              <Video className="w-4 h-4 ml-2" />
-              انتخاب ویدیو
-            </Button>
-          )}
-        </div>
-      )}
-
-      {question.type === "متن بدون پاسخ" && (
-        <div className="space-y-3 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">آپلود رسانه</Label>
-            <Switch
-              checked={question.hasMedia || false}
-              onCheckedChange={(checked) => {
-                onUpdateField("hasMedia", checked);
-                if (!checked) {
-                  onUpdateField("mediaType", undefined);
-                }
-              }}
-            />
-          </div>
-
-          {question.hasMedia && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="image"
-                  name="mediaType"
-                  checked={question.mediaType === "image"}
-                  onChange={() => onUpdateField("mediaType", "image")}
-                  className="ml-2"
-                />
-                <Label htmlFor="image" className="text-sm font-medium">
-                  تصویر
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="video"
-                  name="mediaType"
-                  checked={question.mediaType === "video"}
-                  onChange={() => onUpdateField("mediaType", "video")}
-                  className="ml-2"
-                />
-                <Label htmlFor="video" className="text-sm font-medium">
-                  ویدئو
-                </Label>
-              </div>
-
-              {question.mediaType && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    // Handle media upload based on type
-                  }}
-                >
-                  {question.mediaType === "image" ? (
-                    <ImagePlus className="w-4 h-4 ml-2" />
-                  ) : (
-                    <Video className="w-4 h-4 ml-2" />
-                  )}
-                  انتخاب {question.mediaType === "image" ? "تصویر" : "ویدئو"}
-                </Button>
-              )}
-            </div>
           )}
         </div>
       )}

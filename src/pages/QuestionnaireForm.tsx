@@ -22,6 +22,22 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { v4 as uuidv4 } from "uuid";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import {
+  Type,
+  AlignLeft,
+  Mail,
+  Hash,
+  List,
+  ChevronDown,
+  SlidersHorizontal,
+  Table,
+  ArrowUpDown,
+  Image,
+  Star,
+  Folder,
+  Info,
+  HelpCircle,
+} from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -46,9 +62,9 @@ export interface ApiQuestion {
     score: number;
     value: string;
     type: string;
-    label: string;
+    label?: string;
     option_kind: string;
-    text: string;
+    text?: string;
     is_other?: boolean;
     is_none?: boolean;
     is_all?: boolean;
@@ -62,12 +78,12 @@ export interface ApiQuestion {
   min_selectable_choices?: number;
   max_selectable_choices?: number;
   rows?: Array<{
-    id: number;
+    id?: number;
     value: string;
     order: number;
   }>;
   columns?: Array<{
-    id: number;
+    id?: number;
     value: string;
     order: number;
   }>;
@@ -87,6 +103,10 @@ export interface ApiQuestion {
   right_label?: string;
   description?: string;
   step?: number;
+  multiselectquestion?: {
+    min_selection_count: string | null;
+    max_selection_count: string | null;
+  };
 }
 
 export interface QuestionOption {
@@ -97,7 +117,7 @@ export interface QuestionOption {
   score: number;
   value: string;
   type: string;
-  label: string | null;
+  label?: string | null;
   option_kind: string;
   is_other?: boolean;
   is_none?: boolean;
@@ -115,7 +135,8 @@ export interface Question {
   required?: boolean;
   order: number;
   attachmentType?: string;
-  textType?: "short" | "long";
+  attachment?: string;
+  textType?: "short" | "long" | "email";
   maxChars?: number;
   minChars?: number;
   minNumber?: number;
@@ -126,6 +147,7 @@ export interface Question {
   hasOther?: boolean;
   hasNone?: boolean;
   hasAll?: boolean;
+  otherOptionText?: string;
   randomizeOptions?: boolean;
   isMultiSelect?: boolean;
   minSelectableChoices?: number;
@@ -180,6 +202,7 @@ export interface Question {
     pattern?: string;
     required?: boolean;
   };
+  maxLength?: number;
 }
 
 interface Category {
@@ -319,39 +342,292 @@ const Index = () => {
           throw new Error("Missing questionnaire ID or access token");
         }
 
-        console.log("Creating new question with data:", {
-          questionData,
-          pendingQuestionData,
-          isNewQuestion,
-          selectedType: pendingQuestionData?.type,
-        });
+        console.log("Full question data:", questionData);
 
-        // Get the correct type from pendingQuestionData if it's a new question
-        const questionType =
-          isNewQuestion && pendingQuestionData
-            ? pendingQuestionData.type
-            : questionData.type;
+        // Get the correct type from questionData
+        const questionType = questionData.type;
+        const textType = questionData.textType;
+        const isMultiSelect = questionData.isMultiSelect;
+        const isMultiImage = questionData.isMultiImage;
 
-        console.log("Selected question type:", questionType);
-        console.log("Mapped API type:", mapQuestionType(questionType));
+        console.log("Question type:", questionType);
+        console.log("Text type:", textType);
+        console.log("Is multi select:", isMultiSelect);
+        console.log("Is multi select type:", typeof isMultiSelect);
+        console.log("Is multi image:", isMultiImage);
 
         if (!questionType) {
           throw new Error("Question type is required");
         }
 
-        const apiData = {
+        // Determine the style based on textType for text questions
+        let style;
+        console.log("Checking style for type:", questionType);
+
+        if (questionType === "text_question") {
+          if (textType === "short") {
+            style = "short";
+            console.log("Matched short text style");
+          } else if (textType === "long") {
+            style = "long";
+            console.log("Matched long text style");
+          } else if (textType === "email") {
+            style = "email";
+            console.log("Matched email style");
+          }
+        }
+
+        console.log("Final style:", style);
+
+        // Map the question type based on isMultiSelect for choice questions
+        let mappedType = mapQuestionType(questionType);
+        console.log("Initial mapped type:", mappedType);
+
+        if (
+          questionType === "single_select" ||
+          questionType === "multi_select" ||
+          questionType === "select_single_image" ||
+          questionType === "select_multi_image"
+        ) {
+          console.log("This is a choice question");
+          console.log("isMultiSelect value:", isMultiSelect);
+          console.log("isMultiImage value:", isMultiImage);
+
+          if (
+            questionType === "select_single_image" ||
+            questionType === "select_multi_image"
+          ) {
+            mappedType = isMultiImage
+              ? "select_multi_image"
+              : "select_single_image";
+          } else {
+            mappedType =
+              isMultiSelect === true ? "multi_select" : "single_select";
+          }
+
+          console.log(
+            "Final mapped type after multi-select check:",
+            mappedType
+          );
+        }
+
+        const apiData: any = {
           is_required: questionData.required || false,
           order: questions.length + 1,
-          type: mapQuestionType(questionType),
-          style: getQuestionStyle(questionType),
+          type: mappedType,
+          style: style,
           title: questionData.label || "",
           attachment_type: questionData.hasMedia
             ? questionData.mediaType
             : null,
+          attachment: questionData.hasMedia ? questionData.mediaUrl : null,
           related_group: questionData.parentId || null,
         };
 
-        console.log("Sending to API:", apiData);
+        // Add limit for text questions
+        if (
+          mappedType === "text_question" &&
+          (style === "short" || style === "long")
+        ) {
+          apiData.limit = questionData.maxLength || 200;
+        }
+
+        // Add min and max values for number questions
+        if (mappedType === "number_descriptive") {
+          apiData.min_value = questionData.minNumber || 0;
+          apiData.max_value = questionData.maxNumber || 5000;
+        }
+
+        // Add options based on question type
+        if (
+          mappedType === "single_select" ||
+          mappedType === "multi_select" ||
+          mappedType === "combobox"
+        ) {
+          const regularOptions =
+            questionData.options?.map((text, index) => ({
+              text,
+              value: text,
+              priority: index + 1,
+              score: 0,
+              type: "text",
+              option_kind: "usual",
+            })) || [];
+
+          const otherOption = questionData.hasOther
+            ? {
+                text: questionData.otherOptionText || "سایر",
+                value: questionData.otherOptionText || "سایر",
+                priority: regularOptions.length + 1,
+                score: 0,
+                type: "text",
+                option_kind: "etc",
+              }
+            : null;
+
+          const noneOption = questionData.hasNone
+            ? {
+                text: "هیچکدام",
+                value: "هیچکدام",
+                priority: regularOptions.length + (otherOption ? 2 : 1),
+                score: 0,
+                type: "text",
+                option_kind: "usual",
+              }
+            : null;
+
+          const allOption = questionData.hasAll
+            ? {
+                text: "همه موارد",
+                value: "همه موارد",
+                priority:
+                  regularOptions.length +
+                  (otherOption ? 2 : 1) +
+                  (noneOption ? 1 : 0),
+                score: 0,
+                type: "text",
+                option_kind: "usual",
+              }
+            : null;
+
+          apiData.options = [
+            ...regularOptions,
+            ...(otherOption ? [otherOption] : []),
+            ...(noneOption ? [noneOption] : []),
+            ...(allOption ? [allOption] : []),
+          ];
+
+          // Add multiselectquestion only for choice questions
+          if (mappedType === "single_select" || mappedType === "multi_select") {
+            apiData.multiselectquestion = {
+              min_selection_count:
+                questionData.minSelectableChoices?.toString() || null,
+              max_selection_count:
+                questionData.maxSelectableChoices?.toString() || null,
+            };
+          }
+        } else if (mappedType === "range_slider") {
+          // Generate options for range slider based on scaleMax
+          const range = questionData.scaleMax || 5;
+          apiData.options = Array.from({ length: range }, (_, i) => ({
+            value: String(i + 1),
+            priority: i + 1,
+            type: "integer",
+            option_kind: "usual",
+          }));
+          // Add labels for range slider
+          apiData.right_label = questionData.scaleLabels?.right || "";
+          apiData.left_label = questionData.scaleLabels?.left || "";
+          apiData.middle_label = questionData.scaleLabels?.center || "";
+        } else if (mappedType === "matrix") {
+          // Add rows and columns for matrix question
+          apiData.rows =
+            questionData.rows?.map((row, index) => ({
+              value: row,
+              order: index + 1,
+            })) || [];
+          apiData.columns =
+            questionData.columns?.map((col, index) => ({
+              value: col,
+              order: index + 1,
+            })) || [];
+          apiData.shuffle_rows = questionData.shuffleRows || false;
+          apiData.shuffle_columns = questionData.shuffleColumns || false;
+        } else if (mappedType === "prioritize") {
+          // Add options for prioritize question
+          apiData.options =
+            questionData.options?.map((text, index) => ({
+              text,
+              value: text,
+              priority: index + 1,
+              score: 0,
+              type: "text",
+              option_kind: "usual",
+            })) || [];
+        } else if (mappedType === "grading") {
+          // Add shape and options for grading question
+          apiData.shape =
+            questionData.ratingStyle === "thumbs"
+              ? "like"
+              : questionData.ratingStyle || "star";
+          apiData.count = questionData.ratingMax?.toString() || "5";
+          // Generate options based on count
+          const count = parseInt(apiData.count);
+          apiData.options = Array.from({ length: count }, (_, i) => ({
+            priority: 1,
+            score: 0,
+            type: "integer",
+            value: String(i + 1),
+            option_kind: "usual",
+          }));
+        } else if (
+          mappedType === "select_single_image" ||
+          mappedType === "select_multi_image"
+        ) {
+          // Add options for image choice question
+          apiData.options = [
+            // Regular image options
+            ...(questionData.imageOptions?.map((opt, index) => ({
+              text: opt.text,
+              value: opt.imageUrl,
+              priority: index + 1,
+              score: 0,
+              type: "image",
+              label: opt.text,
+              option_kind: "usual",
+            })) || []),
+            // Add "other" option if enabled
+            ...(questionData.hasOther
+              ? [
+                  {
+                    text: questionData.otherOptionText || "سایر",
+                    value: "",
+                    priority: (questionData.imageOptions?.length || 0) + 1,
+                    score: 0,
+                    type: "text",
+                    label: questionData.otherOptionText || "سایر",
+                    option_kind: "etc",
+                  },
+                ]
+              : []),
+            // Add "none" option if enabled
+            ...(questionData.hasNone
+              ? [
+                  {
+                    text: "هیچکدام",
+                    value: "",
+                    priority:
+                      (questionData.imageOptions?.length || 0) +
+                      (questionData.hasOther ? 2 : 1),
+                    score: 0,
+                    type: "text",
+                    label: "هیچکدام",
+                    option_kind: "usual",
+                  },
+                ]
+              : []),
+            // Add "all" option if enabled
+            ...(questionData.hasAll
+              ? [
+                  {
+                    text: "همه موارد",
+                    value: "",
+                    priority:
+                      (questionData.imageOptions?.length || 0) +
+                      (questionData.hasOther ? 2 : 1) +
+                      (questionData.hasNone ? 1 : 0),
+                    score: 0,
+                    type: "text",
+                    label: "همه موارد",
+                    option_kind: "usual",
+                  },
+                ]
+              : []),
+          ];
+          apiData.is_multiple_select = questionData.isMultiImage || false;
+        }
+
+        console.log("Final API data being sent:", apiData);
 
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/single-question-create/${id}/`,
@@ -365,19 +641,15 @@ const Index = () => {
           }
         );
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("API Error:", errorData);
-          throw new Error(errorData.info?.message || "خطا در ایجاد سوال");
-        }
-
         const data = await response.json();
         console.log("API Response:", data);
-        if (data.info.status === 200) {
+
+        // Check if the response is successful (status 200 or 201)
+        if (response.ok || response.status === 201) {
           toast.success("سوال با موفقیت ایجاد شد");
-          return data.data;
+          return data.data || { message: "Created" };
         } else {
-          throw new Error(data.info.message);
+          throw new Error(data.info?.message || "خطا در ایجاد سوال");
         }
       } catch (error) {
         console.error("Error creating question:", error);
@@ -387,7 +659,7 @@ const Index = () => {
         throw error;
       }
     },
-    [id, accessToken, questions.length, isNewQuestion, pendingQuestionData]
+    [id, accessToken, questions.length]
   );
 
   const updateQuestion = useCallback(
@@ -397,104 +669,28 @@ const Index = () => {
           throw new Error("Missing access token or questionnaire ID");
         }
 
-        // Base API data
-        const apiData: any = {
-          id: id,
-          is_required: updates.required || false,
-          title: updates.label || "",
-          attachment_type: updates.hasMedia ? updates.mediaType : null,
-          related_group: updates.parentId || null,
+        console.log("Updating question with data:", {
+          updates,
+          apiData: {
+            ...updates,
+            attachment_type: updates.mediaType || null,
+            attachment: updates.mediaUrl || null,
+          },
+          hasMedia: updates.hasMedia,
+          mediaUrl: updates.mediaUrl,
+          mediaType: updates.mediaType,
+          attachment_type: updates.mediaType || null,
+          attachment: updates.mediaUrl || null,
+        });
+
+        const apiData = {
+          ...updates,
+          attachment_type: updates.mediaType || null,
+          attachment: updates.mediaUrl || null,
         };
 
-        // Handle different question types
-        switch (updates.type) {
-          case "چندگزینه‌ای":
-          case "اولویت‌دهی":
-          case "اولویت دهی":
-            apiData.type =
-              updates.type === "اولویت‌دهی" || updates.type === "اولویت دهی"
-                ? "prioritize"
-                : updates.isMultiSelect
-                ? "multi_select"
-                : "single_select";
-            apiData.options =
-              updates.options?.map((text, index) => ({
-                text,
-                value: updates.optionValues?.[index] || "",
-                priority: index + 1,
-                score: 0,
-                type: "option",
-                label: text,
-                option_kind: "normal",
-              })) || [];
-            apiData.has_other = updates.hasOther || false;
-            apiData.has_none = updates.hasNone || false;
-            apiData.has_all = updates.hasAll || false;
-            apiData.is_multi_select = updates.isMultiSelect || false;
-            apiData.randomize_options = updates.randomizeOptions || false;
-            break;
-
-          case "چند‌گزینه‌ای تصویری":
-            apiData.type = "select_multi_image";
-            apiData.options =
-              updates.imageOptions?.map((opt, index) => ({
-                text: opt.text,
-                value: opt.imageUrl,
-                priority: index + 1,
-                score: {
-                  source: "0.0",
-                  parsedValue: 0,
-                },
-                type: "image",
-                label: opt.text,
-                option_kind: "usual",
-              })) || [];
-            apiData.is_multi_select = updates.isMultiImage || false;
-            break;
-
-          case "متنی کوتاه":
-          case "متنی بلند":
-            apiData.type = "text_question";
-            apiData.style = updates.textType === "long" ? "long" : "short";
-            apiData.limit = updates.maxChars || 200;
-            break;
-
-          case "عددی":
-            apiData.type = "number_descriptive";
-            apiData.min_value = updates.minNumber || 0;
-            apiData.max_value = updates.maxNumber || 5000;
-            apiData.step = updates.step || 1;
-            break;
-
-          case "متن بدون پاسخ":
-            apiData.type = "statement";
-            // Only allow one media type at a time
-            if (updates.hasMedia) {
-              apiData.attachment_type = updates.mediaType;
-            }
-            break;
-
-          case "طیفی":
-            apiData.type = "range_slider";
-            // Generate options for range slider
-            const range = updates.scaleMax || 5;
-            apiData.options = Array.from({ length: range }, (_, i) => ({
-              value: String(i + 1),
-              priority: 1,
-              type: "integer",
-              option_kind: "usual",
-            }));
-            apiData.left_label = updates.scaleLabels?.left || "کم";
-            apiData.middle_label = updates.scaleLabels?.center || "متوسط";
-            apiData.right_label = updates.scaleLabels?.right || "زیاد";
-            break;
-
-          default:
-            apiData.type = mapQuestionType(updates.type || "");
-        }
-
         const response = await fetch(
-          `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/update/`,
+          `${BASE_URL}/api/v1/questionnaire/${id}/questions/update/`,
           {
             method: "PATCH",
             headers: {
@@ -525,65 +721,80 @@ const Index = () => {
         throw error;
       }
     },
-    [accessToken, questionnaire?.id]
+    [accessToken, questionnaire?.id, questions]
   );
 
   // Helper function to map question types to API types
   const mapQuestionType = (type: string): string => {
+    console.log("Mapping question type:", type);
+
+    // Handle text questions first
+    if (type === "text_question_short" || type === "متنی کوتاه") {
+      console.log("Detected short text, returning text_question");
+      return "text_question";
+    }
+    if (type === "text_question_long" || type === "متنی بلند") {
+      console.log("Detected long text, returning text_question");
+      return "text_question";
+    }
+    if (type === "text_question_email" || type === "ایمیل") {
+      console.log("Detected email, returning text_question");
+      return "text_question";
+    }
+
+    // Handle other question types
     switch (type) {
-      case "text_question_short":
-      case "text_question_long":
-        return "text_question";
       case "چندگزینه‌ای":
       case "چندگزینه‌ای (چند جواب)":
       case "چندگزینه‌ای (تک جواب)":
         return "single_select";
+
       case "ماتریسی":
         return "matrix";
+
       case "اولویت دهی":
       case "اولویت‌دهی":
         return "prioritize";
+
       case "لیست کشویی":
         return "combobox";
+
       case "درجه بندی":
         return "grading";
-      case "متنی کوتاه":
-      case "متنی بلند":
-      case "ایمیل":
-        return "text_question";
-      case "عددی":
-        return "number_descriptive";
+
       case "گروه سوال":
         return "question_group";
+
       case "متن بدون پاسخ":
         return "statement";
+
       case "چند‌گزینه‌ای تصویری":
       case "انتخاب تصویر (تک جواب)":
       case "انتخاب تصویر (چند جواب)":
-        return "select_multi_image";
-      case "بله/خیر":
-        return "yes_no";
-      case "وب سایت":
-        return "website";
+        return "select_single_image";
+
       case "طیفی":
         return "range_slider";
+
       default:
-        return "text_question";
+        console.log("Unknown question type:", type);
+        return type; // Return the original type if not found
     }
   };
 
   // Helper function to get question style
   const getQuestionStyle = (type: string): string | undefined => {
-    switch (type) {
-      case "text_question_short":
-        return "short";
-      case "text_question_long":
-        return "long";
-      case "ایمیل":
-        return "email";
-      default:
-        return undefined;
+    // Handle text questions first
+    if (type === "text_question_short" || type === "متنی کوتاه") {
+      return "short";
     }
+    if (type === "text_question_long" || type === "متنی بلند") {
+      return "long";
+    }
+    if (type === "text_question_email" || type === "ایمیل") {
+      return "email";
+    }
+    return undefined;
   };
 
   const addQuestion = useCallback(
@@ -597,21 +808,205 @@ const Index = () => {
         parentId
       );
 
+      // Map the question type to the correct format
+      const mappedType = mapQuestionType(questionType);
+      console.log("Mapped question type:", mappedType);
+
+      // Set default type for image choice questions
+      const finalType =
+        questionType === "چند‌گزینه‌ای تصویری"
+          ? "select_single_image"
+          : mappedType;
+
       const newQuestion: Question = {
         id: uuidv4(),
-        type: questionType,
+        type: questionType, // Keep the original type for display
         label: "",
         title: "",
         isRequired: false,
         order: questions.length + 1,
         parentId: parentId,
-        textType: questionType === "text_question_long" ? "long" : "short",
+        textType:
+          questionType === "text_question_long" || questionType === "متنی بلند"
+            ? "long"
+            : questionType === "text_question_email" || questionType === "ایمیل"
+            ? "email"
+            : "short",
       };
+
+      // Add default rows and columns for matrix questions
+      if (mappedType === "matrix") {
+        newQuestion.rows = ["سطر 1", "سطر 2", "سطر 3"];
+        newQuestion.columns = ["ستون 1", "ستون 2", "ستون 3"];
+        newQuestion.shuffleRows = false;
+        newQuestion.shuffleColumns = false;
+      }
+
+      // Add default options for prioritize questions
+      if (mappedType === "prioritize") {
+        newQuestion.options = ["گزینه 1", "گزینه 2", "گزینه 3", "گزینه 4"];
+        newQuestion.optionValues = ["گزینه 1", "گزینه 2", "گزینه 3", "گزینه 4"];
+        newQuestion.rawOptions = [
+          {
+            text: "گزینه 1",
+            value: "گزینه 1",
+            priority: 1,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 2",
+            value: "گزینه 2",
+            priority: 2,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 3",
+            value: "گزینه 3",
+            priority: 3,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 4",
+            value: "گزینه 4",
+            priority: 4,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+        ];
+        newQuestion.hasOther = false;
+        newQuestion.hasNone = false;
+        newQuestion.hasAll = false;
+        newQuestion.otherOptionText = "سایر";
+      }
+
+      // Add default options for multi-choice questions
+      if (mappedType === "single_select" || mappedType === "multi_select") {
+        newQuestion.options = ["گزینه 1", "گزینه 2", "گزینه 3", "گزینه 4"];
+        newQuestion.optionValues = ["گزینه 1", "گزینه 2", "گزینه 3", "گزینه 4"];
+        newQuestion.rawOptions = [
+          {
+            text: "گزینه 1",
+            value: "گزینه 1",
+            priority: 1,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 2",
+            value: "گزینه 2",
+            priority: 2,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 3",
+            value: "گزینه 3",
+            priority: 3,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 4",
+            value: "گزینه 4",
+            priority: 4,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+        ];
+        newQuestion.hasOther = false;
+        newQuestion.hasNone = false;
+        newQuestion.hasAll = false;
+        newQuestion.otherOptionText = "سایر";
+      }
+
+      // Add default options for combobox questions
+      if (mappedType === "combobox") {
+        newQuestion.options = ["گزینه 1", "گزینه 2", "گزینه 3", "گزینه 4"];
+        newQuestion.optionValues = ["گزینه 1", "گزینه 2", "گزینه 3", "گزینه 4"];
+        newQuestion.rawOptions = [
+          {
+            text: "گزینه 1",
+            value: "گزینه 1",
+            priority: 1,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 2",
+            value: "گزینه 2",
+            priority: 2,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 3",
+            value: "گزینه 3",
+            priority: 3,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+          {
+            text: "گزینه 4",
+            value: "گزینه 4",
+            priority: 4,
+            score: 0,
+            type: "text",
+            option_kind: "usual",
+          },
+        ];
+        newQuestion.hasOther = false;
+        newQuestion.hasNone = false;
+        newQuestion.hasAll = false;
+        newQuestion.otherOptionText = "سایر";
+      }
+
+      // Add default options for image choice questions
+      if (
+        mappedType === "select_single_image" ||
+        mappedType === "select_multi_image"
+      ) {
+        newQuestion.imageOptions = [
+          { text: "تصویر 1", imageUrl: "" },
+          { text: "تصویر 2", imageUrl: "" },
+          { text: "تصویر 3", imageUrl: "" },
+        ];
+        newQuestion.isMultiImage = mappedType === "select_multi_image";
+        newQuestion.hasOther = false;
+        newQuestion.hasNone = false;
+        newQuestion.hasAll = false;
+      }
+
+      // Add default options for grading questions
+      if (mappedType === "grading") {
+        newQuestion.ratingMax = 5;
+        newQuestion.ratingStyle = "like";
+        newQuestion.rawOptions = Array.from({ length: 5 }, (_, i) => ({
+          priority: 1,
+          score: 0,
+          type: "integer",
+          value: String(i + 1),
+          option_kind: "usual",
+        }));
+      }
 
       // Set as new question and open modal
       setSelectedQuestion(newQuestion);
       setIsNewQuestion(true);
-      setPendingQuestionData({ type: questionType, insertIndex, parentId });
+      setPendingQuestionData({ type: finalType, insertIndex, parentId });
       setIsModalOpen(true);
     },
     [questions.length]
@@ -620,24 +1015,50 @@ const Index = () => {
   const handleQuestionSave = useCallback(
     async (questionData: Question) => {
       try {
+        let result;
         if (isNewQuestion && pendingQuestionData) {
           // Create new question
-          await createQuestion(questionData);
+          const apiData = {
+            ...questionData,
+            type: mapQuestionType(pendingQuestionData.type), // Map the type for API
+          };
+          result = await createQuestion(apiData);
+
+          if (result) {
+            // Close modal and reset states
+            setIsModalOpen(false);
+            setSelectedQuestion(null);
+            setIsNewQuestion(false);
+            setPendingQuestionData(null);
+
+            // Refresh questions list
+            await fetchQuestions();
+
+            toast.success("سوال با موفقیت ایجاد شد");
+          }
         } else {
-          // Update existing question
-          await updateQuestion(questionData.id, questionData);
+          // Update existing question - don't send type field
+          const { type, ...updateData } = questionData;
+          result = await updateQuestion(questionData.id, updateData);
+
+          if (result) {
+            // Close modal and reset states
+            setIsModalOpen(false);
+            setSelectedQuestion(null);
+            setIsNewQuestion(false);
+            setPendingQuestionData(null);
+
+            // Refresh questions list
+            await fetchQuestions();
+
+            toast.success("سوال با موفقیت بروزرسانی شد");
+          }
         }
-
-        // Refresh questions list after save
-        await fetchQuestions();
-
-        setIsModalOpen(false);
-        setSelectedQuestion(null);
-        setIsNewQuestion(false);
-        setPendingQuestionData(null);
       } catch (error) {
         console.error("Error saving question:", error);
-        // Don't close modal if there was an error
+        toast.error(
+          error instanceof Error ? error.message : "خطا در ذخیره سوال"
+        );
       }
     },
     [
@@ -681,19 +1102,80 @@ const Index = () => {
     [questions]
   );
 
-  const removeQuestion = useCallback((id: string) => {
-    setQuestions((prev) => {
-      // Also remove child questions if removing a group
-      const questionToRemove = prev.find((q) => q.id === id);
-      if (questionToRemove?.related_group) {
-        return prev.filter((q) => q.id !== id && q.related_group !== id);
-      }
-      return prev.filter((q) => q.id !== id);
-    });
+  const removeQuestion = useCallback(
+    async (id: string) => {
+      try {
+        if (!accessToken || !questionnaire?.id) {
+          throw new Error("Missing access token or questionnaire ID");
+        }
 
-    // Remove from expanded groups if it was a group
-    setExpandedGroups((prev) => prev.filter((groupId) => groupId !== id));
-  }, []);
+        const response = await fetch(
+          `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.info?.message || "خطا در حذف سوال");
+        }
+
+        // Remove from local state
+        setQuestions((prev) => {
+          // Also remove child questions if removing a group
+          const questionToRemove = prev.find((q) => q.id === id);
+          if (questionToRemove?.related_group) {
+            return prev.filter((q) => q.id !== id && q.related_group !== id);
+          }
+          return prev.filter((q) => q.id !== id);
+        });
+
+        // Remove from expanded groups if it was a group
+        setExpandedGroups((prev) => prev.filter((groupId) => groupId !== id));
+
+        // Reorder remaining questions
+        const reorderResponse = await fetch(
+          `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/reorder/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(
+              questions
+                .filter(
+                  (q) =>
+                    q.id !== id && (!q.related_group || q.related_group !== id)
+                )
+                .map((q, index) => ({
+                  id: parseInt(q.id),
+                  order: index + 1,
+                }))
+            ),
+          }
+        );
+
+        if (!reorderResponse.ok) {
+          const errorData = await reorderResponse.json();
+          throw new Error(errorData.info?.message || "خطا در مرتب‌سازی سوالات");
+        }
+
+        // Fetch updated questions list
+        await fetchQuestions();
+
+        toast.success("سوال با موفقیت حذف شد");
+      } catch (error) {
+        console.error("Error removing question:", error);
+        toast.error(error instanceof Error ? error.message : "خطا در حذف سوال");
+      }
+    },
+    [accessToken, questionnaire?.id, questions, fetchQuestions]
+  );
 
   const updateQuestionInList = useCallback(
     (id: string, updates: Partial<ApiQuestion>) => {
@@ -733,51 +1215,145 @@ const Index = () => {
 
   const openQuestionSettings = (question: ApiQuestion) => {
     console.log("Opening question settings:", question);
-    console.log("Scale labels from API:", question.scale_labels);
-    console.log("Scale labels type:", typeof question.scale_labels);
+    console.log("Original API type:", question.type);
+    console.log("Original API style:", question.style);
+
+    // Map API type to English type
+    const mapApiTypeToEnglish = (type: string, style?: string): string => {
+      console.log("Mapping API type:", type, "with style:", style);
+
+      if (type === "text_question") {
+        if (style === "email") {
+          console.log("Detected email style, returning text_question_email");
+          return "text_question_email";
+        } else if (style === "long") {
+          console.log("Detected long style, returning text_question_long");
+          return "text_question_long";
+        } else {
+          console.log("Detected short style, returning text_question_short");
+          return "text_question_short";
+        }
+      }
+
+      switch (type) {
+        case "multi_select":
+        case "single_select":
+          return "single_select";
+        case "matrix":
+          return "matrix";
+        case "prioritize":
+          return "prioritize";
+        case "combobox":
+          return "combobox";
+        case "grading":
+          return "grading";
+        case "number_descriptive":
+          return "number_descriptive";
+        case "question_group":
+          return "question_group";
+        case "statement":
+          return "statement";
+        case "select_multi_image":
+        case "select_single_image":
+          return "select_single_image";
+        case "range_slider":
+          return "range_slider";
+        default:
+          console.log("Unknown type:", type);
+          return type;
+      }
+    };
+
+    const englishType = mapApiTypeToEnglish(question.type, question.style);
+    console.log("Mapped to English type:", englishType);
+
+    // Find the other option text from rawOptions
+    const otherOption = question.options?.find(
+      (opt) => opt.option_kind === "etc"
+    );
+    console.log("Found other option:", otherOption);
+    const otherOptionText = otherOption?.text || otherOption?.value || "سایر";
+    console.log("Other option text:", otherOptionText);
+
+    // Check for none and all options
+    const hasNone =
+      question.options?.some((opt) => opt.value === "هیچکدام") || false;
+    const hasAll =
+      question.options?.some((opt) => opt.value === "همه موارد") || false;
+
+    // Map rating style from API shape to our component's rating style
+    const mapRatingStyle = (shape?: string): "star" | "heart" | "thumbs" => {
+      if (shape === "like") return "thumbs";
+      if (shape === "heart") return "heart";
+      return "star";
+    };
 
     const mappedQuestion: Question = {
       id: question.id,
-      type:
-        isNewQuestion && pendingQuestionData
-          ? pendingQuestionData.type
-          : mapApiQuestionType(question.type, question.style),
+      type: englishType,
       label: question.text,
       title: question.title,
       isRequired: question.is_required,
+      required: question.is_required,
       order: question.order,
-      textType: question.style === "short" ? "short" : "long",
-      hasMedia: question.attachment_type === "image",
-      mediaType: "image",
+      textType:
+        question.style === "email"
+          ? "email"
+          : question.style === "long"
+          ? "long"
+          : "short",
+      hasMedia: !!question.attachment_type,
+      mediaType: question.attachment_type || undefined,
+      mediaUrl: question.attachment || undefined,
+      attachment: question.attachment || undefined,
+      attachmentType: question.attachment_type || undefined,
       parentId: question.related_group,
-      maxChars: question.limit,
+      maxLength: question.limit || 200,
       minChars: question.min_value,
       minNumber: question.min_value,
       maxNumber: question.max_value,
       options:
-        question.type === "select_multi_image" ||
-        question.type === "select_single_image"
-          ? question.options?.map((opt) => opt.label) || []
-          : question.options?.map((opt) => opt.value) || [],
+        question.options
+          ?.filter(
+            (opt) =>
+              opt.option_kind !== "etc" &&
+              opt.value !== "هیچکدام" &&
+              opt.value !== "همه موارد"
+          )
+          ?.map((opt) => opt.value) || [],
       optionValues:
-        question.type === "select_multi_image" ||
-        question.type === "select_single_image"
-          ? question.options?.map((opt) => opt.value) || []
-          : question.options?.map((opt) => opt.value) || [],
+        question.options
+          ?.filter(
+            (opt) =>
+              opt.option_kind !== "etc" &&
+              opt.value !== "هیچکدام" &&
+              opt.value !== "همه موارد"
+          )
+          ?.map((opt) => opt.value) || [],
       rawOptions: question.options || [],
-      hasOther: question.is_other,
-      hasNone: question.is_none,
-      hasAll: question.is_all,
+      hasOther:
+        question.options?.some((opt) => opt.option_kind === "etc") || false,
+      otherOptionText: otherOptionText,
+      hasNone: hasNone,
+      hasAll: hasAll,
       randomizeOptions: question.randomize_options,
-      isMultiSelect: question.is_multiple_select,
-      minSelectableChoices: question.min_selectable_choices,
-      maxSelectableChoices: question.max_selectable_choices,
+      isMultiSelect: question.type === "multi_select",
+      minSelectableChoices: question.multiselectquestion?.min_selection_count
+        ? parseInt(question.multiselectquestion.min_selection_count)
+        : question.type === "select_multi_image"
+        ? 2
+        : undefined,
+      maxSelectableChoices: question.multiselectquestion?.max_selection_count
+        ? parseInt(question.multiselectquestion.max_selection_count)
+        : question.type === "select_multi_image"
+        ? 4
+        : undefined,
       rows: question.rows?.map((row) => row.value) || [],
       columns: question.columns?.map((col) => col.value) || [],
       shuffleRows: question.shuffle_rows,
       shuffleColumns: question.shuffle_columns,
       ratingMax: question.count,
-      ratingStyle: question.shape as "star" | "heart" | "thumbs",
+      ratingStyle: mapRatingStyle(question.shape),
       scaleMin: question.scale_min,
       scaleMax: question.scale_max || question.options?.length || 5,
       scaleLabels: {
@@ -795,27 +1371,28 @@ const Index = () => {
               imageUrl: opt.value,
             }))
           : [],
-      isMultiImage:
-        question.type === "select_multi_image" && question.is_multiple_select,
+      isMultiImage: question.type === "select_multi_image",
     };
 
-    console.log("Mapped question:", mappedQuestion);
+    console.log("Final mapped question:", mappedQuestion);
     setSelectedQuestion(mappedQuestion);
     setIsModalOpen(true);
   };
 
   // Helper function to map API question types to our format
   const mapApiQuestionType = (type: string, style?: string): string => {
+    console.log("Mapping API question type:", type, "with style:", style);
+
     if (type === "text_question") {
-      switch (style) {
-        case "short":
-          return "text_question_short";
-        case "long":
-          return "text_question_long";
-        case "email":
-          return "ایمیل";
-        default:
-          return "text_question_short";
+      if (style === "email") {
+        console.log("Detected email style, returning ایمیل");
+        return "ایمیل";
+      } else if (style === "long") {
+        console.log("Detected long style, returning متنی بلند");
+        return "متنی بلند";
+      } else {
+        console.log("Detected short style, returning متنی کوتاه");
+        return "متنی کوتاه";
       }
     }
 
@@ -838,15 +1415,14 @@ const Index = () => {
       case "statement":
         return "متن بدون پاسخ";
       case "select_multi_image":
-        return "چند‌گزینه‌ای تصویری";
-      case "yes_no":
-        return "بله/خیر";
-      case "website":
-        return "وب سایت";
+        return "انتخاب تصویر (چند جواب)";
+      case "select_single_image":
+        return "انتخاب تصویر (تک جواب)";
       case "range_slider":
         return "طیفی";
       default:
-        return "text_question_short";
+        console.log("Unknown type:", type);
+        return "متنی کوتاه";
     }
   };
 
@@ -880,22 +1456,61 @@ const Index = () => {
   };
 
   const handleDragEnd = (result: DropResult) => {
-    console.log("ههووی", result);
-    const { source, destination, type } = result;
+    console.log("Drag result:", result);
+    const { source, destination, type, draggableId } = result;
 
     // If dropped outside a droppable area
     if (!destination) return;
 
     // If it's a question type being dragged from the sidebar
     if (type === "QUESTION_TYPE" && source.droppableId === "questionTypes") {
+      // Get the question type from draggableId
+      const questionType = draggableId;
+      console.log("Adding question of type:", questionType);
+
       // Add the question at the destination index
-      addQuestion(result.type, destination.index, result.draggableId);
+      addQuestion(questionType, destination.index);
       return;
     }
 
     // If it's a question being reordered within the form
     if (source.droppableId === destination.droppableId) {
       moveQuestion(source.index, destination.index);
+    }
+  };
+
+  const getQuestionIcon = (type: string) => {
+    switch (type) {
+      case "text_question_short":
+        return <Type className="w-4 h-4" />;
+      case "text_question_long":
+        return <AlignLeft className="w-4 h-4" />;
+      case "text_question_email":
+        return <Mail className="w-4 h-4" />;
+      case "number_descriptive":
+        return <Hash className="w-4 h-4" />;
+      case "single_select":
+      case "multi_select":
+        return <List className="w-4 h-4" />;
+      case "combobox":
+        return <ChevronDown className="w-4 h-4" />;
+      case "range_slider":
+        return <SlidersHorizontal className="w-4 h-4" />;
+      case "matrix":
+        return <Table className="w-4 h-4" />;
+      case "prioritize":
+        return <ArrowUpDown className="w-4 h-4" />;
+      case "select_single_image":
+      case "select_multi_image":
+        return <Image className="w-4 h-4" />;
+      case "grading":
+        return <Star className="w-4 h-4" />;
+      case "question_group":
+        return <Folder className="w-4 h-4" />;
+      case "statement":
+        return <Info className="w-4 h-4" />;
+      default:
+        return <HelpCircle className="w-4 h-4" />;
     }
   };
 

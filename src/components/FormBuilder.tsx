@@ -27,6 +27,7 @@ import {
   Image,
   Star,
   Mail,
+  AlignLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -47,7 +48,7 @@ interface FormBuilderProps {
   renderQuestionTitle: (question: ApiQuestion) => React.ReactNode;
 }
 
-const getQuestionTypeIcon = (type: string) => {
+const getQuestionTypeIcon = (type: string, question) => {
   switch (type) {
     case "single_select":
     case "multi_select":
@@ -59,7 +60,13 @@ const getQuestionTypeIcon = (type: string) => {
     case "statement":
       return <FileText className="w-3 h-3 text-gray-600" />;
     case "text_question":
-      return <Type className="w-3 h-3 text-purple-600" />;
+      if (question.style === "email") {
+        return <Mail className="w-3 h-3 text-red-600" />;
+      } else if (question.style === "long") {
+        return <Type className="w-3 h-3 text-red-600" />;
+      } else {
+        return <Type className="w-3 h-3 text-purple-600" />;
+      }
     case "number_descriptive":
       return <Hash className="w-3 h-3 text-orange-600" />;
     case "matrix":
@@ -193,7 +200,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                           getQuestionTypeColor(question.type)
                         )}
                       >
-                        {getQuestionTypeIcon(question.type)}
+                        {getQuestionTypeIcon(question.type, question)}
                       </span>
                       <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-[10px] text-gray-600 font-medium">
                         {index + 1}
@@ -278,8 +285,19 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
               }`}
             >
-              {questions.map((question, index) =>
-                renderQuestion(question, index)
+              {questions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                  <div className="text-gray-400 mb-2">
+                    <MoveRight className="w-8 h-8" />
+                  </div>
+                  <p className="text-gray-500 text-sm text-center">
+                    سوالات را از لیست سمت راست به اینجا بکشید
+                  </p>
+                </div>
+              ) : (
+                questions.map((question, index) =>
+                  renderQuestion(question, index)
+                )
               )}
               {provided.placeholder}
             </div>

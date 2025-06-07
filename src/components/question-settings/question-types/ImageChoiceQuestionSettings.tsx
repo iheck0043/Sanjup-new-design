@@ -14,10 +14,9 @@ interface ImageChoiceQuestionSettingsProps {
   onUpdateField: (field: keyof Question, value: any) => void;
 }
 
-const ImageChoiceQuestionSettings: React.FC<ImageChoiceQuestionSettingsProps> = ({
-  question,
-  onUpdateField,
-}) => {
+const ImageChoiceQuestionSettings: React.FC<
+  ImageChoiceQuestionSettingsProps
+> = ({ question, onUpdateField }) => {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   const addOption = () => {
@@ -39,7 +38,11 @@ const ImageChoiceQuestionSettings: React.FC<ImageChoiceQuestionSettingsProps> = 
     }
   };
 
-  const updateOption = (index: number, field: "text" | "imageUrl", value: string) => {
+  const updateOption = (
+    index: number,
+    field: "text" | "imageUrl",
+    value: string
+  ) => {
     if (question.imageOptions) {
       const newOptions = [...question.imageOptions];
       newOptions[index] = { ...newOptions[index], [field]: value };
@@ -47,7 +50,10 @@ const ImageChoiceQuestionSettings: React.FC<ImageChoiceQuestionSettingsProps> = 
     }
   };
 
-  const handleImageUpload = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -74,7 +80,9 @@ const ImageChoiceQuestionSettings: React.FC<ImageChoiceQuestionSettingsProps> = 
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      toast.error(error instanceof Error ? error.message : "خطا در آپلود تصویر");
+      toast.error(
+        error instanceof Error ? error.message : "خطا در آپلود تصویر"
+      );
     } finally {
       setUploadingIndex(null);
     }
@@ -83,56 +91,102 @@ const ImageChoiceQuestionSettings: React.FC<ImageChoiceQuestionSettingsProps> = 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">چند جوابی</Label>
+        <Label className="text-sm font-medium">انتخاب چندگانه</Label>
         <Switch
           checked={question.isMultiImage || false}
           onCheckedChange={(checked) => onUpdateField("isMultiImage", checked)}
         />
       </div>
 
-      <div className="space-y-4">
-        {question.imageOptions?.map((option, index) => (
-          <div key={index} className="flex items-center gap-2">
+      {question.isMultiImage && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-sm font-medium">حداقل انتخاب</Label>
             <Input
-              value={option.text}
-              onChange={(e) => updateOption(index, "text", e.target.value)}
-              placeholder={`گزینه ${index + 1}`}
-              className="flex-1"
+              type="number"
+              value={question.minSelectableChoices || 2}
+              onChange={(e) =>
+                onUpdateField(
+                  "minSelectableChoices",
+                  parseInt(e.target.value) || 2
+                )
+              }
+              min={2}
+              className="mt-1"
             />
-            <label className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageUpload(index, e)}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-10 w-10"
-                disabled={uploadingIndex === index}
-              >
-                {uploadingIndex === index ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
-              </Button>
-            </label>
-            {question.imageOptions && question.imageOptions.length > 2 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 text-red-500 hover:text-red-600"
-                onClick={() => removeOption(index)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
           </div>
-        ))}
+          <div>
+            <Label className="text-sm font-medium">حداکثر انتخاب</Label>
+            <Input
+              type="number"
+              value={question.maxSelectableChoices || 4}
+              onChange={(e) =>
+                onUpdateField(
+                  "maxSelectableChoices",
+                  parseInt(e.target.value) || 4
+                )
+              }
+              min={2}
+              className="mt-1"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          {(
+            question.imageOptions || [
+              { text: "تصویر ۱", imageUrl: "" },
+              { text: "تصویر ۲", imageUrl: "" },
+            ]
+          )
+            .filter((_, index) => {
+              const option = question.rawOptions?.[index];
+              return option?.option_kind !== "etc";
+            })
+            .map((option, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={option.text}
+                  onChange={(e) => updateOption(index, "text", e.target.value)}
+                  className="flex-1"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      const input = document.createElement("input");
+                      input.type = "file";
+                      input.accept = "image/*";
+                      input.onchange = (e) =>
+                        handleImageUpload(index, e as any);
+                      input.click();
+                    }}
+                  >
+                    {uploadingIndex === index ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                  </Button>
+                  {(question.imageOptions?.length || 2) > 2 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeOption(index)}
+                      className="h-8 w-8 p-0 text-red-500"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+        </div>
       </div>
 
       <Button
@@ -144,6 +198,54 @@ const ImageChoiceQuestionSettings: React.FC<ImageChoiceQuestionSettingsProps> = 
         <Plus className="h-4 w-4 ml-2" />
         افزودن گزینه
       </Button>
+
+      <div className="space-y-3 border-t pt-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">گزینه "سایر"</Label>
+          <Switch
+            checked={question.hasOther || false}
+            onCheckedChange={(checked) => onUpdateField("hasOther", checked)}
+          />
+        </div>
+
+        {question.hasOther && (
+          <div className="mr-6">
+            <Input
+              placeholder="متن گزینه سایر"
+              value={
+                question.rawOptions?.find((opt) => opt.option_kind === "etc")
+                  ?.label || "سایر"
+              }
+              onChange={(e) => {
+                const otherOption = question.rawOptions?.find(
+                  (opt) => opt.option_kind === "etc"
+                );
+                if (otherOption) {
+                  otherOption.label = e.target.value;
+                  otherOption.text = e.target.value;
+                  onUpdateField("rawOptions", [...(question.rawOptions || [])]);
+                }
+              }}
+            />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">گزینه "هیچکدام"</Label>
+          <Switch
+            checked={question.hasNone || false}
+            onCheckedChange={(checked) => onUpdateField("hasNone", checked)}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">گزینه "همه موارد"</Label>
+          <Switch
+            checked={question.hasAll || false}
+            onCheckedChange={(checked) => onUpdateField("hasAll", checked)}
+          />
+        </div>
+      </div>
     </div>
   );
 };

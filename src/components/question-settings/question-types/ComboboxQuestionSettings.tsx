@@ -13,6 +13,7 @@ import {
 import type { Question } from "@/pages/QuestionnaireForm";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { Switch } from "@/components/ui/switch";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 

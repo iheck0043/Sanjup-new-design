@@ -3,6 +3,43 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import type { Question } from "../../pages/QuestionnaireForm";
 
+// Helper function to map question types to Persian
+const mapQuestionTypeToPersian = (type: string): string => {
+  switch (type) {
+    case "text_question_short":
+    case "text_question":
+      return "متنی کوتاه";
+    case "text_question_long":
+      return "متنی بلند";
+    case "single_select":
+    case "multi_select":
+      return "چندگزینه‌ای";
+    case "matrix":
+      return "ماتریسی";
+    case "prioritize":
+      return "اولویت‌دهی";
+    case "combobox":
+      return "لیست کشویی";
+    case "grading":
+      return "درجه بندی";
+    case "number_descriptive":
+      return "عددی";
+    case "question_group":
+      return "گروه سوال";
+    case "statement":
+      return "متن بدون پاسخ";
+    case "select_single_image":
+    case "select_multi_image":
+      return "چند‌گزینه‌ای تصویری";
+    case "range_slider":
+      return "طیفی";
+    case "text_question_email":
+      return "ایمیل";
+    default:
+      return "متنی کوتاه";
+  }
+};
+
 interface QuestionHeaderProps {
   question: Question;
   isNewQuestion: boolean;
@@ -16,13 +53,14 @@ const QuestionHeader: React.FC<QuestionHeaderProps> = ({
   inputRef,
   onUpdateField,
 }) => {
-  const isQuestionGroup = question.type === "گروه سوال";
+  const isQuestionGroup = question.type === "question_group";
+  const displayType = mapQuestionTypeToPersian(question.type);
 
   return (
     <div className="p-6 border-b border-gray-200 bg-white flex-shrink-0">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium">
-          {question.type}
+          {displayType}
         </span>
       </div>
       <div>

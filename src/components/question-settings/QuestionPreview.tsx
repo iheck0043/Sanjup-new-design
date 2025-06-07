@@ -23,18 +23,25 @@ interface QuestionPreviewProps {
 }
 
 const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
+  console.log("QuestionPreview - Full question:", question);
+  console.log("QuestionPreview - hasMedia:", question.hasMedia);
+  console.log("QuestionPreview - mediaUrl:", question.mediaUrl);
+  console.log("QuestionPreview - attachment:", question.attachment);
+  console.log("QuestionPreview - attachmentType:", question.attachmentType);
+
   const isText =
-    question.type === "متنی کوتاه" || question.type === "متنی بلند";
-  const isNumber = question.type === "اعداد";
-  const isEmail = question.type === "ایمیل";
-  const isDescription = question.type === "متن بدون پاسخ";
-  const isScale = question.type === "طیفی";
-  const isRating = question.type === "درجه‌بندی";
-  const isDropdown = question.type === "لیست کشویی";
-  const isMatrix = question.type === "ماتریسی";
-  const isPriority = question.type === "اولویت‌دهی";
-  const isImageChoice = question.type === "چند‌گزینه‌ای تصویری";
-  const hasOptions = question.type === "چندگزینه‌ای";
+    question.type === "text_question_short" ||
+    question.type === "text_question_long";
+  const isNumber = question.type === "number_descriptive";
+  const isEmail = question.type === "text_question_email";
+  const isDescription = question.type === "statement";
+  const isScale = question.type === "range_slider";
+  const isRating = question.type === "grading";
+  const isDropdown = question.type === "combobox";
+  const isMatrix = question.type === "matrix";
+  const isPriority = question.type === "prioritize";
+  const isImageChoice = question.type === "select_multi_image";
+  const hasOptions = question.type === "single_select";
 
   return (
     <div className="flex-1 p-6 bg-white overflow-y-auto">
@@ -57,6 +64,16 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
                 <p className="text-sm text-gray-600 mt-1 mb-3">
                   {question.description}
                 </p>
+              )}
+
+              {question.attachment && (
+                <div className="mt-3 mb-4">
+                  <img
+                    src={question.attachment}
+                    alt="تصویر سوال"
+                    className="max-w-full h-auto rounded-lg shadow-sm"
+                  />
+                </div>
               )}
 
               <div className="mt-3">

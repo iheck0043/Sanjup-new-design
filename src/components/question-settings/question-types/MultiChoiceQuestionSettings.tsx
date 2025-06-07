@@ -54,25 +54,30 @@ const MultiChoiceQuestionSettings: React.FC<
           </Button>
         </div>
         <div className="space-y-2">
-          {(question.options || ["گزینه ۱", "گزینه ۲"]).map((option, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={option}
-                onChange={(e) => updateOption(index, e.target.value)}
-                className="flex-1"
-              />
-              {(question.options?.length || 2) > 2 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => removeOption(index)}
-                  className="h-8 w-8 p-0 text-red-500"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          ))}
+          {(question.options || ["گزینه ۱", "گزینه ۲"])
+            .filter((_, index) => {
+              const option = question.rawOptions?.[index];
+              return option?.option_kind !== "etc";
+            })
+            .map((option, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={option}
+                  onChange={(e) => updateOption(index, e.target.value)}
+                  className="flex-1"
+                />
+                {(question.options?.length || 2) > 2 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeOption(index)}
+                    className="h-8 w-8 p-0 text-red-500"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
         </div>
       </div>
 
@@ -123,30 +128,6 @@ const MultiChoiceQuestionSettings: React.FC<
         )}
 
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">نمایش به صورت گرید</Label>
-          <Switch
-            checked={question.isGrid || false}
-            onCheckedChange={(checked) => onUpdateField("isGrid", checked)}
-          />
-        </div>
-
-        {question.isGrid && (
-          <div>
-            <Label className="text-sm font-medium">تعداد ستون‌ها</Label>
-            <Input
-              type="number"
-              value={question.gridColumns || 2}
-              onChange={(e) =>
-                onUpdateField("gridColumns", parseInt(e.target.value) || 2)
-              }
-              min={2}
-              max={4}
-              className="mt-1"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">ترتیب تصادفی گزینه‌ها</Label>
           <Switch
             checked={question.shuffleOptions || false}
@@ -165,6 +146,18 @@ const MultiChoiceQuestionSettings: React.FC<
             />
           </div>
 
+          {question.hasOther && (
+            <div className="mr-6">
+              <Input
+                placeholder="متن گزینه سایر"
+                value={question.otherOptionText || "سایر"}
+                onChange={(e) =>
+                  onUpdateField("otherOptionText", e.target.value)
+                }
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium">گزینه "هیچکدام"</Label>
             <Switch
@@ -173,15 +166,13 @@ const MultiChoiceQuestionSettings: React.FC<
             />
           </div>
 
-          {question.isMultiSelect && (
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">گزینه "همه موارد"</Label>
-              <Switch
-                checked={question.hasAll || false}
-                onCheckedChange={(checked) => onUpdateField("hasAll", checked)}
-              />
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">گزینه "همه موارد"</Label>
+            <Switch
+              checked={question.hasAll || false}
+              onCheckedChange={(checked) => onUpdateField("hasAll", checked)}
+            />
+          </div>
         </div>
       </div>
     </div>

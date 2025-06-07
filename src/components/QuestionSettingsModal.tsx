@@ -31,6 +31,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import QuestionHeader from "./question-settings/QuestionHeader";
 import QuestionSettingsSidebar from "./question-settings/QuestionSettingsSidebar";
 import QuestionPreview from "./question-settings/QuestionPreview";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface QuestionSettingsModalProps {
   isOpen: boolean;
@@ -76,10 +77,43 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   if (!localQuestion) return null;
 
   const handleUpdateField = (field: keyof Question, value: any) => {
-    const updated = { ...localQuestion, [field]: value };
+    console.log("Updating field:", field, "with value:", value);
+    const updated = { ...localQuestion };
+
     if (field === "label") {
       updated.title = value;
     }
+
+    if (field === "hasMedia") {
+      updated.hasMedia = value;
+      if (!value) {
+        updated.mediaType = undefined;
+        updated.mediaUrl = undefined;
+        updated.attachment = undefined;
+        updated.attachmentType = undefined;
+      } else if (!updated.mediaType) {
+        updated.mediaType = "image";
+        updated.attachmentType = "image";
+      }
+    } else if (field === "mediaType") {
+      updated.mediaType = value;
+      updated.attachmentType = value;
+      updated.mediaUrl = undefined;
+      updated.attachment = undefined;
+    } else if (field === "mediaUrl") {
+      updated.mediaUrl = value;
+      updated.attachment = value;
+    } else if (field === "attachment") {
+      updated.attachment = value;
+      updated.mediaUrl = value;
+    } else if (field === "attachmentType") {
+      updated.attachmentType = value;
+      updated.mediaType = value;
+    } else {
+      updated[field] = value;
+    }
+
+    console.log("Updated question:", updated);
     setLocalQuestion(updated);
     setHasChanges(true);
   };
@@ -247,22 +281,23 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     }
   };
 
-  const hasOptions = localQuestion.type === "چندگزینه‌ای";
-  const isMultiChoice = localQuestion.type === "چندگزینه‌ای";
-  const isDropdown = localQuestion.type === "لیست کشویی";
-  const isScale = localQuestion.type === "طیفی";
+  const hasOptions = localQuestion.type === "single_select";
+  const isMultiChoice = localQuestion.type === "single_select";
+  const isDropdown = localQuestion.type === "combobox";
+  const isScale = localQuestion.type === "range_slider";
   const isText =
-    localQuestion.type === "متنی کوتاه" || localQuestion.type === "متنی بلند";
-  const isNumber = localQuestion.type === "اعداد";
-  const isMatrix = localQuestion.type === "ماتریسی";
-  const isPriority = localQuestion.type === "اولویت‌دهی";
-  const isImageChoice = localQuestion.type === "چند‌گزینه‌ای تصویری";
-  const isQuestionGroup = localQuestion.type === "گروه سوال";
-  const isDescription = localQuestion.type === "متن بدون پاسخ";
-  const isRating = localQuestion.type === "درجه‌بندی";
-  const isEmail = localQuestion.type === "ایمیل";
-  const isShortText = localQuestion.type === "متنی کوتاه";
-  const isLongText = localQuestion.type === "متنی بلند";
+    localQuestion.type === "text_question_short" ||
+    localQuestion.type === "text_question_long";
+  const isNumber = localQuestion.type === "number_descriptive";
+  const isMatrix = localQuestion.type === "matrix";
+  const isPriority = localQuestion.type === "prioritize";
+  const isImageChoice = localQuestion.type === "select_multi_image";
+  const isQuestionGroup = localQuestion.type === "question_group";
+  const isDescription = localQuestion.type === "statement";
+  const isRating = localQuestion.type === "grading";
+  const isEmail = localQuestion.type === "text_question";
+  const isShortText = localQuestion.type === "text_question_short";
+  const isLongText = localQuestion.type === "text_question_long";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
