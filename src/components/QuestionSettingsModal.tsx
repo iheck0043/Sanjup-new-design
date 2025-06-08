@@ -89,26 +89,12 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       if (!value) {
         updated.mediaType = undefined;
         updated.mediaUrl = undefined;
-        updated.attachment = undefined;
-        updated.attachmentType = undefined;
       } else if (!updated.mediaType) {
         updated.mediaType = "image";
-        updated.attachmentType = "image";
       }
     } else if (field === "mediaType") {
       updated.mediaType = value;
-      updated.attachmentType = value;
       updated.mediaUrl = undefined;
-      updated.attachment = undefined;
-    } else if (field === "mediaUrl") {
-      updated.mediaUrl = value;
-      updated.attachment = value;
-    } else if (field === "attachment") {
-      updated.attachment = value;
-      updated.mediaUrl = value;
-    } else if (field === "attachmentType") {
-      updated.attachmentType = value;
-      updated.mediaType = value;
     } else {
       updated[field] = value;
     }

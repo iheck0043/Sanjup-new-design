@@ -23,12 +23,6 @@ interface QuestionPreviewProps {
 }
 
 const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
-  console.log("QuestionPreview - Full question:", question);
-  console.log("QuestionPreview - hasMedia:", question.hasMedia);
-  console.log("QuestionPreview - mediaUrl:", question.mediaUrl);
-  console.log("QuestionPreview - attachment:", question.attachment);
-  console.log("QuestionPreview - attachmentType:", question.attachmentType);
-
   const isText =
     question.type === "text_question_short" ||
     question.type === "text_question_long";
@@ -64,16 +58,6 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
                 <p className="text-sm text-gray-600 mt-1 mb-3">
                   {question.description}
                 </p>
-              )}
-
-              {question.attachment && (
-                <div className="mt-3 mb-4">
-                  <img
-                    src={question.attachment}
-                    alt="تصویر سوال"
-                    className="max-w-full h-auto rounded-lg shadow-sm"
-                  />
-                </div>
               )}
 
               <div className="mt-3">

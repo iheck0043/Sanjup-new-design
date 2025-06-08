@@ -12,7 +12,7 @@ interface QuestionSettingsModalProps {
   onClose: () => void;
   question: Question;
   onUpdateField: (field: keyof Question, value: any) => void;
-  onSave: () => void;
+  onSave: (question: Question) => void;
   isNewQuestion: boolean;
 }
 
@@ -57,6 +57,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           hasMedia: false,
           mediaType: undefined,
           mediaUrl: undefined,
+          attachment: undefined,
+          attachment_type: undefined,
         };
         setLocalQuestion(initialQuestion);
         onUpdateField("title", initialQuestion.title);
@@ -65,14 +67,26 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         onUpdateField("hasMedia", initialQuestion.hasMedia);
         onUpdateField("mediaType", initialQuestion.mediaType);
         onUpdateField("mediaUrl", initialQuestion.mediaUrl);
+        onUpdateField("attachment", initialQuestion.attachment);
+        onUpdateField("attachment_type", initialQuestion.attachment_type);
       } else {
         console.log("QuestionSettingsModal - Updating existing question");
         const updatedQuestion = {
           ...question,
           label: question.title || question.label || "",
+          hasMedia: question.hasMedia || false,
+          mediaType: question.mediaType || undefined,
+          mediaUrl: question.mediaUrl || undefined,
+          attachment: question.attachment || undefined,
+          attachment_type: question.attachment_type || undefined,
         };
         setLocalQuestion(updatedQuestion);
         onUpdateField("label", updatedQuestion.label);
+        onUpdateField("hasMedia", updatedQuestion.hasMedia);
+        onUpdateField("mediaType", updatedQuestion.mediaType);
+        onUpdateField("mediaUrl", updatedQuestion.mediaUrl);
+        onUpdateField("attachment", updatedQuestion.attachment);
+        onUpdateField("attachment_type", updatedQuestion.attachment_type);
       }
     }
   }, [question, isNewQuestion]);
@@ -119,7 +133,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               <Button variant="outline" onClick={onClose}>
                 انصراف
               </Button>
-              <Button onClick={onSave}>ذخیره</Button>
+              <Button onClick={() => onSave(localQuestion)}>ذخیره</Button>
             </div>
           </div>
         </div>

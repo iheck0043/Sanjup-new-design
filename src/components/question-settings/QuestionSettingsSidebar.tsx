@@ -175,21 +175,12 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
             <Switch
               checked={isMediaEnabled}
               onCheckedChange={(checked) => {
-                console.log("Switch changed to:", checked);
-                console.log("Current question state:", question);
                 setIsMediaEnabled(checked);
-                if (checked) {
-                  onUpdateField("hasMedia", true);
-                  onUpdateField("mediaType", "image");
-                  onUpdateField("attachmentType", "image");
-                } else {
-                  onUpdateField("hasMedia", false);
-                  onUpdateField("mediaType", undefined);
-                  onUpdateField("mediaUrl", undefined);
-                  onUpdateField("attachment", undefined);
-                  onUpdateField("attachmentType", undefined);
-                }
-                console.log("After switch update - hasMedia:", checked);
+                onUpdateField("hasMedia", checked);
+                onUpdateField("mediaType", checked ? "image" : undefined);
+                onUpdateField("mediaUrl", undefined);
+                onUpdateField("attachment", undefined);
+                onUpdateField("attachment_type", undefined);
               }}
             />
           </div>
@@ -223,29 +214,15 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
                       }
                     );
 
+                    if (!response.ok) {
+                      throw new Error("خطا در آپلود تصویر");
+                    }
+
                     const data = await response.json();
                     if (data.info.status === 201) {
-                      console.log("Image upload response:", data);
-                      console.log("Setting mediaUrl to:", data.data.image_url);
-                      console.log("Current question state:", question);
-
-                      // First set hasMedia and mediaType
-                      onUpdateField("hasMedia", true);
-                      onUpdateField("mediaType", "image");
-                      onUpdateField("attachmentType", "image");
-
-                      // Then set the URLs
                       onUpdateField("mediaUrl", data.data.image_url);
                       onUpdateField("attachment", data.data.image_url);
-
-                      console.log("After image upload - question state:", {
-                        hasMedia: true,
-                        mediaType: "image",
-                        mediaUrl: data.data.image_url,
-                        attachment: data.data.image_url,
-                        attachmentType: "image",
-                      });
-
+                      onUpdateField("attachment_type", "image");
                       toast.success("تصویر با موفقیت آپلود شد");
                     } else {
                       throw new Error(data.info.message);

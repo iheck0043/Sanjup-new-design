@@ -50,6 +50,7 @@ export interface ApiQuestion {
   order: number;
   style?: string;
   attachment_type?: string;
+  attachment?: string;
   related_group?: string;
   limit?: number;
   min_value?: number;
@@ -136,6 +137,7 @@ export interface Question {
   order: number;
   attachmentType?: string;
   attachment?: string;
+  attachment_type?: string;
   textType?: "short" | "long" | "email";
   maxChars?: number;
   minChars?: number;
@@ -420,8 +422,9 @@ const Index = () => {
           attachment_type: questionData.hasMedia
             ? questionData.mediaType
             : null,
-          attachment: questionData.hasMedia ? questionData.mediaUrl : null,
           related_group: questionData.parentId || null,
+          attachment: questionData.attachment,
+          description: questionData.description,
         };
 
         // Add limit for text questions
@@ -669,25 +672,329 @@ const Index = () => {
           throw new Error("Missing access token or questionnaire ID");
         }
 
-        console.log("Updating question with data:", {
-          updates,
-          apiData: {
-            ...updates,
-            attachment_type: updates.mediaType || null,
-            attachment: updates.mediaUrl || null,
-          },
-          hasMedia: updates.hasMedia,
-          mediaUrl: updates.mediaUrl,
-          mediaType: updates.mediaType,
-          attachment_type: updates.mediaType || null,
-          attachment: updates.mediaUrl || null,
-        });
-
-        const apiData = {
-          ...updates,
-          attachment_type: updates.mediaType || null,
-          attachment: updates.mediaUrl || null,
+        // Base API data
+        const apiData: any = {
+          id: id,
+          is_required: updates.required || false,
+          title: updates.label || "",
+          attachment_type: updates.hasMedia ? updates.mediaType : null,
+          related_group: updates.parentId || null,
+          attachment: updates.attachment,
+          description: updates.description,
         };
+
+        console.log("lllllllllll::", apiData);
+
+        // Get the existing question to determine its type
+        const existingQuestion = questions.find((q) => q.id === id);
+        if (!existingQuestion) {
+          throw new Error("Question not found");
+        }
+
+        // Find existing "other" option if it exists
+        const existingOtherOption = existingQuestion.options?.find(
+          (opt) => opt.option_kind === "etc"
+        );
+
+        // Determine the new type based on isMultiSelect and isMultiImage
+        let newType = existingQuestion.type;
+        if (
+          existingQuestion.type === "single_select" ||
+          existingQuestion.type === "multi_select"
+        ) {
+          newType = updates.isMultiSelect ? "multi_select" : "single_select";
+        } else if (
+          existingQuestion.type === "select_single_image" ||
+          existingQuestion.type === "select_multi_image"
+        ) {
+          newType = updates.isMultiImage
+            ? "select_multi_image"
+            : "select_single_image";
+        }
+
+        // Handle different question types based on existing question type
+        switch (existingQuestion.type) {
+          case "multi_select":
+          case "single_select":
+          case "combobox":
+            // Find existing options
+            const existingNoneOption = existingQuestion.options?.find(
+              (opt) => opt.value === "هیچکدام"
+            );
+            const existingAllOption = existingQuestion.options?.find(
+              (opt) => opt.value === "همه موارد"
+            );
+
+            const regularOptions =
+              updates.options?.map((text, index) => {
+                const existingOption = existingQuestion.options?.[index];
+                return {
+                  text,
+                  value: text,
+                  priority: index + 1,
+                  score: 0,
+                  type: "text",
+                  option_kind: "usual",
+                  ...(existingOption?.id ? { id: existingOption.id } : {}),
+                };
+              }) || [];
+
+            const otherOption = updates.hasOther
+              ? {
+                  text: updates.otherOptionText || "سایر",
+                  value: updates.otherOptionText || "سایر",
+                  priority: regularOptions.length + 1,
+                  score: 0,
+                  type: "text",
+                  option_kind: "etc",
+                  ...(existingOtherOption?.id
+                    ? { id: existingOtherOption.id }
+                    : {}),
+                }
+              : null;
+
+            const noneOption = updates.hasNone
+              ? {
+                  text: "هیچکدام",
+                  value: "هیچکدام",
+                  priority: regularOptions.length + (otherOption ? 2 : 1),
+                  score: 0,
+                  type: "text",
+                  option_kind: "usual",
+                  ...(existingNoneOption?.id
+                    ? { id: existingNoneOption.id }
+                    : {}),
+                }
+              : null;
+
+            const allOption = updates.hasAll
+              ? {
+                  text: "همه موارد",
+                  value: "همه موارد",
+                  priority:
+                    regularOptions.length +
+                    (otherOption ? 2 : 1) +
+                    (noneOption ? 1 : 0),
+                  score: 0,
+                  type: "text",
+                  option_kind: "usual",
+                  ...(existingAllOption?.id
+                    ? { id: existingAllOption.id }
+                    : {}),
+                }
+              : null;
+
+            apiData.options = [
+              ...regularOptions,
+              ...(otherOption ? [otherOption] : []),
+              ...(noneOption ? [noneOption] : []),
+              ...(allOption ? [allOption] : []),
+            ];
+            apiData.type = newType;
+
+            // Add multiselectquestion for multi-select questions
+            if (newType === "multi_select") {
+              apiData.multiselectquestion = {
+                min_selection_count:
+                  updates.minSelectableChoices?.toString() || "1",
+                max_selection_count:
+                  updates.maxSelectableChoices?.toString() || null,
+              };
+            }
+            break;
+
+          case "select_multi_image":
+          case "select_single_image":
+            apiData.options = [
+              // Regular image options
+              ...(updates.imageOptions?.map((opt, index) => {
+                // Find existing option by index to preserve ID even if value changed
+                const existingOption = existingQuestion.options?.[index];
+                const optionData: any = {
+                  text: opt.text,
+                  value: opt.imageUrl,
+                  priority: index + 1,
+                  score: 0,
+                  type: "image",
+                  label: opt.text,
+                  option_kind: "usual",
+                };
+
+                // Preserve existing option ID if it exists
+                if (existingOption?.id) {
+                  optionData.id = existingOption.id;
+                }
+
+                return optionData;
+              }) || []),
+              // Add "other" option if enabled
+              ...(updates.hasOther
+                ? [
+                    {
+                      text: updates.otherOptionText || "سایر",
+                      value: "",
+                      priority: (updates.imageOptions?.length || 0) + 1,
+                      score: 0,
+                      type: "text",
+                      label: updates.otherOptionText || "سایر",
+                      option_kind: "etc",
+                      ...(existingOtherOption?.id
+                        ? { id: existingOtherOption.id }
+                        : {}),
+                    },
+                  ]
+                : []),
+              // Add "none" option if enabled
+              ...(updates.hasNone
+                ? [
+                    {
+                      text: "هیچکدام",
+                      value: "",
+                      priority:
+                        (updates.imageOptions?.length || 0) +
+                        (updates.hasOther ? 2 : 1),
+                      score: 0,
+                      type: "text",
+                      label: "هیچکدام",
+                      option_kind: "usual",
+                    },
+                  ]
+                : []),
+              // Add "all" option if enabled
+              ...(updates.hasAll
+                ? [
+                    {
+                      text: "همه موارد",
+                      value: "",
+                      priority:
+                        (updates.imageOptions?.length || 0) +
+                        (updates.hasOther ? 2 : 1) +
+                        (updates.hasNone ? 1 : 0),
+                      score: 0,
+                      type: "text",
+                      label: "همه موارد",
+                      option_kind: "usual",
+                    },
+                  ]
+                : []),
+            ];
+            apiData.type = newType;
+            apiData.is_multiple_select = updates.isMultiImage || false;
+
+            // Add multiselectquestion for image multi-select questions
+            if (newType === "select_multi_image") {
+              apiData.multiselectquestion = {
+                min_selection_count:
+                  updates.minSelectableChoices?.toString() || "1",
+                max_selection_count:
+                  updates.maxSelectableChoices?.toString() || null,
+              };
+            }
+            break;
+
+          case "text_question":
+            apiData.style =
+              updates.textType === "long"
+                ? "long"
+                : updates.textType === "email"
+                ? "email"
+                : "short";
+            if (updates.textType === "short" || updates.textType === "long") {
+              apiData.limit = updates.maxLength || 200;
+            }
+            break;
+
+          case "number_descriptive":
+            apiData.min_value = updates.minNumber || 0;
+            apiData.max_value = updates.maxNumber || 5000;
+            break;
+
+          case "statement":
+            // Only allow one media type at a time
+            if (updates.hasMedia) {
+              apiData.attachment_type = updates.mediaType;
+            }
+            break;
+
+          case "range_slider":
+            // Generate options for range slider
+            const range = updates.scaleMax || 5;
+            apiData.options = Array.from({ length: range }, (_, i) => ({
+              value: String(i + 1),
+              priority: 1,
+              type: "integer",
+              option_kind: "usual",
+            }));
+            apiData.left_label = updates.scaleLabels?.left || "کم";
+            apiData.middle_label = updates.scaleLabels?.center || "متوسط";
+            apiData.right_label = updates.scaleLabels?.right || "زیاد";
+            break;
+
+          case "matrix":
+            apiData.rows =
+              updates.rows?.map((row, index) => {
+                // Find existing row by index to preserve ID even if value changed
+                const existingRow = existingQuestion.rows?.[index];
+                return {
+                  id: existingRow?.id,
+                  value: row,
+                  order: index + 1,
+                };
+              }) || [];
+            apiData.columns =
+              updates.columns?.map((col, index) => {
+                // Find existing column by index to preserve ID even if value changed
+                const existingCol = existingQuestion.columns?.[index];
+                return {
+                  id: existingCol?.id,
+                  value: col,
+                  order: index + 1,
+                };
+              }) || [];
+            apiData.shuffle_rows = updates.shuffleRows || false;
+            apiData.shuffle_columns = updates.shuffleColumns || false;
+            break;
+
+          case "prioritize":
+            // Map options with proper types and preserve existing IDs
+            apiData.options =
+              updates.options?.map((text, index) => {
+                // Find existing option by index to preserve ID even if value changed
+                const existingOption = existingQuestion.options?.[index];
+                const optionData: any = {
+                  text,
+                  value: text,
+                  priority: index + 1,
+                  score: 0,
+                  type: "text",
+                  option_kind: "usual",
+                };
+
+                // Preserve existing option ID if it exists
+                if (existingOption?.id) {
+                  optionData.id = existingOption.id;
+                }
+
+                return optionData;
+              }) || [];
+            break;
+
+          case "grading":
+            apiData.count = updates.ratingMax?.toString() || "5";
+            apiData.shape =
+              updates.ratingStyle === "thumbs"
+                ? "like"
+                : updates.ratingStyle || "star";
+            // Generate options based on count
+            const count = parseInt(apiData.count);
+            apiData.options = Array.from({ length: count }, (_, i) => ({
+              priority: 1,
+              score: 0,
+              type: "integer",
+              value: i + 1,
+            }));
+            break;
+        }
 
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/${id}/questions/update/`,
@@ -1302,11 +1609,8 @@ const Index = () => {
           : question.style === "long"
           ? "long"
           : "short",
-      hasMedia: !!question.attachment_type,
-      mediaType: question.attachment_type || undefined,
-      mediaUrl: question.attachment || undefined,
-      attachment: question.attachment || undefined,
-      attachmentType: question.attachment_type || undefined,
+      hasMedia: question.attachment_type === "image",
+      mediaType: "image",
       parentId: question.related_group,
       maxLength: question.limit || 200,
       minChars: question.min_value,
