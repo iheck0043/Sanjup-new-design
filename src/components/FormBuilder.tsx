@@ -1,14 +1,12 @@
 
 import React, { useState, useCallback } from "react";
 import {
-  DragDropContext,
   Droppable,
   Draggable,
   DroppableProvided,
   DroppableStateSnapshot,
   DraggableProvided,
   DraggableStateSnapshot,
-  DropResult,
 } from "react-beautiful-dnd";
 import {
   Plus,
@@ -34,26 +32,24 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-// استفاده از انترفیس Question از Index.tsx
-import { Question } from "../pages/Index";
+import { ApiQuestion } from "../pages/QuestionnaireForm";
 
 interface FormBuilderProps {
-  questions: Question[];
+  questions: ApiQuestion[];
   onRemoveQuestion: (id: string) => void;
-  onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
+  onUpdateQuestion: (id: string, updates: Partial<ApiQuestion>) => void;
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
-  onQuestionClick: (question: Question) => void;
+  onQuestionClick: (question: ApiQuestion) => void;
   onAddQuestion: (type: string, insertIndex?: number) => void;
-  onDuplicateQuestion: (question: Question) => void;
-  onConditionClick: (question: Question) => void;
+  onDuplicateQuestion: (question: ApiQuestion) => void;
+  onConditionClick: (question: ApiQuestion) => void;
   onMoveToGroup: (questionId: string, groupId: string) => void;
   expandedGroups: string[];
   onToggleGroup: (groupId: string) => void;
-  renderQuestionTitle: (question: Question) => React.ReactNode;
+  renderQuestionTitle: (question: ApiQuestion) => React.ReactNode;
 }
 
-const getQuestionTypeIcon = (type: string, question: Question) => {
+const getQuestionTypeIcon = (type: string, question) => {
   switch (type) {
     case "single_select":
     case "multi_select":
@@ -65,10 +61,13 @@ const getQuestionTypeIcon = (type: string, question: Question) => {
     case "statement":
       return <FileText className="w-3 h-3 text-gray-600" />;
     case "text_question":
-    case "text_question_short":
-    case "text_question_long":
-    case "text_question_email":
-      return <Type className="w-3 h-3 text-purple-600" />;
+      if (question.style === "email") {
+        return <Mail className="w-3 h-3 text-red-600" />;
+      } else if (question.style === "long") {
+        return <Type className="w-3 h-3 text-red-600" />;
+      } else {
+        return <Type className="w-3 h-3 text-purple-600" />;
+      }
     case "number_descriptive":
       return <Hash className="w-3 h-3 text-orange-600" />;
     case "matrix":
@@ -102,9 +101,6 @@ const getQuestionTypeColor = (type: string) => {
     case "statement":
       return "bg-gray-50";
     case "text_question":
-    case "text_question_short":
-    case "text_question_long":
-    case "text_question_email":
       return "bg-purple-50";
     case "number_descriptive":
       return "bg-orange-50";
@@ -141,6 +137,9 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onToggleGroup,
   renderQuestionTitle,
 }) => {
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
+
   const handleRemoveFromGroup = (questionId: string) => {
     onUpdateQuestion(questionId, { related_group: null });
   };
@@ -148,75 +147,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   const handleMoveToGroup = (questionId: string, groupId: string) => {
     onUpdateQuestion(questionId, { related_group: groupId });
     onMoveToGroup(questionId, groupId);
-  };
-
-  const onDragEnd = (result: DropResult) => {
-    const { destination, source, draggableId } = result;
-
-    if (!destination) {
-      return;
-    }
-
-    // Same position
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    // Dragging from question types sidebar to main form
-    if (source.droppableId === 'questionTypes' && destination.droppableId === 'formQuestions') {
-      // Adding new question from sidebar
-      onAddQuestion(draggableId, destination.index);
-      return;
-    }
-
-    // Dragging from question types sidebar to a group
-    if (source.droppableId === 'questionTypes' && destination.droppableId.startsWith('group-')) {
-      // Create question and add to group
-      const groupId = destination.droppableId.replace('group-', '');
-      onAddQuestion(draggableId);
-      // Wait for question to be created then move it to group
-      setTimeout(() => {
-        const newQuestion = questions[questions.length - 1];
-        if (newQuestion) {
-          handleMoveToGroup(newQuestion.id, groupId);
-        }
-      }, 0);
-      return;
-    }
-
-    const questionId = draggableId.replace('_child', '').replace(/_\d+$/, '');
-
-    // Moving from main list to group
-    if (source.droppableId === 'formQuestions' && destination.droppableId.startsWith('group-')) {
-      const groupId = destination.droppableId.replace('group-', '');
-      handleMoveToGroup(questionId, groupId);
-      return;
-    }
-
-    // Moving from group to main list
-    if (source.droppableId.startsWith('group-') && destination.droppableId === 'formQuestions') {
-      handleRemoveFromGroup(questionId);
-      return;
-    }
-
-    // Moving within same group or main list
-    if (source.droppableId === destination.droppableId) {
-      if (source.droppableId === 'formQuestions') {
-        // Moving within main questions
-        onMoveQuestion(source.index, destination.index);
-      }
-      return;
-    }
-
-    // Moving between different groups
-    if (source.droppableId.startsWith('group-') && destination.droppableId.startsWith('group-')) {
-      const newGroupId = destination.droppableId.replace('group-', '');
-      handleMoveToGroup(questionId, newGroupId);
-      return;
-    }
   };
 
   // Get main questions (not children of any group)
@@ -232,7 +162,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "mt-2 space-y-2 min-h-[60px]",
+              "mt-2 space-y-2",
               snapshot.isDraggingOver && "bg-blue-50 rounded-lg p-2"
             )}
           >
@@ -342,7 +272,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     );
   };
 
-  const renderQuestion = (question: Question, index: number) => {
+  const renderQuestion = (question: ApiQuestion, index: number) => {
     const isGroup = question.type === "question_group";
     const isExpanded = expandedGroups.includes(question.id);
 
@@ -362,7 +292,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               className={cn(
                 "bg-white rounded-lg border border-gray-200/70 shadow-sm",
                 snapshot.isDragging && "shadow-lg scale-[1.02] rotate-1",
-                "hover:shadow-md hover:border-gray-300/50"
+                "hover:shadow-md hover:border-gray-300/50",
+                isGroup && dragOverGroup === question.id && "border-blue-300 shadow-lg"
               )}
             >
               <div className="p-3">
@@ -451,35 +382,33 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   return (
     <div className="flex-1 p-6">
       <div className="max-w-3xl mx-auto">
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
-            {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={`space-y-4 min-h-[200px] ${
-                  snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
-                }`}
-              >
-                {mainQuestions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
-                    <div className="text-gray-400 mb-2">
-                      <MoveRight className="w-8 h-8" />
-                    </div>
-                    <p className="text-gray-500 text-sm text-center">
-                      سوالات را از لیست سمت راست به اینجا بکشید
-                    </p>
+        <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
+          {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`space-y-4 ${
+                snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
+              }`}
+            >
+              {mainQuestions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                  <div className="text-gray-400 mb-2">
+                    <MoveRight className="w-8 h-8" />
                   </div>
-                ) : (
-                  mainQuestions.map((question, index) =>
-                    renderQuestion(question, index)
-                  )
-                )}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+                  <p className="text-gray-500 text-sm text-center">
+                    سوالات را از لیست سمت راست به اینجا بکشید
+                  </p>
+                </div>
+              ) : (
+                mainQuestions.map((question, index) =>
+                  renderQuestion(question, index)
+                )
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
       </div>
     </div>
   );
