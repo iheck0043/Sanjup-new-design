@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -20,43 +21,46 @@ const QuestionTypeList: React.FC<QuestionTypeListProps> = ({
   questionTypes,
   onAddQuestion,
 }) => {
-  const handleDragStart = (e: React.DragEvent, typeId: string) => {
-    e.dataTransfer.setData('text/plain', `question-type-${typeId}`);
-    e.dataTransfer.effectAllowed = 'copy';
-  };
-
   return (
     <div className="w-96 h-full bg-white border-l p-4 overflow-y-auto">
       <h2 className="text-lg font-semibold mb-4">انواع سوالات</h2>
       <div className="space-y-2">
         {questionTypes.map((type, index) => (
-          <div key={type.id}>
-            <Card 
-              className="p-4 hover:shadow-md transition-shadow cursor-move"
-              draggable
-              onDragStart={(e) => handleDragStart(e, type.id)}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  {type.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">{type.title}</h3>
-                  <p className="text-sm text-gray-500">
-                    {type.description}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => onAddQuestion(type.id)}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+          <Draggable key={type.id} draggableId={`question-type-${type.id}`} index={index}>
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+                style={{
+                  ...provided.draggableProps.style,
+                  opacity: snapshot.isDragging ? 0.5 : 1,
+                }}
+              >
+                <Card className="p-4 hover:shadow-md transition-shadow cursor-move">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                      {type.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium">{type.title}</h3>
+                      <p className="text-sm text-gray-500">
+                        {type.description}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => onAddQuestion(type.id)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </Card>
               </div>
-            </Card>
-          </div>
+            )}
+          </Draggable>
         ))}
       </div>
     </div>

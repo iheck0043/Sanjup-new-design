@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import {
   Droppable,
@@ -148,25 +147,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     onUpdateQuestion(questionId, { related_group: groupId });
   };
 
-  const handleAddToGroup = (type: string, groupId: string) => {
-    // Create a new question and add it to the group
-    const newQuestion: Partial<ApiQuestion> = {
-      id: `${Date.now()}-${Math.random()}`,
-      type,
-      label: `سوال جدید ${type}`,
-      related_group: groupId,
-      required: false,
-    };
-    
-    // Add the question to the questions array
-    onAddQuestion(type, undefined);
-    
-    // Then update its related_group
-    setTimeout(() => {
-      onUpdateQuestion(newQuestion.id as string, { related_group: groupId });
-    }, 100);
-  };
-
   // Get main questions (not children of any group)
   const mainQuestions = questions.filter(q => !q.related_group);
 
@@ -185,17 +165,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 ? "border-blue-400 bg-blue-50/70" 
                 : "border-blue-200 bg-blue-50/30"
             )}
-            onDrop={(e) => {
-              e.preventDefault();
-              const questionType = e.dataTransfer.getData('text/plain');
-              if (questionType && questionType.startsWith('question-type-')) {
-                const type = questionType.replace('question-type-', '');
-                handleAddToGroup(type, groupId);
-              }
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-            }}
           >
             {childQuestions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 px-4">
@@ -434,17 +403,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 "space-y-6 min-h-[400px] transition-all duration-300",
                 snapshot.isDraggingOver && "bg-blue-50/50 rounded-lg p-4"
               )}
-              onDrop={(e) => {
-                e.preventDefault();
-                const questionType = e.dataTransfer.getData('text/plain');
-                if (questionType && questionType.startsWith('question-type-')) {
-                  const type = questionType.replace('question-type-', '');
-                  onAddQuestion(type);
-                }
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-              }}
             >
               {mainQuestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50/50">
