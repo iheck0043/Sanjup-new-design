@@ -38,6 +38,7 @@ import {
   Info,
   HelpCircle,
 } from "lucide-react";
+import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -672,7 +673,45 @@ const Index = () => {
           throw new Error("Missing access token or questionnaire ID");
         }
 
-        // Base API data
+        // If we're only updating parentId (moving to/from group)
+        if (Object.keys(updates).length === 1 && "parentId" in updates) {
+          const apiData = {
+            id,
+            related_group: updates.parentId || null,
+          };
+
+          console.log("Updating question group:", apiData);
+
+          const response = await fetch(
+            `${BASE_URL}/api/v1/questionnaire/${id}/questions/update/`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify(apiData),
+            }
+          );
+
+          if (response.ok) {
+            // Update local state
+            setQuestions((prevQuestions) =>
+              prevQuestions.map((q) =>
+                String(q.id) === String(id)
+                  ? { ...q, related_group: updates.parentId || null }
+                  : q
+              )
+            );
+            // Fetch updated questions from server
+            await fetchQuestions();
+            return { message: "Updated" };
+          } else {
+            throw new Error("Failed to update question");
+          }
+        }
+
+        // Original updateQuestion logic for other cases
         const apiData: any = {
           id: id,
           is_required: updates.required || false,
@@ -683,11 +722,15 @@ const Index = () => {
           description: updates.description,
         };
 
-        console.log("lllllllllll::", apiData);
-
         // Get the existing question to determine its type
-        const existingQuestion = questions.find((q) => q.id === id);
+        const existingQuestion = questions.find(
+          (q) => String(q.id) === String(id)
+        );
         if (!existingQuestion) {
+          console.error("Question not found:", {
+            id,
+            questions: questions.map((q) => ({ id: q.id, title: q.title })),
+          });
           throw new Error("Question not found");
         }
 
@@ -1028,7 +1071,7 @@ const Index = () => {
         throw error;
       }
     },
-    [accessToken, questionnaire?.id, questions]
+    [accessToken, questionnaire?.id, questions, setQuestions, fetchQuestions]
   );
 
   // Helper function to map question types to API types
@@ -1496,11 +1539,20 @@ const Index = () => {
   const moveQuestion = useCallback((dragIndex: number, hoverIndex: number) => {
     console.log("Moving question from", dragIndex, "to", hoverIndex);
     setQuestions((prev) => {
-      const draggedItem = prev[dragIndex];
-      const newItems = [...prev];
-      newItems.splice(dragIndex, 1);
-      newItems.splice(hoverIndex, 0, draggedItem);
-      return newItems;
+      // Get only main list questions (not in groups)
+      const mainQuestions = prev.filter((q) => !q.related_group);
+      const [removed] = mainQuestions.splice(dragIndex, 1);
+      mainQuestions.splice(hoverIndex, 0, removed);
+
+      // Update order for main questions
+      const updatedMainQuestions = mainQuestions.map((q, index) => ({
+        ...q,
+        order: index,
+      }));
+
+      // Combine with group questions
+      const groupQuestions = prev.filter((q) => q.related_group);
+      return [...updatedMainQuestions, ...groupQuestions];
     });
   }, []);
 
@@ -1760,26 +1812,211 @@ const Index = () => {
   };
 
   const handleDragEnd = (result: DropResult) => {
-    console.log("Drag result:", result);
     const { source, destination, type, draggableId } = result;
+
+    console.log("Drag End Result:", {
+      source,
+      destination,
+      type,
+      draggableId,
+    });
 
     // If dropped outside a droppable area
     if (!destination) return;
 
-    // If it's a question type being dragged from the sidebar
+    // If dropped in the same position
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
+
+    // Handle adding new question from sidebar
     if (type === "QUESTION_TYPE" && source.droppableId === "questionTypes") {
       // Get the question type from draggableId
       const questionType = draggableId;
-      console.log("Adding question of type:", questionType);
 
       // Add the question at the destination index
       addQuestion(questionType, destination.index);
       return;
     }
 
-    // If it's a question being reordered within the form
-    if (source.droppableId === destination.droppableId) {
-      moveQuestion(source.index, destination.index);
+    // Handle moving questions between groups and main list
+    if (type === "QUESTION_TYPE") {
+      const questionId = draggableId;
+      const sourceGroupId =
+        source.droppableId === "formQuestions" ? null : source.droppableId;
+      const destGroupId =
+        destination.droppableId === "formQuestions"
+          ? null
+          : destination.droppableId;
+
+      console.log("Moving question:", {
+        questionId,
+        sourceGroupId,
+        destGroupId,
+        sourceDroppableId: source.droppableId,
+        destDroppableId: destination.droppableId,
+      });
+
+      // If moving to/from a group
+      if (sourceGroupId !== destGroupId) {
+        // Find the question to update
+        const questionToUpdate = questions.find(
+          (q) => String(q.id) === String(questionId)
+        );
+        console.log("Question to update:", {
+          id: questionToUpdate?.id,
+          title: questionToUpdate?.title,
+          type: questionToUpdate?.type,
+          related_group: questionToUpdate?.related_group,
+        });
+
+        if (questionToUpdate) {
+          // Create a new question object with only related_group
+          const updatedQuestion: Partial<Question> = {
+            parentId: destGroupId || undefined,
+          };
+
+          console.log("Updated question object:", updatedQuestion);
+
+          // Update the question in the API
+          updateQuestion(questionId, updatedQuestion)
+            .then(() => {
+              console.log("API update successful");
+              // After successful API update, update local state
+              moveToGroup(questionId, destGroupId || undefined);
+            })
+            .catch((error) => {
+              console.error("Error updating question group:", error);
+              toast.error("خطا در انتقال سوال به گروه");
+            });
+        } else {
+          console.error("Question not found:", questionId);
+          toast.error("سوال مورد نظر یافت نشد");
+        }
+        return;
+      }
+
+      // If reordering within the same container
+      if (source.droppableId === destination.droppableId) {
+        if (sourceGroupId) {
+          // Reordering within a group
+          const group = questions.find((q) => q.id === sourceGroupId);
+          if (group) {
+            const children = questions.filter(
+              (q) => q.related_group === sourceGroupId
+            );
+            const [removed] = children.splice(source.index, 1);
+            children.splice(destination.index, 0, removed);
+
+            // Create a new array with reordered questions
+            const reorderedQuestions = questions.map((q) => {
+              if (q.related_group === sourceGroupId) {
+                const newIndex = children.findIndex(
+                  (child) => child.id === q.id
+                );
+                return { ...q, order: newIndex };
+              }
+              return q;
+            });
+
+            // Update the questions state immediately
+            setQuestions(reorderedQuestions);
+
+            // Update order in API for group children
+            if (questionnaire?.id) {
+              const reorderData = children.map((q, index) => ({
+                id: parseInt(q.id),
+                order: index + 1,
+              }));
+
+              fetch(
+                `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/reorder/`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                  body: JSON.stringify(reorderData),
+                }
+              )
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("خطا در مرتب‌سازی سوالات");
+                  }
+                  return response.json();
+                })
+                .then(() => {
+                  toast.success("ترتیب سوالات با موفقیت بروزرسانی شد");
+                  // Fetch updated questions after reordering
+                  fetchQuestions();
+                })
+                .catch((error) => {
+                  console.error("Error reordering questions:", error);
+                  toast.error(error.message || "خطا در مرتب‌سازی سوالات");
+                  // Refresh questions to restore original order
+                  fetchQuestions();
+                });
+            }
+          }
+        } else {
+          console.log("هوووووسسسسسس");
+          // Reordering in main list
+          moveQuestion(source.index, destination.index);
+          const mainQuestions = questions.filter((q) => !q.related_group);
+          const [removed] = mainQuestions.splice(source.index, 1);
+          mainQuestions.splice(destination.index, 0, removed);
+
+          // Create a new array with reordered questions
+          const reorderedQuestions = questions.map((q) => {
+            if (!q.related_group) {
+              const newIndex = mainQuestions.findIndex((mq) => mq.id === q.id);
+              return { ...q, order: newIndex };
+            }
+            return q;
+          });
+
+          // Update order in API
+          if (questionnaire?.id) {
+            const reorderData = mainQuestions.map((q, index) => ({
+              id: parseInt(q.id),
+              order: index + 1,
+            }));
+
+            fetch(
+              `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/reorder/`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify(reorderData),
+              }
+            )
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("خطا در مرتب‌سازی سوالات");
+                }
+                return response.json();
+              })
+              .then(() => {
+                toast.success("ترتیب سوالات با موفقیت بروزرسانی شد");
+                // Fetch updated questions after reordering
+                fetchQuestions();
+              })
+              .catch((error) => {
+                console.error("Error reordering questions:", error);
+                toast.error(error.message || "خطا در مرتب‌سازی سوالات");
+                // Refresh questions to restore original order
+                fetchQuestions();
+              });
+          }
+        }
+      }
     }
   };
 

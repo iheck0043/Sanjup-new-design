@@ -138,36 +138,33 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // const handleDragEnd = (result: any) => {
-  //   setDragOverIndex(null);
-  //   const { source, destination, draggableId } = result;
-
-  //   if (!destination) return;
-
-  //   if (
-  //     source.droppableId === "questionTypes" &&
-  //     destination.droppableId === "formQuestions"
-  //   ) {
-  //     onAddQuestion(draggableId, destination.index);
-  //     return;
-  //   }
-
-  //   if (source.droppableId === destination.droppableId) {
-  //     onMoveQuestion(source.index, destination.index);
-  //   }
-  // };
-
-  const renderQuestion = (question: ApiQuestion, index: number) => {
+  const renderQuestion = (
+    question: ApiQuestion,
+    index: number,
+    parentId?: string
+  ) => {
     const isGroup = question.type === "question_group";
     const isExpanded = expandedGroups.includes(question.id);
     const childQuestions = questions.filter(
       (q) => q.related_group === question.id
     );
 
+    if (isGroup) {
+      console.log("Group Details:", {
+        id: question.id,
+        title: question.title,
+        childQuestions: childQuestions.map((q) => ({
+          id: q.id,
+          title: q.title,
+          related_group: q.related_group,
+        })),
+      });
+    }
+
     return (
       <Draggable
         key={String(question.id)}
-        draggableId={String(question.id + "_" + index)}
+        draggableId={String(question.id)}
         index={index}
       >
         {(provided, snapshot) => (
@@ -255,16 +252,51 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               </div>
             </div>
 
-            {isGroup && isExpanded && childQuestions.length > 0 && (
+            {isGroup && isExpanded && (
               <div className="mt-2 pr-8">
-                {childQuestions.map((childQuestion, childIndex) => (
-                  <div key={childQuestion.id} className="relative">
-                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200" />
-                    <div className="pl-4">
-                      {renderQuestion(childQuestion, childIndex)}
+                <Droppable
+                  droppableId={String(question.id)}
+                  type="QUESTION_TYPE"
+                >
+                  {(
+                    provided: DroppableProvided,
+                    snapshot: DroppableStateSnapshot
+                  ) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={cn(
+                        "space-y-4 min-h-[50px] rounded-lg transition-colors duration-200",
+                        snapshot.isDraggingOver
+                          ? "bg-blue-50/80 border-2 border-dashed border-blue-300 p-4"
+                          : "border-2 border-dashed border-transparent p-4",
+                        childQuestions.length === 0 &&
+                          "flex items-center justify-center"
+                      )}
+                    >
+                      {childQuestions.length === 0 ? (
+                        <div className="text-gray-400 text-sm flex items-center gap-2">
+                          <MoveRight className="w-4 h-4" />
+                          <span>سوالات را به اینجا بکشید</span>
+                        </div>
+                      ) : (
+                        childQuestions.map((childQuestion, childIndex) => (
+                          <div key={childQuestion.id} className="relative">
+                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200" />
+                            <div className="pl-4">
+                              {renderQuestion(
+                                childQuestion,
+                                childIndex,
+                                question.id
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      {provided.placeholder}
                     </div>
-                  </div>
-                ))}
+                  )}
+                </Droppable>
               </div>
             )}
           </div>
@@ -272,6 +304,9 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       </Draggable>
     );
   };
+
+  // Filter main questions (those not in any group)
+  const mainQuestions = questions.filter((q) => !q.related_group);
 
   return (
     <div className="flex-1 p-6">
@@ -281,11 +316,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`space-y-4 ${
-                snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
-              }`}
+              className={cn(
+                "space-y-4",
+                snapshot.isDraggingOver && "bg-blue-50/50 rounded-lg p-2"
+              )}
             >
-              {questions.length === 0 ? (
+              {mainQuestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
                   <div className="text-gray-400 mb-2">
                     <MoveRight className="w-8 h-8" />
@@ -295,7 +331,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                   </p>
                 </div>
               ) : (
-                questions.map((question, index) =>
+                mainQuestions.map((question, index) =>
                   renderQuestion(question, index)
                 )
               )}
