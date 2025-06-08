@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from "react";
 import {
   Droppable,
@@ -31,7 +32,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ApiQuestion } from "../pages/Index";
+import { ApiQuestion } from "../pages/QuestionnaireForm";
 
 interface FormBuilderProps {
   questions: ApiQuestion[];
@@ -145,6 +146,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
   const handleMoveToGroup = (questionId: string, groupId: string) => {
     onUpdateQuestion(questionId, { related_group: groupId });
+    onMoveToGroup(questionId, groupId);
   };
 
   // Get main questions (not children of any group)
@@ -154,118 +156,114 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     const childQuestions = questions.filter(q => q.related_group === groupId);
     
     return (
-      <Droppable droppableId={`group-${groupId}`} type="QUESTION">
+      <Droppable droppableId={`group-${groupId}`} type="CHILD_QUESTION">
         {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "mt-3 min-h-[120px] rounded-lg border-2 border-dashed transition-all duration-300 p-3",
-              snapshot.isDraggingOver 
-                ? "border-blue-400 bg-blue-50/70" 
-                : "border-blue-200 bg-blue-50/30"
+              "mt-2 space-y-2",
+              snapshot.isDraggingOver && "bg-blue-50 rounded-lg p-2"
             )}
           >
             {childQuestions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 px-4">
-                <SquarePlus className="w-8 h-8 text-blue-300 mb-3" />
-                <p className="text-blue-500 text-sm font-medium text-center">
+              <div className="flex flex-col items-center justify-center py-8 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                <SquarePlus className="w-6 h-6 text-gray-300 mb-2" />
+                <p className="text-gray-400 text-sm text-center">
                   سوالات را به اینجا بکشید
-                </p>
-                <p className="text-blue-400 text-xs text-center mt-1">
-                  یا از نوار کناری سوال جدید اضافه کنید
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {childQuestions.map((question, index) => (
-                  <Draggable
-                    key={String(question.id)}
-                    draggableId={String(question.id + "_child")}
-                    index={index}
-                  >
-                    {(provided, snapshot) => (
+              childQuestions.map((question, index) => (
+                <Draggable
+                  key={String(question.id)}
+                  draggableId={String(question.id + "_child")}
+                  index={index}
+                >
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={cn(
+                        "relative group pr-4 border-r-2 border-blue-200",
+                        snapshot.isDragging && "z-50"
+                      )}
+                    >
                       <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
                         className={cn(
-                          "relative group",
-                          snapshot.isDragging && "z-50"
+                          "bg-blue-50/50 rounded-lg border border-blue-200/70 shadow-sm",
+                          snapshot.isDragging && "shadow-lg scale-[1.02] rotate-1",
+                          "hover:shadow-md hover:border-blue-300/50"
                         )}
                       >
-                        <div
-                          className={cn(
-                            "bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 shadow-sm transition-all duration-200",
-                            snapshot.isDragging && "shadow-xl scale-[1.03] rotate-1 ring-2 ring-blue-300",
-                            "hover:shadow-md hover:border-blue-300 hover:scale-[1.01]"
-                          )}
-                        >
-                          <div className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div
-                                {...provided.dragHandleProps}
-                                className="cursor-move text-blue-400 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100"
-                              >
-                                <GripVertical className="w-4 h-4" />
-                              </div>
+                        <div className="p-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              {...provided.dragHandleProps}
+                              className="cursor-move text-gray-400 hover:text-gray-600 transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              <GripVertical className="w-4 h-4" />
+                            </div>
 
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3">
-                                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">
-                                    {getQuestionTypeIcon(question.type, question)}
-                                  </span>
-                                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-bold">
-                                    {index + 1}
-                                  </span>
-                                  <div className="text-sm text-gray-800 font-medium">
-                                    {renderQuestionTitle(question)}
-                                  </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={cn(
+                                  "flex items-center justify-center w-5 h-5 rounded-full text-xs text-blue-600 font-medium",
+                                  "bg-blue-100"
+                                )}>
+                                  {getQuestionTypeIcon(question.type, question)}
+                                </span>
+                                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-[10px] text-blue-600 font-medium">
+                                  {index + 1}
+                                </span>
+                                <div className="text-sm text-gray-700 font-medium">
+                                  {renderQuestionTitle(question)}
                                 </div>
                               </div>
+                            </div>
 
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-100"
-                                  onClick={() => onQuestionClick(question)}
-                                >
-                                  <Settings className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-100"
-                                  onClick={() => onDuplicateQuestion(question)}
-                                >
-                                  <Copy className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-100"
-                                  onClick={() => handleRemoveFromGroup(question.id)}
-                                  title="خارج کردن از گروه"
-                                >
-                                  <MoveRight className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100"
-                                  onClick={() => onRemoveQuestion(question.id)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
+                                onClick={() => onQuestionClick(question)}
+                              >
+                                <Settings className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
+                                onClick={() => onDuplicateQuestion(question)}
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-gray-500 hover:text-red-500 hover:bg-red-50"
+                                onClick={() => handleRemoveFromGroup(question.id)}
+                                title="خارج کردن از گروه"
+                              >
+                                <MoveRight className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
+                                onClick={() => onRemoveQuestion(question.id)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </Draggable>
-                ))}
-              </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))
             )}
             {provided.placeholder}
           </div>
@@ -276,13 +274,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
   const renderQuestion = (question: ApiQuestion, index: number) => {
     const isGroup = question.type === "question_group";
-    const childQuestions = questions.filter(q => q.related_group === question.id);
     const isExpanded = expandedGroups.includes(question.id);
 
     return (
       <Draggable
         key={String(question.id)}
-        draggableId={String(question.id)}
+        draggableId={String(question.id + "_" + index)}
         index={index}
       >
         {(provided, snapshot) => (
@@ -293,98 +290,89 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
           >
             <div
               className={cn(
-                "bg-white rounded-lg border transition-all duration-200",
-                snapshot.isDragging && "shadow-xl scale-[1.02] rotate-1 ring-2 ring-blue-300",
-                isGroup ? (
-                  "border-green-200 shadow-md hover:shadow-lg hover:border-green-300"
-                ) : (
-                  "border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300"
-                ),
-                isGroup && dragOverGroup === question.id && "border-green-400 shadow-xl bg-green-50/30"
+                "bg-white rounded-lg border border-gray-200/70 shadow-sm",
+                snapshot.isDragging && "shadow-lg scale-[1.02] rotate-1",
+                "hover:shadow-md hover:border-gray-300/50",
+                isGroup && dragOverGroup === question.id && "border-blue-300 shadow-lg"
               )}
             >
-              <div className="p-4">
+              <div className="p-3">
                 <div className="flex items-center gap-3">
                   <div
                     {...provided.dragHandleProps}
                     className="cursor-move text-gray-400 hover:text-gray-600 transition-colors opacity-0 group-hover:opacity-100"
                   >
-                    <GripVertical className="w-5 h-5" />
+                    <GripVertical className="w-4 h-4" />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <span
                         className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium",
-                          isGroup ? "bg-green-100 text-green-700" : getQuestionTypeColor(question.type) + " text-gray-700"
+                          "flex items-center justify-center w-5 h-5 rounded-full text-xs text-gray-600 font-medium",
+                          getQuestionTypeColor(question.type)
                         )}
                       >
                         {getQuestionTypeIcon(question.type, question)}
                       </span>
-                      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-700 text-sm font-bold">
+                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-[10px] text-gray-600 font-medium">
                         {index + 1}
                       </span>
-                      <div className="text-base text-gray-800 font-medium">
+                      <div className="text-sm text-gray-700 font-medium">
                         {renderQuestionTitle(question)}
                       </div>
-                      {isGroup && (
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-                          {childQuestions.length} سوال
-                        </span>
-                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
+                      onClick={() => onQuestionClick(question)}
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
+                      onClick={() => onDuplicateQuestion(question)}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
+                      onClick={() => onRemoveQuestion(question.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
                     {isGroup && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-green-500 hover:text-green-700 hover:bg-green-100"
+                        className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
                         onClick={() => onToggleGroup(question.id)}
                       >
                         {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
+                          <ChevronUp className="w-3.5 h-3.5" />
                         ) : (
-                          <ChevronDown className="w-4 h-4" />
+                          <ChevronDown className="w-3.5 h-3.5" />
                         )}
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                      onClick={() => onQuestionClick(question)}
-                    >
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                      onClick={() => onDuplicateQuestion(question)}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100"
-                      onClick={() => onRemoveQuestion(question.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </div>
               </div>
-
-              {isGroup && isExpanded && (
-                <div className="border-t border-green-100 bg-green-50/20">
-                  {renderChildQuestions(question.id)}
-                </div>
-              )}
             </div>
+
+            {isGroup && isExpanded && (
+              <div className="mt-2 pr-4 border-r-2 border-gray-200">
+                {renderChildQuestions(question.id)}
+              </div>
+            )}
           </div>
         )}
       </Draggable>
@@ -393,25 +381,21 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
   return (
     <div className="flex-1 p-6">
-      <div className="max-w-4xl mx-auto">
-        <Droppable droppableId="formQuestions" type="QUESTION">
+      <div className="max-w-3xl mx-auto">
+        <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
           {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={cn(
-                "space-y-6 min-h-[400px] transition-all duration-300",
-                snapshot.isDraggingOver && "bg-blue-50/50 rounded-lg p-4"
-              )}
+              className={`space-y-4 ${
+                snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
+              }`}
             >
               {mainQuestions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50/50">
-                  <div className="text-gray-400 mb-4">
-                    <SquarePlus className="w-12 h-12" />
+                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                  <div className="text-gray-400 mb-2">
+                    <MoveRight className="w-8 h-8" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">
-                    سوال اول را اضافه کنید
-                  </h3>
                   <p className="text-gray-500 text-sm text-center">
                     سوالات را از لیست سمت راست به اینجا بکشید
                   </p>
