@@ -34,24 +34,26 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ApiQuestion } from "../pages/QuestionnaireForm";
+
+// استفاده از انترفیس Question از Index.tsx
+import { Question } from "../pages/Index";
 
 interface FormBuilderProps {
-  questions: ApiQuestion[];
+  questions: Question[];
   onRemoveQuestion: (id: string) => void;
-  onUpdateQuestion: (id: string, updates: Partial<ApiQuestion>) => void;
+  onUpdateQuestion: (id: string, updates: Partial<Question>) => void;
   onMoveQuestion: (dragIndex: number, hoverIndex: number) => void;
-  onQuestionClick: (question: ApiQuestion) => void;
+  onQuestionClick: (question: Question) => void;
   onAddQuestion: (type: string, insertIndex?: number) => void;
-  onDuplicateQuestion: (question: ApiQuestion) => void;
-  onConditionClick: (question: ApiQuestion) => void;
+  onDuplicateQuestion: (question: Question) => void;
+  onConditionClick: (question: Question) => void;
   onMoveToGroup: (questionId: string, groupId: string) => void;
   expandedGroups: string[];
   onToggleGroup: (groupId: string) => void;
-  renderQuestionTitle: (question: ApiQuestion) => React.ReactNode;
+  renderQuestionTitle: (question: Question) => React.ReactNode;
 }
 
-const getQuestionTypeIcon = (type: string, question) => {
+const getQuestionTypeIcon = (type: string, question: Question) => {
   switch (type) {
     case "single_select":
     case "multi_select":
@@ -63,13 +65,10 @@ const getQuestionTypeIcon = (type: string, question) => {
     case "statement":
       return <FileText className="w-3 h-3 text-gray-600" />;
     case "text_question":
-      if (question.style === "email") {
-        return <Mail className="w-3 h-3 text-red-600" />;
-      } else if (question.style === "long") {
-        return <Type className="w-3 h-3 text-red-600" />;
-      } else {
-        return <Type className="w-3 h-3 text-purple-600" />;
-      }
+    case "text_question_short":
+    case "text_question_long":
+    case "text_question_email":
+      return <Type className="w-3 h-3 text-purple-600" />;
     case "number_descriptive":
       return <Hash className="w-3 h-3 text-orange-600" />;
     case "matrix":
@@ -103,6 +102,9 @@ const getQuestionTypeColor = (type: string) => {
     case "statement":
       return "bg-gray-50";
     case "text_question":
+    case "text_question_short":
+    case "text_question_long":
+    case "text_question_email":
       return "bg-purple-50";
     case "number_descriptive":
       return "bg-orange-50";
@@ -163,6 +165,28 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       return;
     }
 
+    // Dragging from question types sidebar to main form
+    if (source.droppableId === 'questionTypes' && destination.droppableId === 'formQuestions') {
+      // Adding new question from sidebar
+      onAddQuestion(draggableId, destination.index);
+      return;
+    }
+
+    // Dragging from question types sidebar to a group
+    if (source.droppableId === 'questionTypes' && destination.droppableId.startsWith('group-')) {
+      // Create question and add to group
+      const groupId = destination.droppableId.replace('group-', '');
+      onAddQuestion(draggableId);
+      // Wait for question to be created then move it to group
+      setTimeout(() => {
+        const newQuestion = questions[questions.length - 1];
+        if (newQuestion) {
+          handleMoveToGroup(newQuestion.id, groupId);
+        }
+      }, 0);
+      return;
+    }
+
     const questionId = draggableId.replace('_child', '').replace(/_\d+$/, '');
 
     // Moving from main list to group
@@ -183,14 +207,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       if (source.droppableId === 'formQuestions') {
         // Moving within main questions
         onMoveQuestion(source.index, destination.index);
-      } else {
-        // Moving within a group - handle child question reordering
-        const groupId = source.droppableId.replace('group-', '');
-        const childQuestions = questions.filter(q => q.related_group === groupId);
-        const [movedQuestion] = childQuestions.splice(source.index, 1);
-        childQuestions.splice(destination.index, 0, movedQuestion);
-        // Update the order of child questions
-        // This would need additional handler in parent component
       }
       return;
     }
@@ -326,7 +342,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     );
   };
 
-  const renderQuestion = (question: ApiQuestion, index: number) => {
+  const renderQuestion = (question: Question, index: number) => {
     const isGroup = question.type === "question_group";
     const isExpanded = expandedGroups.includes(question.id);
 

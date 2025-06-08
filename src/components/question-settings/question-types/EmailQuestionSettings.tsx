@@ -3,11 +3,14 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Question } from '../../../pages/QuestionnaireForm';
+import { Question } from '../../../pages/Index';
 
 interface EmailQuestionSettingsProps {
-  question: Question;
-  onUpdateField: (field: keyof Question, value: any) => void;
+  question: Question & {
+    placeholder?: string;
+    email_validation?: boolean;
+  };
+  onUpdateField: (field: string, value: any) => void;
 }
 
 const EmailQuestionSettings: React.FC<EmailQuestionSettingsProps> = ({
