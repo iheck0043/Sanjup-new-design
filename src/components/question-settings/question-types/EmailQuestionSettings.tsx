@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ApiQuestion } from '../../../pages/QuestionnaireForm';
+import { ApiQuestion } from '../../../pages/Index';
 
 interface EmailQuestionSettingsProps {
   question: ApiQuestion;
@@ -17,8 +17,8 @@ const EmailQuestionSettings: React.FC<EmailQuestionSettingsProps> = ({
         <label className="block text-sm font-medium mb-2">عنوان سوال</label>
         <input
           type="text"
-          value={question.label || ''}
-          onChange={(e) => onUpdate({ label: e.target.value })}
+          value={question.title || ''}
+          onChange={(e) => onUpdate({ title: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md"
           placeholder="عنوان سوال ایمیل"
         />
@@ -30,7 +30,17 @@ const EmailQuestionSettings: React.FC<EmailQuestionSettingsProps> = ({
           value={question.placeholder || ''}
           onChange={(e) => onUpdate({ placeholder: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          placeholder="مثال: ایمیل خود را وارد کنید"
+          placeholder="مثال: آدرس ایمیل خود را وارد کنید"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">توضیحات</label>
+        <textarea
+          value={question.description || ''}
+          onChange={(e) => onUpdate({ description: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          placeholder="توضیحات اضافی برای سوال"
+          rows={3}
         />
       </div>
     </div>

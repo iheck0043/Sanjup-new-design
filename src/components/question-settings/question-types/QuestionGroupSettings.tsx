@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ApiQuestion } from '../../../pages/QuestionnaireForm';
+import { ApiQuestion } from '../../../pages/Index';
 
 interface QuestionGroupSettingsProps {
   question: ApiQuestion;
@@ -17,8 +17,8 @@ const QuestionGroupSettings: React.FC<QuestionGroupSettingsProps> = ({
         <label className="block text-sm font-medium mb-2">عنوان گروه</label>
         <input
           type="text"
-          value={question.label || ''}
-          onChange={(e) => onUpdate({ label: e.target.value })}
+          value={question.title || ''}
+          onChange={(e) => onUpdate({ title: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md"
           placeholder="عنوان گروه سوال"
         />

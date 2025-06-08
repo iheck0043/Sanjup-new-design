@@ -9,6 +9,22 @@ export interface Question {
   required?: boolean;
   options?: any[];
   description?: string;
+  conditions?: any[];
+  placeholder?: string;
+}
+
+export interface ApiQuestion {
+  id: string;
+  type: string;
+  title?: string;
+  label?: string;
+  related_group?: string | null;
+  required?: boolean;
+  options?: any[];
+  description?: string;
+  conditions?: any[];
+  placeholder?: string;
+  style?: string;
 }
 
 export default function Index() {

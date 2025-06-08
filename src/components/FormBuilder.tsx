@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import {
   Droppable,
@@ -32,7 +31,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ApiQuestion } from "../pages/QuestionnaireForm";
+import { ApiQuestion } from "../pages/Index";
 
 interface FormBuilderProps {
   questions: ApiQuestion[];
@@ -146,7 +145,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
   const handleMoveToGroup = (questionId: string, groupId: string) => {
     onUpdateQuestion(questionId, { related_group: groupId });
-    onMoveToGroup(questionId, groupId);
   };
 
   // Get main questions (not children of any group)
@@ -156,13 +154,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     const childQuestions = questions.filter(q => q.related_group === groupId);
     
     return (
-      <Droppable droppableId={`group-${groupId}`} type="CHILD_QUESTION">
+      <Droppable droppableId={`group-${groupId}`} type="QUESTION">
         {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "mt-3 min-h-[120px] rounded-lg border-2 border-dashed transition-all duration-300",
+              "mt-3 min-h-[120px] rounded-lg border-2 border-dashed transition-all duration-300 p-3",
               snapshot.isDraggingOver 
                 ? "border-blue-400 bg-blue-50/70" 
                 : "border-blue-200 bg-blue-50/30"
@@ -179,7 +177,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="p-3 space-y-3">
+              <div className="space-y-3">
                 {childQuestions.map((question, index) => (
                   <Draggable
                     key={String(question.id)}
@@ -279,11 +277,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   const renderQuestion = (question: ApiQuestion, index: number) => {
     const isGroup = question.type === "question_group";
     const childQuestions = questions.filter(q => q.related_group === question.id);
+    const isExpanded = expandedGroups.includes(question.id);
 
     return (
       <Draggable
         key={String(question.id)}
-        draggableId={String(question.id + "_" + index)}
+        draggableId={String(question.id)}
         index={index}
       >
         {(provided, snapshot) => (
@@ -338,6 +337,20 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {isGroup && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-green-500 hover:text-green-700 hover:bg-green-100"
+                        onClick={() => onToggleGroup(question.id)}
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -366,7 +379,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 </div>
               </div>
 
-              {isGroup && (
+              {isGroup && isExpanded && (
                 <div className="border-t border-green-100 bg-green-50/20">
                   {renderChildQuestions(question.id)}
                 </div>
@@ -381,7 +394,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   return (
     <div className="flex-1 p-6">
       <div className="max-w-4xl mx-auto">
-        <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
+        <Droppable droppableId="formQuestions" type="QUESTION">
           {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
             <div
               ref={provided.innerRef}
