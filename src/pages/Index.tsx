@@ -11,9 +11,6 @@ export interface Question {
   description?: string;
   conditions?: any[];
   placeholder?: string;
-  text?: string;
-  is_required?: boolean;
-  order?: number;
 }
 
 export interface ApiQuestion {
@@ -28,9 +25,6 @@ export interface ApiQuestion {
   conditions?: any[];
   placeholder?: string;
   style?: string;
-  text?: string;
-  is_required?: boolean;
-  order?: number;
 }
 
 export default function Index() {

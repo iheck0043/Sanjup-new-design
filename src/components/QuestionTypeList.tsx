@@ -21,19 +21,8 @@ const QuestionTypeList: React.FC<QuestionTypeListProps> = ({
   onAddQuestion,
 }) => {
   const handleDragStart = (e: React.DragEvent, typeId: string) => {
-    console.log("Drag start with type:", typeId);
     e.dataTransfer.setData('text/plain', `question-type-${typeId}`);
     e.dataTransfer.effectAllowed = 'copy';
-    
-    // Add visual feedback
-    const target = e.target as HTMLElement;
-    target.style.opacity = '0.5';
-  };
-
-  const handleDragEnd = (e: React.DragEvent) => {
-    // Reset visual feedback
-    const target = e.target as HTMLElement;
-    target.style.opacity = '1';
   };
 
   return (
@@ -46,7 +35,6 @@ const QuestionTypeList: React.FC<QuestionTypeListProps> = ({
               className="p-4 hover:shadow-md transition-shadow cursor-move"
               draggable
               onDragStart={(e) => handleDragStart(e, type.id)}
-              onDragEnd={handleDragEnd}
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
