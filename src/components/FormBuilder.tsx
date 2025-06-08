@@ -144,26 +144,22 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     onUpdateQuestion(questionId, { related_group: null });
   };
 
-  const handleMoveToGroup = (questionId: string, groupId: string) => {
-    onUpdateQuestion(questionId, { related_group: groupId });
-  };
-
   const handleAddToGroup = (type: string, groupId: string) => {
-    // Create a new question and add it to the group
-    const newQuestion: Partial<ApiQuestion> = {
-      id: `${Date.now()}-${Math.random()}`,
-      type,
-      label: `سوال جدید ${type}`,
-      related_group: groupId,
-      required: false,
-    };
+    console.log("Adding question to group:", type, groupId);
     
-    // Add the question to the questions array
-    onAddQuestion(type, undefined);
+    // Create a temporary question ID
+    const tempId = `temp-${Date.now()}-${Math.random()}`;
     
-    // Then update its related_group
+    // Add the question with the group relationship
+    onAddQuestion(type);
+    
+    // Find the most recently added question and update its related_group
     setTimeout(() => {
-      onUpdateQuestion(newQuestion.id as string, { related_group: groupId });
+      const allQuestions = questions;
+      const lastQuestion = allQuestions[allQuestions.length - 1];
+      if (lastQuestion) {
+        onUpdateQuestion(lastQuestion.id, { related_group: groupId });
+      }
     }, 100);
   };
 
@@ -187,14 +183,29 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             )}
             onDrop={(e) => {
               e.preventDefault();
+              console.log("Drop event on group:", groupId);
               const questionType = e.dataTransfer.getData('text/plain');
+              console.log("Question type:", questionType);
               if (questionType && questionType.startsWith('question-type-')) {
                 const type = questionType.replace('question-type-', '');
+                console.log("Adding type to group:", type, groupId);
                 handleAddToGroup(type, groupId);
               }
             }}
             onDragOver={(e) => {
               e.preventDefault();
+              e.dataTransfer.dropEffect = 'copy';
+            }}
+            onDragEnter={(e) => {
+              e.preventDefault();
+              setDragOverGroup(groupId);
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+              // Only clear if we're leaving the actual drop zone
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setDragOverGroup(null);
+              }
             }}
           >
             {childQuestions.length === 0 ? (
@@ -436,14 +447,18 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               )}
               onDrop={(e) => {
                 e.preventDefault();
+                console.log("Drop event on main area");
                 const questionType = e.dataTransfer.getData('text/plain');
+                console.log("Question type on main area:", questionType);
                 if (questionType && questionType.startsWith('question-type-')) {
                   const type = questionType.replace('question-type-', '');
+                  console.log("Adding type to main area:", type);
                   onAddQuestion(type);
                 }
               }}
               onDragOver={(e) => {
                 e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
               }}
             >
               {mainQuestions.length === 0 ? (
