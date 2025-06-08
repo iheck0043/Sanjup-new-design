@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import {
   Droppable,
@@ -146,9 +145,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
   const handleAddToGroup = (type: string, groupId: string) => {
     console.log("Adding question to group:", type, groupId);
-    
-    // Create a temporary question ID
-    const tempId = `temp-${Date.now()}-${Math.random()}`;
     
     // Add the question with the group relationship
     onAddQuestion(type);
@@ -453,6 +449,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 if (questionType && questionType.startsWith('question-type-')) {
                   const type = questionType.replace('question-type-', '');
                   console.log("Adding type to main area:", type);
+                  // اضافه کردن به انتهای لیست اصلی (بدون insertIndex)
                   onAddQuestion(type);
                 }
               }}
