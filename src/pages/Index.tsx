@@ -17,7 +17,7 @@ export interface ApiQuestion {
   id: string;
   type: string;
   title?: string;
-  label?: string;
+  label: string;
   related_group?: string | null;
   required?: boolean;
   options?: any[];

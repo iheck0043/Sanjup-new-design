@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
@@ -25,7 +26,7 @@ const QuestionTypeList: React.FC<QuestionTypeListProps> = ({
       <h2 className="text-lg font-semibold mb-4">انواع سوالات</h2>
       <div className="space-y-2">
         {questionTypes.map((type, index) => (
-          <Draggable key={type.id} draggableId={type.id} index={index}>
+          <Draggable key={type.id} draggableId={`question-type-${type.id}`} index={index}>
             {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
