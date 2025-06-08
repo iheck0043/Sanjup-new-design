@@ -1,12 +1,14 @@
 
 import React, { useState, useCallback } from "react";
 import {
+  DragDropContext,
   Droppable,
   Draggable,
   DroppableProvided,
   DroppableStateSnapshot,
   DraggableProvided,
   DraggableStateSnapshot,
+  DropResult,
 } from "react-beautiful-dnd";
 import {
   Plus,
@@ -137,9 +139,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   onToggleGroup,
   renderQuestionTitle,
 }) => {
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
-
   const handleRemoveFromGroup = (questionId: string) => {
     onUpdateQuestion(questionId, { related_group: null });
   };
@@ -147,6 +146,61 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   const handleMoveToGroup = (questionId: string, groupId: string) => {
     onUpdateQuestion(questionId, { related_group: groupId });
     onMoveToGroup(questionId, groupId);
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    // Same position
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    const questionId = draggableId.replace('_child', '').replace(/_\d+$/, '');
+
+    // Moving from main list to group
+    if (source.droppableId === 'formQuestions' && destination.droppableId.startsWith('group-')) {
+      const groupId = destination.droppableId.replace('group-', '');
+      handleMoveToGroup(questionId, groupId);
+      return;
+    }
+
+    // Moving from group to main list
+    if (source.droppableId.startsWith('group-') && destination.droppableId === 'formQuestions') {
+      handleRemoveFromGroup(questionId);
+      return;
+    }
+
+    // Moving within same group or main list
+    if (source.droppableId === destination.droppableId) {
+      if (source.droppableId === 'formQuestions') {
+        // Moving within main questions
+        onMoveQuestion(source.index, destination.index);
+      } else {
+        // Moving within a group - handle child question reordering
+        const groupId = source.droppableId.replace('group-', '');
+        const childQuestions = questions.filter(q => q.related_group === groupId);
+        const [movedQuestion] = childQuestions.splice(source.index, 1);
+        childQuestions.splice(destination.index, 0, movedQuestion);
+        // Update the order of child questions
+        // This would need additional handler in parent component
+      }
+      return;
+    }
+
+    // Moving between different groups
+    if (source.droppableId.startsWith('group-') && destination.droppableId.startsWith('group-')) {
+      const newGroupId = destination.droppableId.replace('group-', '');
+      handleMoveToGroup(questionId, newGroupId);
+      return;
+    }
   };
 
   // Get main questions (not children of any group)
@@ -162,7 +216,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "mt-2 space-y-2",
+              "mt-2 space-y-2 min-h-[60px]",
               snapshot.isDraggingOver && "bg-blue-50 rounded-lg p-2"
             )}
           >
@@ -292,8 +346,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               className={cn(
                 "bg-white rounded-lg border border-gray-200/70 shadow-sm",
                 snapshot.isDragging && "shadow-lg scale-[1.02] rotate-1",
-                "hover:shadow-md hover:border-gray-300/50",
-                isGroup && dragOverGroup === question.id && "border-blue-300 shadow-lg"
+                "hover:shadow-md hover:border-gray-300/50"
               )}
             >
               <div className="p-3">
@@ -382,33 +435,35 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   return (
     <div className="flex-1 p-6">
       <div className="max-w-3xl mx-auto">
-        <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
-          {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`space-y-4 ${
-                snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
-              }`}
-            >
-              {mainQuestions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
-                  <div className="text-gray-400 mb-2">
-                    <MoveRight className="w-8 h-8" />
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
+            {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`space-y-4 min-h-[200px] ${
+                  snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
+                }`}
+              >
+                {mainQuestions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                    <div className="text-gray-400 mb-2">
+                      <MoveRight className="w-8 h-8" />
+                    </div>
+                    <p className="text-gray-500 text-sm text-center">
+                      سوالات را از لیست سمت راست به اینجا بکشید
+                    </p>
                   </div>
-                  <p className="text-gray-500 text-sm text-center">
-                    سوالات را از لیست سمت راست به اینجا بکشید
-                  </p>
-                </div>
-              ) : (
-                mainQuestions.map((question, index) =>
-                  renderQuestion(question, index)
-                )
-              )}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+                ) : (
+                  mainQuestions.map((question, index) =>
+                    renderQuestion(question, index)
+                  )
+                )}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     </div>
   );
