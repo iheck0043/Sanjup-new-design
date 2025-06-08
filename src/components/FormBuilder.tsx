@@ -279,7 +279,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     return (
       <Draggable
         key={String(question.id)}
-        draggableId={String(question.id + "_" + index)}
+        draggableId={String(question.id)}
         index={index}
       >
         {(provided, snapshot) => (
@@ -387,9 +387,10 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`space-y-4 ${
-                snapshot.isDraggingOver ? "bg-blue-50/50 rounded-lg" : ""
-              }`}
+              className={cn(
+                "space-y-4",
+                snapshot.isDraggingOver && "bg-blue-50/50 rounded-lg p-2"
+              )}
             >
               {mainQuestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
