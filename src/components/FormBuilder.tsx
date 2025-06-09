@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ApiQuestion } from "../pages/QuestionnaireForm";
+import { Card, CardHeader } from "@/components/ui/card";
 
 interface FormBuilderProps {
   questions: ApiQuestion[];
@@ -137,203 +138,318 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   renderQuestionTitle,
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isDraggingFromSidebar, setIsDraggingFromSidebar] = useState(false);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
-  const renderQuestion = (
-    question: ApiQuestion,
-    index: number,
-    parentId?: string
-  ) => {
-    const isGroup = question.type === "question_group";
-    const isExpanded = expandedGroups.includes(question.id);
-    const childQuestions = questions.filter(
-      (q) => q.related_group === question.id
+  // Helper functions to determine group boundaries
+  const getGroupInfo = (question: ApiQuestion, index: number) => {
+    if (!question.related_group) return null;
+
+    // Find the group question (question with type "question_group" and same related_group)
+    const groupQuestionIndex = questions.findIndex(
+      (q) =>
+        q.type === "question_group" &&
+        q.related_group === question.related_group
     );
 
-    if (isGroup) {
-      console.log("Group Details:", {
-        id: question.id,
-        title: question.title,
-        childQuestions: childQuestions.map((q) => ({
-          id: q.id,
-          title: q.title,
-          related_group: q.related_group,
-        })),
-      });
-    }
+    const isFirstInGroup =
+      index === 0 ||
+      !questions[index - 1]?.related_group ||
+      questions[index - 1].related_group !== question.related_group;
 
-    return (
-      <Draggable
-        key={String(question.id)}
-        draggableId={String(question.id)}
-        index={index}
-      >
-        {(provided, snapshot) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            className={cn("relative group", snapshot.isDragging && "z-50")}
-          >
-            <div
-              className={cn(
-                "bg-white rounded-lg border border-gray-200/70 shadow-sm",
-                snapshot.isDragging && "shadow-lg scale-[1.02] rotate-1",
-                "hover:shadow-md hover:border-gray-300/50"
-              )}
-            >
-              <div className="p-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    {...provided.dragHandleProps}
-                    className="cursor-move text-gray-400 hover:text-gray-600 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <GripVertical className="w-4 h-4" />
-                  </div>
+    const isLastInGroup =
+      index === questions.length - 1 ||
+      !questions[index + 1]?.related_group ||
+      questions[index + 1].related_group !== question.related_group;
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "flex items-center justify-center w-5 h-5 rounded-full text-xs text-gray-600 font-medium",
-                          getQuestionTypeColor(question.type)
-                        )}
-                      >
-                        {getQuestionTypeIcon(question.type, question)}
-                      </span>
-                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-[10px] text-gray-600 font-medium">
-                        {index + 1}
-                      </span>
-                      <div className="text-sm text-gray-700 font-medium">
-                        {renderQuestionTitle(question)}
-                      </div>
-                    </div>
-                  </div>
+    const isGroupQuestion = question.type === "question_group";
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
-                      onClick={() => onQuestionClick(question)}
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
-                      onClick={() => onDuplicateQuestion(question)}
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
-                      onClick={() => onRemoveQuestion(question.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                    {isGroup && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
-                        onClick={() => onToggleGroup(question.id)}
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {isGroup && isExpanded && (
-              <div className="mt-2 pr-8">
-                <Droppable
-                  droppableId={String(question.id)}
-                  type="QUESTION_TYPE"
-                >
-                  {(
-                    provided: DroppableProvided,
-                    snapshot: DroppableStateSnapshot
-                  ) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={cn(
-                        "space-y-4 min-h-[50px] rounded-lg transition-colors duration-200",
-                        snapshot.isDraggingOver
-                          ? "bg-blue-50/80 border-2 border-dashed border-blue-300 p-4"
-                          : "border-2 border-dashed border-transparent p-4",
-                        childQuestions.length === 0 &&
-                          "flex items-center justify-center"
-                      )}
-                    >
-                      {childQuestions.length === 0 ? (
-                        <div className="text-gray-400 text-sm flex items-center gap-2">
-                          <MoveRight className="w-4 h-4" />
-                          <span>سوالات را به اینجا بکشید</span>
-                        </div>
-                      ) : (
-                        childQuestions.map((childQuestion, childIndex) => (
-                          <div key={childQuestion.id} className="relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200" />
-                            <div className="pl-4">
-                              {renderQuestion(
-                                childQuestion,
-                                childIndex,
-                                question.id
-                              )}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            )}
-          </div>
-        )}
-      </Draggable>
-    );
+    return {
+      isFirstInGroup,
+      isLastInGroup,
+      isGroupQuestion,
+      groupQuestionIndex,
+    };
   };
 
-  // Filter main questions (those not in any group)
-  const mainQuestions = questions.filter((q) => !q.related_group);
+  // Calculate total number of items (questions + exit areas)
+  const totalItems = questions.reduce((acc, question, index) => {
+    const isLastQuestionInGroup =
+      question.related_group &&
+      !questions
+        .slice(index + 1)
+        .some((q) => q.related_group === question.related_group);
+    return acc + (isLastQuestionInGroup ? 2 : 1);
+  }, 0);
+
+  // Create a flat array of all items (questions and exit areas)
+  const allItems = questions.reduce((acc, question, index) => {
+    const isLastQuestionInGroup =
+      question.related_group &&
+      !questions
+        .slice(index + 1)
+        .some((q) => q.related_group === question.related_group);
+
+    acc.push({ type: "question", data: question, originalIndex: index });
+    if (isLastQuestionInGroup) {
+      acc.push({ type: "exit", data: question, originalIndex: index });
+    }
+    return acc;
+  }, [] as Array<{ type: "question" | "exit"; data: ApiQuestion; originalIndex: number }>);
 
   return (
-    <div className="flex-1 p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="p-6">
+      <div className="">
         <Droppable droppableId="formQuestions" type="QUESTION_TYPE">
           {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={cn(
-                "space-y-4",
-                snapshot.isDraggingOver && "bg-blue-50/50 rounded-lg p-2"
-              )}
+              style={{ position: "relative" }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (!snapshot.isDraggingOver) return;
+
+                const rect = e.currentTarget.getBoundingClientRect();
+                const y = e.clientY - rect.top;
+                const itemHeight = 60 + 4; // height + margin
+                const newHoverIndex = Math.floor(y / itemHeight);
+
+                if (newHoverIndex !== hoverIndex) {
+                  setHoverIndex(
+                    Math.max(0, Math.min(newHoverIndex, allItems.length))
+                  );
+                }
+              }}
+              onDragLeave={() => {
+                setHoverIndex(null);
+              }}
             >
-              {mainQuestions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
-                  <div className="text-gray-400 mb-2">
+              {questions.length === 0 ? (
+                <div
+                  className={`flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg transition-all duration-200 ${
+                    snapshot.isDraggingOver
+                      ? "border-blue-400 bg-blue-100/50"
+                      : "border-gray-200 bg-gray-50/50"
+                  }`}
+                >
+                  <div
+                    className={`mb-2 transition-colors duration-200 ${
+                      snapshot.isDraggingOver
+                        ? "text-blue-500"
+                        : "text-gray-400"
+                    }`}
+                  >
                     <MoveRight className="w-8 h-8" />
                   </div>
-                  <p className="text-gray-500 text-sm text-center">
-                    سوالات را از لیست سمت راست به اینجا بکشید
+                  <p
+                    className={`text-sm text-center transition-colors duration-200 ${
+                      snapshot.isDraggingOver
+                        ? "text-blue-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {snapshot.isDraggingOver
+                      ? "اینجا رها کنید"
+                      : "سوالات را از لیست سمت راست به اینجا بکشید"}
                   </p>
                 </div>
               ) : (
-                mainQuestions.map((question, index) =>
-                  renderQuestion(question, index)
-                )
+                <>
+                  {/* Drop zone at the beginning */}
+                  {snapshot.isDraggingOver && hoverIndex === 0 && (
+                    <div className="h-2 bg-blue-400 rounded-full mb-2 transition-all duration-150" />
+                  )}
+
+                  {allItems.map((item, index) => {
+                    if (item.type === "question") {
+                      const groupInfo = getGroupInfo(
+                        item.data,
+                        item.originalIndex
+                      );
+
+                      return (
+                        <div key={String(item.data.id)}>
+                          <Draggable
+                            draggableId={String(item.data.id)}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`relative group h-[60px] bg-transparent mb-1 ${
+                                  snapshot.isDragging ? "opacity-50 mb-1" : ""
+                                }`}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  left: "unset !important",
+                                  top: "unset !important",
+                                }}
+                              >
+                                <div
+                                  className={`h-[50px] ${
+                                    item.data.related_group ? "pr-8" : ""
+                                  }`}
+                                >
+                                  {/* Blue line for subgroup questions - positioned outside the padding */}
+                                  {item.data.related_group && (
+                                    <div
+                                      className={`absolute right-4 w-1 z-10 transition-all duration-200 bg-blue-200`}
+                                      style={{
+                                        top:
+                                          groupInfo?.isGroupQuestion ||
+                                          groupInfo?.isFirstInGroup
+                                            ? "-14px"
+                                            : "-6px",
+                                        bottom: groupInfo?.isLastInGroup
+                                          ? "10px"
+                                          : "-6px",
+                                        height:
+                                          groupInfo?.isGroupQuestion &&
+                                          groupInfo?.isLastInGroup
+                                            ? "calc(100% - 10px)"
+                                            : groupInfo?.isFirstInGroup &&
+                                              groupInfo?.isLastInGroup
+                                            ? "calc(100% - 10px)"
+                                            : "calc(100% + 12px)",
+                                      }}
+                                    />
+                                  )}
+
+                                  <Card
+                                    className={`h-full flex items-center ${
+                                      snapshot.isDragging
+                                        ? "shadow-lg"
+                                        : "hover:shadow-md"
+                                    } transition-shadow duration-200`}
+                                  >
+                                    <CardHeader className="p-2 w-full">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex-shrink-0 transition-all duration-300 group-hover:scale-110">
+                                            <div
+                                              className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                                                item.data.related_group
+                                                  ? "bg-blue-100 text-blue-600"
+                                                  : "bg-gray-100 text-gray-600"
+                                              }`}
+                                            >
+                                              {item.data.related_group
+                                                ? `${index + 1}.1`
+                                                : `${index + 1}`}
+                                            </div>
+                                          </div>
+                                          <div className="flex-shrink-0 transition-all duration-300 group-hover:scale-110">
+                                            {getQuestionTypeIcon(
+                                              item.data.type,
+                                              item.data
+                                            )}
+                                          </div>
+                                          <div className="text-sm text-gray-700">
+                                            {renderQuestionTitle(item.data)}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7"
+                                            onClick={() =>
+                                              onQuestionClick(item.data)
+                                            }
+                                          >
+                                            <Settings className="h-3.5 w-3.5" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7"
+                                            onClick={() =>
+                                              onDuplicateQuestion(item.data)
+                                            }
+                                          >
+                                            <Copy className="h-3.5 w-3.5" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7"
+                                            onClick={() =>
+                                              onRemoveQuestion(item.data.id)
+                                            }
+                                          >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </CardHeader>
+                                  </Card>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+
+                          {/* Drop zone after each question when hovering over that specific area */}
+                          {snapshot.isDraggingOver &&
+                            hoverIndex === index + 1 && (
+                              <div className="h-2 bg-blue-400 rounded-full my-1 transition-all duration-150" />
+                            )}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <Draggable
+                          key={`group-${item.data.related_group}-exit`}
+                          draggableId={`group-${item.data.related_group}-exit`}
+                          index={index}
+                          isDragDisabled={true}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`h-16 border-2 border-dashed rounded-lg flex items-center justify-center transition-colors mb-1 ${
+                                snapshot.isDragging
+                                  ? "border-blue-400 bg-blue-50/80"
+                                  : "border-gray-300 bg-gray-50/80"
+                              }`}
+                              style={{
+                                ...provided.draggableProps.style,
+                                position: "relative",
+                                zIndex: 1,
+                                pointerEvents: "auto",
+                                cursor: "default",
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                const draggedQuestionId =
+                                  e.dataTransfer.getData("text/plain");
+                                const draggedQuestion = questions.find(
+                                  (q) => q.id === draggedQuestionId
+                                );
+                                if (
+                                  draggedQuestion &&
+                                  draggedQuestion.related_group ===
+                                    item.data.related_group
+                                ) {
+                                  onUpdateQuestion(draggedQuestionId, {
+                                    related_group: null,
+                                  });
+                                }
+                              }}
+                            >
+                              <span className="text-gray-400 text-sm">
+                                برای خارج کردن سوال از گروه، اینجا رها کنید
+                              </span>
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    }
+                  })}
+                </>
               )}
               {provided.placeholder}
             </div>
