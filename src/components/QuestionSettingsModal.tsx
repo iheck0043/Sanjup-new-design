@@ -60,13 +60,14 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       if (isNewQuestion) {
         setLocalQuestion({
           ...question,
-          title: "سوال جدید",
-          label: "سوال جدید",
+          title: question.title || "سوال جدید",
+          label: question.label || "سوال جدید",
           required: true,
         });
       } else {
         setLocalQuestion({
           ...question,
+          title: question.title || question.label || "",
           label: question.title || question.label || "",
         });
       }
@@ -82,6 +83,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
     if (field === "label") {
       updated.title = value;
+      updated.label = value;
     }
 
     if (field === "hasMedia") {
@@ -105,7 +107,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
-    if (!localQuestion.label?.trim()) {
+    if (!localQuestion.title?.trim()) {
       inputRef.current?.focus();
       return;
     }
@@ -321,7 +323,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                 <Button
                   onClick={handleSave}
                   className="flex-1"
-                  disabled={!hasChanges || !localQuestion.label?.trim()}
+                  disabled={!hasChanges || !localQuestion.title?.trim()}
                 >
                   ذخیره
                 </Button>

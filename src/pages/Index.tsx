@@ -4,10 +4,12 @@ import React from 'react';
 export interface Question {
   id: string;
   type: string;
-  title?: string;
+  title: string;
   label?: string;
+  text?: string;
   required?: boolean;
   isRequired?: boolean;
+  is_required?: boolean;
   order?: number;
   related_group?: string | null;
   hasMedia?: boolean;
@@ -39,7 +41,7 @@ export interface Question {
   shuffleOptions?: boolean;
   hasOther?: boolean;
   hasNone?: boolean;
-  text?: string;
+  defaultValue?: any;
 }
 
 const Index: React.FC = () => {

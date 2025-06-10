@@ -1,8 +1,9 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import type { Question } from "../../pages/QuestionnaireForm";
+import type { Question } from "../../pages/Index";
 import QuestionHeader from "./QuestionHeader";
 import QuestionSettingsSidebar from "./QuestionSettingsSidebar";
 import QuestionPreview from "./QuestionPreview";
@@ -51,8 +52,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         console.log("QuestionSettingsModal - Initializing new question");
         const initialQuestion = {
           ...question,
-          title: "سوال جدید",
-          label: "سوال جدید",
+          title: question.title || "سوال جدید",
+          label: question.label || "سوال جدید",
           required: true,
           hasMedia: false,
           mediaType: undefined,
@@ -73,6 +74,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         console.log("QuestionSettingsModal - Updating existing question");
         const updatedQuestion = {
           ...question,
+          title: question.title || question.label || "",
           label: question.title || question.label || "",
           hasMedia: question.hasMedia || false,
           mediaType: question.mediaType || undefined,
@@ -81,6 +83,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           attachment_type: question.attachment_type || undefined,
         };
         setLocalQuestion(updatedQuestion);
+        onUpdateField("title", updatedQuestion.title);
         onUpdateField("label", updatedQuestion.label);
         onUpdateField("hasMedia", updatedQuestion.hasMedia);
         onUpdateField("mediaType", updatedQuestion.mediaType);
