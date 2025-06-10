@@ -13,6 +13,13 @@ export interface Question {
   mediaUrl?: string;
   attachment?: string;
   attachment_type?: string;
+  description?: string;
+  options?: string[];
+  conditions?: Array<{
+    id: string;
+    sourceOption: string;
+    targetQuestionId: string;
+  }>;
 }
 
 const Index: React.FC = () => {

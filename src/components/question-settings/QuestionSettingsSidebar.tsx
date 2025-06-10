@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -5,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, Video } from "lucide-react";
-import type { Question } from "../../../../pages/QuestionnaireForm";
+import type { Question } from "../../pages/Index";
 import ScaleQuestionSettings from "./question-types/ScaleQuestionSettings";
 import PriorityQuestionSettings from "./question-types/PriorityQuestionSettings";
 import RatingQuestionSettings from "./question-types/RatingQuestionSettings";

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ interface AuthContextType {
   accessToken: string | null;
   login: (phone: string) => Promise<void>;
   verifyOTP: (phone: string, code: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -107,6 +109,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register = async (username: string, email: string, password: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/v1/auth/register/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "خطا در ثبت نام");
+      }
+
+      toast.success("ثبت نام موفقیت‌آمیز");
+    } catch (error) {
+      console.error("Register error:", error);
+      toast.error(error instanceof Error ? error.message : "خطا در ثبت نام");
+      throw error;
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setAccessToken(null);
@@ -117,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, login, verifyOTP, logout }}
+      value={{ user, accessToken, login, verifyOTP, register, logout }}
     >
       {children}
     </AuthContext.Provider>

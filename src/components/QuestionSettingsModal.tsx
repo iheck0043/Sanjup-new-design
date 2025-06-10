@@ -26,7 +26,7 @@ import {
   Play,
   Video,
 } from "lucide-react";
-import type { Question } from "../pages/QuestionnaireForm";
+import type { Question } from "../pages/Index";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import QuestionHeader from "./question-settings/QuestionHeader";
 import QuestionSettingsSidebar from "./question-settings/QuestionSettingsSidebar";
@@ -78,7 +78,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   const handleUpdateField = (field: keyof Question, value: any) => {
     console.log("Updating field:", field, "with value:", value);
-    const updated = { ...localQuestion };
+    const updated = { ...localQuestion } as Question;
 
     if (field === "label") {
       updated.title = value;
@@ -96,7 +96,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       updated.mediaType = value;
       updated.mediaUrl = undefined;
     } else {
-      updated[field] = value;
+      (updated as any)[field] = value;
     }
 
     console.log("Updated question:", updated);
@@ -105,7 +105,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
-    if (!localQuestion.label.trim()) {
+    if (!localQuestion.label?.trim()) {
       inputRef.current?.focus();
       return;
     }
@@ -177,50 +177,50 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   // Matrix functions - fixed to ensure minimum 2 items
   const addRow = () => {
-    const currentRows = localQuestion.rows || ["سطر ۱", "سطر ۲"];
+    const currentRows = (localQuestion as any).rows || ["سطر ۱", "سطر ۲"];
     const newRows = [...currentRows, `سطر ${currentRows.length + 1}`];
-    handleUpdateField("rows", newRows);
+    handleUpdateField("rows" as keyof Question, newRows);
   };
 
   const removeRow = (index: number) => {
-    if (localQuestion.rows && localQuestion.rows.length > 2) {
-      const newRows = localQuestion.rows.filter((_, i) => i !== index);
-      handleUpdateField("rows", newRows);
+    if ((localQuestion as any).rows && (localQuestion as any).rows.length > 2) {
+      const newRows = (localQuestion as any).rows.filter((_: any, i: number) => i !== index);
+      handleUpdateField("rows" as keyof Question, newRows);
     }
   };
 
   const updateRow = (index: number, value: string) => {
-    if (localQuestion.rows) {
-      const newRows = [...localQuestion.rows];
+    if ((localQuestion as any).rows) {
+      const newRows = [...(localQuestion as any).rows];
       newRows[index] = value;
-      handleUpdateField("rows", newRows);
+      handleUpdateField("rows" as keyof Question, newRows);
     }
   };
 
   const addColumn = () => {
-    const currentColumns = localQuestion.columns || ["ستون ۱", "ستون ۲"];
+    const currentColumns = (localQuestion as any).columns || ["ستون ۱", "ستون ۲"];
     const newColumns = [...currentColumns, `ستون ${currentColumns.length + 1}`];
-    handleUpdateField("columns", newColumns);
+    handleUpdateField("columns" as keyof Question, newColumns);
   };
 
   const removeColumn = (index: number) => {
-    if (localQuestion.columns && localQuestion.columns.length > 2) {
-      const newColumns = localQuestion.columns.filter((_, i) => i !== index);
-      handleUpdateField("columns", newColumns);
+    if ((localQuestion as any).columns && (localQuestion as any).columns.length > 2) {
+      const newColumns = (localQuestion as any).columns.filter((_: any, i: number) => i !== index);
+      handleUpdateField("columns" as keyof Question, newColumns);
     }
   };
 
   const updateColumn = (index: number, value: string) => {
-    if (localQuestion.columns) {
-      const newColumns = [...localQuestion.columns];
+    if ((localQuestion as any).columns) {
+      const newColumns = [...(localQuestion as any).columns];
       newColumns[index] = value;
-      handleUpdateField("columns", newColumns);
+      handleUpdateField("columns" as keyof Question, newColumns);
     }
   };
 
   // Image choice functions - fixed
   const addImageOption = () => {
-    const currentOptions = localQuestion.imageOptions || [
+    const currentOptions = (localQuestion as any).imageOptions || [
       { text: "گزینه ۱", imageUrl: "" },
       { text: "گزینه ۲", imageUrl: "" },
     ];
@@ -228,15 +228,15 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       ...currentOptions,
       { text: `گزینه ${currentOptions.length + 1}`, imageUrl: "" },
     ];
-    handleUpdateField("imageOptions", newOptions);
+    handleUpdateField("imageOptions" as keyof Question, newOptions);
   };
 
   const removeImageOption = (index: number) => {
-    if (localQuestion.imageOptions && localQuestion.imageOptions.length > 2) {
-      const newOptions = localQuestion.imageOptions.filter(
-        (_, i) => i !== index
+    if ((localQuestion as any).imageOptions && (localQuestion as any).imageOptions.length > 2) {
+      const newOptions = (localQuestion as any).imageOptions.filter(
+        (_: any, i: number) => i !== index
       );
-      handleUpdateField("imageOptions", newOptions);
+      handleUpdateField("imageOptions" as keyof Question, newOptions);
     }
   };
 
@@ -245,10 +245,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     field: "text" | "imageUrl",
     value: string
   ) => {
-    if (localQuestion.imageOptions) {
-      const newOptions = [...localQuestion.imageOptions];
+    if ((localQuestion as any).imageOptions) {
+      const newOptions = [...(localQuestion as any).imageOptions];
       newOptions[index] = { ...newOptions[index], [field]: value };
-      handleUpdateField("imageOptions", newOptions);
+      handleUpdateField("imageOptions" as keyof Question, newOptions);
     }
   };
 
@@ -321,7 +321,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                 <Button
                   onClick={handleSave}
                   className="flex-1"
-                  disabled={!hasChanges || !localQuestion.label.trim()}
+                  disabled={!hasChanges || !localQuestion.label?.trim()}
                 >
                   ذخیره
                 </Button>
