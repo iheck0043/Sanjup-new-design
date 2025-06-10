@@ -5,12 +5,12 @@ export interface Question {
   id: string;
   type: string;
   title: string;
-  label?: string;
-  text?: string;
+  label: string;
+  text: string;
   required?: boolean;
   isRequired?: boolean;
   is_required?: boolean;
-  order?: number;
+  order: number;
   related_group?: string | null;
   hasMedia?: boolean;
   mediaType?: string;
@@ -42,6 +42,7 @@ export interface Question {
   hasOther?: boolean;
   hasNone?: boolean;
   defaultValue?: any;
+  step?: number;
 }
 
 const Index: React.FC = () => {

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./lib/auth-context";
@@ -6,6 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import QuestionnaireForm from "./pages/QuestionnaireForm";
 import QuestionnaireList from "./pages/QuestionnaireList";
+import Audience from "./pages/Audience";
 import { Toaster } from "sonner";
 
 function App() {
@@ -28,6 +30,14 @@ function App() {
             element={
               <PrivateRoute>
                 <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/audience"
+            element={
+              <PrivateRoute>
+                <Audience />
               </PrivateRoute>
             }
           />
