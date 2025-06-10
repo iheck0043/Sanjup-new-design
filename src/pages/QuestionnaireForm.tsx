@@ -1,6 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import FormBuilder from "../components/FormBuilder";
 import QuestionSidebar from "../components/QuestionSidebar";
 import FormHeader from "../components/FormHeader";
@@ -21,7 +19,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { v4 as uuidv4 } from "uuid";
-import { DragDropContext, DropResult, DragUpdate } from "react-beautiful-dnd";
 import {
   Type,
   AlignLeft,
@@ -108,6 +105,25 @@ export interface ApiQuestion {
     min_selection_count: string | null;
     max_selection_count: string | null;
   };
+  mappings?: Array<{
+    id: number;
+    conditions: Array<{
+      id: number;
+      comparison_type: string;
+      target_text: string;
+      operator: string;
+      target_question: number;
+      target_option: number | null;
+    }>;
+    the_end: boolean;
+    question: number;
+    next_question: number;
+  }>;
+  conditions?: Array<{
+    id: string;
+    sourceOption: string;
+    targetQuestionId: string;
+  }>;
 }
 
 export interface QuestionOption {
@@ -169,6 +185,20 @@ export interface Question {
     id: string;
     sourceOption: string;
     targetQuestionId: string;
+  }>;
+  mappings?: Array<{
+    id: number;
+    conditions: Array<{
+      id: number;
+      comparison_type: string;
+      target_text: string;
+      operator: string;
+      target_question: number;
+      target_option: number | null;
+    }>;
+    the_end: boolean;
+    question: number;
+    next_question: number;
   }>;
   description?: string;
   hasDescription?: boolean;
@@ -236,36 +266,30 @@ interface QuestionnaireResponse {
 const Index = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { accessToken } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const { user, accessToken } = useAuth();
+
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
     null
   );
   const [questions, setQuestions] = useState<ApiQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
   const [formTitle, setFormTitle] = useState("بدون عنوان");
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
     null
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
-  const [conditionQuestion, setConditionQuestion] = useState<Question | null>(
-    null
-  );
-  const [isNewQuestion, setIsNewQuestion] = useState(false);
-  const [pendingQuestionData, setPendingQuestionData] = useState<{
-    type: string;
-    insertIndex?: number;
-    parentId?: string;
-  } | null>(null);
+  const [selectedApiQuestion, setSelectedApiQuestion] =
+    useState<ApiQuestion | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showConditionalLogic, setShowConditionalLogic] = useState(false);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log("🔄 showConditionalLogic state changed:", showConditionalLogic);
+    console.log("🔍 selectedApiQuestion state:", selectedApiQuestion?.id);
+  }, [showConditionalLogic, selectedApiQuestion]);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
-  const [placeholderProps, setPlaceholderProps] = useState<{
-    show: boolean;
-    draggableId?: string;
-    clientHeight?: number;
-    clientWidth?: number;
-    clientY?: number;
-    clientX?: number;
-  }>({ show: false });
+
+  // SortableJS handles drag operations through the components directly
 
   useEffect(() => {
     if (!accessToken) {
@@ -315,8 +339,11 @@ const Index = () => {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/api/v1/questionnaire/${id}/questions`,
+      console.log("🔄 Fetching questions and mappings...");
+
+      // 1. دریافت سوالات
+      const questionsResponse = await fetch(
+        `${BASE_URL}/api/v1/questionnaire/${id}/questions-list`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -324,19 +351,210 @@ const Index = () => {
         }
       );
 
-      if (!response.ok) {
+      if (!questionsResponse.ok) {
         throw new Error("خطا در دریافت سوالات");
       }
 
-      const data = await response.json();
-      console.log("Questions API Response:", data);
+      const questionsData = await questionsResponse.json();
+      console.log("📋 Questions API Response:", questionsData);
 
-      if (data.info.status === 200) {
-        console.log("Questions data:", data.data);
-        setQuestions(data.data as ApiQuestion[]);
-      } else {
-        throw new Error(data.info.message);
+      if (questionsData.info.status !== 200) {
+        throw new Error(questionsData.info.message);
       }
+
+      let questionsWithMappings = questionsData.data as ApiQuestion[];
+      console.log("📋 Base questions count:", questionsWithMappings.length);
+
+      // Debug: بررسی کامل تمام فیلدهای هر سوال
+      console.log("🔍 Complete structure analysis of each question:");
+      questionsWithMappings.forEach((question, index) => {
+        console.log(
+          `Question ${question.id} - All fields:`,
+          Object.keys(question)
+        );
+        console.log(`Question ${question.id} - Full object:`, question);
+
+        // بررسی فیلدهای مشکوک که ممکن است mappings باشند
+        const suspiciousFields = Object.keys(question).filter(
+          (key) =>
+            key.toLowerCase().includes("map") ||
+            key.toLowerCase().includes("condition") ||
+            key.toLowerCase().includes("rule") ||
+            key.toLowerCase().includes("logic") ||
+            key.toLowerCase().includes("next") ||
+            key.toLowerCase().includes("target")
+        );
+
+        if (suspiciousFields.length > 0) {
+          console.log(
+            `🎯 Question ${question.id} - Suspicious fields:`,
+            suspiciousFields
+          );
+          suspiciousFields.forEach((field) => {
+            console.log(`   ${field}:`, (question as any)[field]);
+          });
+        }
+      });
+
+      // 2. دریافت mappings از endpoint جداگانه - تست چندین endpoint (DISABLED FOR NOW)
+
+      console.log("⏭️ Looking for mappings in existing questions data...");
+
+      // Check if any questions already have mappings field
+      let foundAnyMappings = false;
+      questionsWithMappings.forEach((question) => {
+        // Check for mappings field directly
+        if ((question as any).mappings) {
+          console.log(
+            `✅ Found mappings field in question ${question.id}:`,
+            (question as any).mappings
+          );
+
+          // If mappings exist, show their detailed structure
+          if ((question as any).mappings.length > 0) {
+            console.log(`🔍 Detailed mappings for question ${question.id}:`);
+            (question as any).mappings.forEach(
+              (mapping: any, index: number) => {
+                console.log(`   Mapping ${index + 1}:`, mapping);
+                if (mapping.conditions) {
+                  console.log(`     Conditions:`, mapping.conditions);
+                }
+              }
+            );
+          }
+
+          foundAnyMappings = true;
+        }
+
+        // Also check for other possible field names
+        const possibleMappingFields = [
+          "conditions",
+          "conditional_logic",
+          "rules",
+          "next_questions",
+          "mappings",
+        ];
+        possibleMappingFields.forEach((fieldName) => {
+          const fieldValue = (question as any)[fieldName];
+          if (
+            fieldValue &&
+            (Array.isArray(fieldValue)
+              ? fieldValue.length > 0
+              : Object.keys(fieldValue).length > 0)
+          ) {
+            console.log(
+              `🔍 Found "${fieldName}" field in question ${question.id}:`,
+              fieldValue
+            );
+            if (fieldName !== "mappings") foundAnyMappings = true;
+          }
+        });
+      });
+
+      if (!foundAnyMappings) {
+        console.log("❌ No mapping fields found in any questions");
+        console.log(
+          "📋 Sample question structure:",
+          questionsWithMappings[0]
+            ? Object.keys(questionsWithMappings[0])
+            : "No questions available"
+        );
+      }
+
+      /*
+      const mappingEndpoints = [
+        `${BASE_URL}/api/v1/questionnaire/${id}/mappings`,
+        `${BASE_URL}/api/v1/questionnaire/${id}/mapping`,
+        `${BASE_URL}/api/v1/questionnaire/mapping/${id}`,
+        `${BASE_URL}/api/v1/mapping/${id}`,
+      ];
+
+      let foundMappings = false;
+
+      for (const endpoint of mappingEndpoints) {
+        if (foundMappings) break;
+
+        try {
+          console.log(`🔍 Testing mappings endpoint: ${endpoint}`);
+          const mappingsResponse = await fetch(endpoint, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          console.log(`📋 ${endpoint} status:`, mappingsResponse.status);
+
+          if (mappingsResponse.ok) {
+            const mappingsData = await mappingsResponse.json();
+            console.log("📋 Mappings API Response:", mappingsData);
+
+            if (mappingsData.info?.status === 200 && mappingsData.data) {
+              console.log("✅ Found working mappings endpoint:", endpoint);
+              console.log("✅ Combining questions with mappings...");
+
+              // ترکیب mappings با questions
+              questionsWithMappings = questionsWithMappings.map((question) => {
+                const questionMappings = mappingsData.data.filter(
+                  (mapping: any) =>
+                    mapping.question?.toString() === question.id.toString()
+                );
+
+                if (questionMappings.length > 0) {
+                  console.log(
+                    `📋 Found ${questionMappings.length} mappings for question ${question.id}`
+                  );
+                  return {
+                    ...question,
+                    mappings: questionMappings,
+                  };
+                }
+
+                return question;
+              });
+
+              console.log("✅ Questions combined with mappings successfully");
+              foundMappings = true;
+            } else {
+              console.log("⚠️ Mappings response format invalid for:", endpoint);
+            }
+          } else {
+            console.log(
+              `⚠️ Endpoint ${endpoint} returned status:`,
+              mappingsResponse.status
+            );
+          }
+        } catch (mappingsError) {
+          console.log(`⚠️ Failed to fetch from ${endpoint}:`, mappingsError);
+        }
+      }
+
+      if (!foundMappings) {
+        console.log(
+          "📋 No working mappings endpoint found, using questions without mappings"
+        );
+      }
+      */
+
+      // 3. بررسی نهایی
+      const finalQuestionsWithMappings = questionsWithMappings.filter(
+        (q) => q.mappings && q.mappings.length > 0
+      );
+
+      if (finalQuestionsWithMappings.length > 0) {
+        console.log(
+          "🎉 Final questions with mappings:",
+          finalQuestionsWithMappings.map((q) => ({
+            id: q.id,
+            type: q.type,
+            title: q.title,
+            mappingsCount: q.mappings?.length,
+          }))
+        );
+      } else {
+        console.log("📋 No questions have mappings in final result");
+      }
+
+      setQuestions(questionsWithMappings);
     } catch (error) {
       console.error("Error fetching questions:", error);
       toast.error(
@@ -370,18 +588,29 @@ const Index = () => {
           throw new Error("Question type is required");
         }
 
-        // Determine the style based on textType for text questions
+        // Determine the style based on question type for text questions
         let style;
         console.log("Checking style for type:", questionType);
 
-        if (questionType === "text_question") {
-          if (textType === "short") {
+        if (
+          questionType === "text_question" ||
+          questionType === "text_question_short" ||
+          questionType === "text_question_long" ||
+          questionType === "text_question_email"
+        ) {
+          if (questionType === "text_question_short" || textType === "short") {
             style = "short";
             console.log("Matched short text style");
-          } else if (textType === "long") {
+          } else if (
+            questionType === "text_question_long" ||
+            textType === "long"
+          ) {
             style = "long";
             console.log("Matched long text style");
-          } else if (textType === "email") {
+          } else if (
+            questionType === "text_question_email" ||
+            textType === "email"
+          ) {
             style = "email";
             console.log("Matched email style");
           }
@@ -1097,7 +1326,42 @@ const Index = () => {
       return "text_question";
     }
 
-    // Handle other question types
+    // Handle direct API types from sidebar
+    if (type === "single_select") {
+      return "single_select";
+    }
+    if (type === "multi_select") {
+      return "multi_select";
+    }
+    if (type === "range_slider") {
+      return "range_slider";
+    }
+    if (type === "question_group") {
+      return "question_group";
+    }
+    if (type === "statement") {
+      return "statement";
+    }
+    if (type === "number_descriptive") {
+      return "number_descriptive";
+    }
+    if (type === "matrix") {
+      return "matrix";
+    }
+    if (type === "prioritize") {
+      return "prioritize";
+    }
+    if (type === "select_multi_image") {
+      return "select_multi_image";
+    }
+    if (type === "combobox") {
+      return "combobox";
+    }
+    if (type === "grading") {
+      return "grading";
+    }
+
+    // Handle Persian labels (for backward compatibility)
     switch (type) {
       case "چندگزینه‌ای":
       case "چندگزینه‌ای (چند جواب)":
@@ -1179,14 +1443,18 @@ const Index = () => {
         label: "",
         title: "",
         isRequired: false,
-        order: questions.length + 1,
+        order:
+          insertIndex !== undefined ? insertIndex + 1 : questions.length + 1,
         parentId: parentId,
         textType:
           questionType === "text_question_long" || questionType === "متنی بلند"
             ? "long"
             : questionType === "text_question_email" || questionType === "ایمیل"
             ? "email"
-            : "short",
+            : questionType === "text_question_short" ||
+              questionType === "متنی کوتاه"
+            ? "short"
+            : undefined,
       };
 
       // Add default rows and columns for matrix questions
@@ -1358,33 +1626,299 @@ const Index = () => {
         }));
       }
 
+      // Convert to ApiQuestion format and add to state first
+      const apiQuestion: ApiQuestion = {
+        id: newQuestion.id,
+        type: mappedType, // Use the mapped type for API format
+        text: newQuestion.title || "سوال جدید",
+        title: newQuestion.title || "سوال جدید",
+        is_required: newQuestion.isRequired,
+        order: newQuestion.order,
+        style: getQuestionStyle(questionType),
+        related_group: parentId,
+      };
+
+      // Add default options for different question types in ApiQuestion format
+      if (mappedType === "single_select" || mappedType === "multi_select") {
+        apiQuestion.options = [
+          {
+            priority: 1,
+            score: 0,
+            value: "گزینه 1",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 1",
+          },
+          {
+            priority: 2,
+            score: 0,
+            value: "گزینه 2",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 2",
+          },
+          {
+            priority: 3,
+            score: 0,
+            value: "گزینه 3",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 3",
+          },
+          {
+            priority: 4,
+            score: 0,
+            value: "گزینه 4",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 4",
+          },
+        ];
+        apiQuestion.is_other = false;
+        apiQuestion.is_none = false;
+        apiQuestion.is_all = false;
+        apiQuestion.is_multiple_select = mappedType === "multi_select";
+      }
+
+      if (mappedType === "prioritize") {
+        apiQuestion.options = [
+          {
+            priority: 1,
+            score: 0,
+            value: "گزینه 1",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 1",
+          },
+          {
+            priority: 2,
+            score: 0,
+            value: "گزینه 2",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 2",
+          },
+          {
+            priority: 3,
+            score: 0,
+            value: "گزینه 3",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 3",
+          },
+          {
+            priority: 4,
+            score: 0,
+            value: "گزینه 4",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 4",
+          },
+        ];
+      }
+
+      if (mappedType === "matrix") {
+        apiQuestion.rows = [
+          { value: "سطر 1", order: 1 },
+          { value: "سطر 2", order: 2 },
+          { value: "سطر 3", order: 3 },
+        ];
+        apiQuestion.columns = [
+          { value: "ستون 1", order: 1 },
+          { value: "ستون 2", order: 2 },
+          { value: "ستون 3", order: 3 },
+        ];
+        apiQuestion.shuffle_rows = false;
+        apiQuestion.shuffle_columns = false;
+      }
+
+      if (
+        mappedType === "select_single_image" ||
+        mappedType === "select_multi_image"
+      ) {
+        apiQuestion.options = [
+          {
+            priority: 1,
+            score: 0,
+            value: "تصویر 1",
+            type: "text",
+            option_kind: "usual",
+            text: "تصویر 1",
+            image_url: "",
+          },
+          {
+            priority: 2,
+            score: 0,
+            value: "تصویر 2",
+            type: "text",
+            option_kind: "usual",
+            text: "تصویر 2",
+            image_url: "",
+          },
+          {
+            priority: 3,
+            score: 0,
+            value: "تصویر 3",
+            type: "text",
+            option_kind: "usual",
+            text: "تصویر 3",
+            image_url: "",
+          },
+        ];
+        apiQuestion.is_multiple_select = mappedType === "select_multi_image";
+      }
+
+      if (mappedType === "combobox") {
+        apiQuestion.options = [
+          {
+            priority: 1,
+            score: 0,
+            value: "گزینه 1",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 1",
+          },
+          {
+            priority: 2,
+            score: 0,
+            value: "گزینه 2",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 2",
+          },
+          {
+            priority: 3,
+            score: 0,
+            value: "گزینه 3",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 3",
+          },
+          {
+            priority: 4,
+            score: 0,
+            value: "گزینه 4",
+            type: "text",
+            option_kind: "usual",
+            text: "گزینه 4",
+          },
+        ];
+      }
+
+      if (mappedType === "grading") {
+        apiQuestion.options = Array.from({ length: 5 }, (_, i) => ({
+          priority: 1,
+          score: 0,
+          type: "integer",
+          value: String(i + 1),
+          option_kind: "usual",
+        }));
+        apiQuestion.scale_max = 5;
+        apiQuestion.shape = "thumbs";
+      }
+
+      const updatedQuestions = (() => {
+        if (insertIndex !== undefined) {
+          // Insert at specific index
+          const newQuestions = [...questions];
+          newQuestions.splice(insertIndex, 0, apiQuestion);
+
+          // Update orders for all questions after the inserted one
+          for (let i = insertIndex + 1; i < newQuestions.length; i++) {
+            newQuestions[i] = { ...newQuestions[i], order: i + 1 };
+          }
+
+          return newQuestions;
+        } else {
+          // Add at the end
+          return [...questions, apiQuestion];
+        }
+      })();
+
+      // Update state immediately (optimistic update)
+      setQuestions(updatedQuestions);
+
+      // Call reorder API to persist the new order
+      if (insertIndex !== undefined) {
+        const reorderAllQuestionsAPI = async () => {
+          try {
+            const reorderData = updatedQuestions.map((question, index) => ({
+              id: parseInt(question.id.toString()),
+              order: index + 1,
+            }));
+
+            console.log(
+              "🚀 Sending reorder API call after new question insertion:",
+              reorderData
+            );
+
+            const BASE_URL = import.meta.env.VITE_BASE_URL;
+            const response = await fetch(
+              `${BASE_URL}/api/v1/questionnaire/${questionnaire?.id}/questions/reorder/`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify(reorderData),
+              }
+            );
+
+            if (response.ok) {
+              console.log("✅ Reorder API call successful after insertion");
+              // Fetch updated questions list
+              await fetchQuestions();
+            } else {
+              console.error("❌ Reorder API call failed after insertion");
+              const errorText = await response.text();
+              console.error("Error details:", errorText);
+            }
+          } catch (error) {
+            console.error(
+              "❌ Error in reorder API call after insertion:",
+              error
+            );
+          }
+        };
+
+        // Call API with slight delay to ensure UI update happens first
+        setTimeout(() => {
+          reorderAllQuestionsAPI();
+        }, 100);
+      }
+
       // Set as new question and open modal
       setSelectedQuestion(newQuestion);
-      setIsNewQuestion(true);
-      setPendingQuestionData({ type: finalType, insertIndex, parentId });
-      setIsModalOpen(true);
+      setShowSettings(true);
+      setShowConditionalLogic(false);
+      setExpandedGroups([]);
     },
-    [questions.length]
+    [questions, questionnaire?.id, accessToken, fetchQuestions]
   );
 
   const handleQuestionSave = useCallback(
     async (questionData: Question) => {
       try {
         let result;
-        if (isNewQuestion && pendingQuestionData) {
-          // Create new question
+
+        // Check if this is a new question that was just added from sidebar
+        const isNewQuestion = questions.some((q) => q.id === questionData.id);
+
+        if (showSettings && selectedQuestion && !isNewQuestion) {
+          // Create new question (old behavior for questions not from drag-drop)
           const apiData = {
             ...questionData,
-            type: mapQuestionType(pendingQuestionData.type), // Map the type for API
+            type: mapQuestionType(selectedQuestion.type), // Map the type for API
           };
           result = await createQuestion(apiData);
 
           if (result) {
             // Close modal and reset states
-            setIsModalOpen(false);
+            setShowSettings(false);
             setSelectedQuestion(null);
-            setIsNewQuestion(false);
-            setPendingQuestionData(null);
+            setShowConditionalLogic(false);
+            setExpandedGroups([]);
 
             // Refresh questions list
             await fetchQuestions();
@@ -1392,22 +1926,105 @@ const Index = () => {
             toast.success("سوال با موفقیت ایجاد شد");
           }
         } else {
-          // Update existing question - don't send type field
-          const { type, ...updateData } = questionData;
-          result = await updateQuestion(questionData.id, updateData);
+          // Create new question for questions added from drag-drop
+          if (isNewQuestion) {
+            const apiData = {
+              ...questionData,
+              type: mapQuestionType(
+                selectedQuestion?.type || questionData.type
+              ), // Map the type for API
+            };
+            result = await createQuestion(apiData);
 
-          if (result) {
-            // Close modal and reset states
-            setIsModalOpen(false);
-            setSelectedQuestion(null);
-            setIsNewQuestion(false);
-            setPendingQuestionData(null);
+            if (result) {
+              // Update the question in state with server response
+              const serverResponse = result;
+              const updatedQuestions = questions.map((q) =>
+                q.id === questionData.id
+                  ? { ...q, id: serverResponse.id, ...serverResponse }
+                  : q
+              );
 
-            // Refresh questions list
-            await fetchQuestions();
+              setQuestions(updatedQuestions);
 
-            toast.success("سوال با موفقیت بروزرسانی شد");
+              // Call reorder API to ensure correct order with new server ID
+              const reorderAfterCreateAPI = async () => {
+                try {
+                  const reorderData = updatedQuestions.map(
+                    (question, index) => ({
+                      id: parseInt(question.id.toString()),
+                      order: index + 1,
+                    })
+                  );
+
+                  console.log(
+                    "🚀 Sending reorder API call after question creation:",
+                    reorderData
+                  );
+
+                  const BASE_URL = import.meta.env.VITE_BASE_URL;
+                  const response = await fetch(
+                    `${BASE_URL}/api/v1/questionnaire/${questionnaire?.id}/questions/reorder/`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                      },
+                      body: JSON.stringify(reorderData),
+                    }
+                  );
+
+                  if (response.ok) {
+                    console.log(
+                      "✅ Reorder API call successful after question creation"
+                    );
+                    // Fetch updated questions list
+                    await fetchQuestions();
+                  } else {
+                    console.error(
+                      "❌ Reorder API call failed after question creation"
+                    );
+                    const errorText = await response.text();
+                    console.error("Error details:", errorText);
+                  }
+                } catch (error) {
+                  console.error(
+                    "❌ Error in reorder API call after question creation:",
+                    error
+                  );
+                }
+              };
+
+              // Call reorder API with slight delay
+              setTimeout(() => {
+                reorderAfterCreateAPI();
+              }, 100);
+
+              toast.success("سوال با موفقیت ایجاد شد");
+            }
+          } else {
+            // Update existing question - don't send type field
+            const { type, ...updateData } = questionData;
+            result = await updateQuestion(questionData.id, updateData);
+
+            if (result) {
+              // Update local state
+              setQuestions((prev) =>
+                prev.map((q) =>
+                  q.id === questionData.id ? { ...q, ...result } : q
+                )
+              );
+
+              toast.success("سوال با موفقیت بروزرسانی شد");
+            }
           }
+
+          // Close modal and reset states
+          setShowSettings(false);
+          setSelectedQuestion(null);
+          setShowConditionalLogic(false);
+          setExpandedGroups([]);
         }
       } catch (error) {
         console.error("Error saving question:", error);
@@ -1417,21 +2034,34 @@ const Index = () => {
       }
     },
     [
-      isNewQuestion,
-      pendingQuestionData,
+      showSettings,
+      selectedQuestion,
       createQuestion,
       updateQuestion,
+      questions,
+      questionnaire?.id,
+      accessToken,
       fetchQuestions,
     ]
   );
 
   const handleQuestionCancel = useCallback(() => {
+    // If this was a new question from drag-drop, remove it from state
+    if (selectedQuestion) {
+      const isNewQuestion = questions.some((q) => q.id === selectedQuestion.id);
+      if (isNewQuestion) {
+        setQuestions((prev) =>
+          prev.filter((q) => q.id !== selectedQuestion.id)
+        );
+      }
+    }
+
     // Don't add question if cancelled
-    setIsModalOpen(false);
+    setShowSettings(false);
     setSelectedQuestion(null);
-    setIsNewQuestion(false);
-    setPendingQuestionData(null);
-  }, []);
+    setShowConditionalLogic(false);
+    setExpandedGroups([]);
+  }, [selectedQuestion, questions]);
 
   const duplicateQuestion = useCallback(
     (question: ApiQuestion) => {
@@ -1534,6 +2164,15 @@ const Index = () => {
 
   const updateQuestionInList = useCallback(
     (id: string, updates: Partial<ApiQuestion>) => {
+      // Special case for reordering all questions
+      if (id === "reorder" && (updates as any).questions) {
+        console.log("📝 Updating questions order locally");
+        setQuestions((updates as any).questions);
+        return;
+      }
+
+      // Special case for reordering children within a group (removed - now handled by direct API call)
+
       setQuestions((prev) =>
         prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
       );
@@ -1541,40 +2180,79 @@ const Index = () => {
     []
   );
 
-  const moveQuestion = useCallback((dragIndex: number, hoverIndex: number) => {
-    console.log("Moving question from", dragIndex, "to", hoverIndex);
-    setQuestions((prev) => {
-      // Get only main list questions (not in groups)
-      const mainQuestions = prev.filter((q) => !q.related_group);
-      const [removed] = mainQuestions.splice(dragIndex, 1);
-      mainQuestions.splice(hoverIndex, 0, removed);
-
-      // Update order for main questions
-      const updatedMainQuestions = mainQuestions.map((q, index) => ({
-        ...q,
-        order: index,
-      }));
-
-      // Combine with group questions
-      const groupQuestions = prev.filter((q) => q.related_group);
-      return [...updatedMainQuestions, ...groupQuestions];
-    });
+  const moveQuestion = useCallback((activeId: string, overId: string) => {
+    console.log("📍 Moving question from", activeId, "to", overId);
+    // This is now handled by the FormBuilder handleSortUpdate
+    // Just log for debugging
   }, []);
 
-  const moveToGroup = useCallback((questionId: string, groupId: string) => {
-    setQuestions((prev) =>
-      prev.map((q) =>
-        q.id === questionId ? { ...q, related_group: groupId } : q
-      )
-    );
-  }, []);
+  const moveToGroup = useCallback(
+    async (questionId: string, groupId: string) => {
+      console.log(`🏃 Moving question ${questionId} to group ${groupId}`);
+
+      // Optimistic update - update local state first
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === questionId ? { ...q, related_group: groupId || null } : q
+        )
+      );
+
+      // Make API call to persist the change
+      try {
+        if (!accessToken || !questionnaire?.id) {
+          throw new Error("Missing access token or questionnaire ID");
+        }
+
+        const apiData = {
+          id: questionId,
+          related_group: groupId || null, // اگر groupId خالی است، null قرار می‌دهیم
+        };
+
+        console.log("📡 Sending move to group API call:", apiData);
+
+        const response = await fetch(
+          `${BASE_URL}/api/v1/questionnaire/${questionId}/questions/update/`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(apiData),
+          }
+        );
+
+        if (response.ok) {
+          console.log("✅ Move to group API call successful");
+        } else {
+          console.error("❌ Move to group API call failed");
+          const errorText = await response.text();
+          console.error("Error details:", errorText);
+
+          // TODO: Rollback local state if needed
+          // For now, we keep the optimistic update even if API fails
+        }
+      } catch (error) {
+        console.error("❌ Error in move to group API call:", error);
+      }
+    },
+    [accessToken, questionnaire?.id]
+  );
 
   const toggleGroup = useCallback((groupId: string) => {
-    setExpandedGroups((prev) =>
-      prev.includes(groupId)
+    console.log("🎮 toggleGroup called with groupId:", groupId);
+    setExpandedGroups((prev) => {
+      console.log("📋 Previous expanded groups:", prev);
+      const isCurrentlyExpanded = prev.includes(groupId);
+      console.log("🔍 Is currently expanded:", isCurrentlyExpanded);
+
+      const newExpanded = isCurrentlyExpanded
         ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
-    );
+        : [...prev, groupId];
+
+      console.log("✨ New expanded groups:", newExpanded);
+      return newExpanded;
+    });
   }, []);
 
   const openQuestionSettings = (question: ApiQuestion) => {
@@ -1737,7 +2415,9 @@ const Index = () => {
 
     console.log("Final mapped question:", mappedQuestion);
     setSelectedQuestion(mappedQuestion);
-    setIsModalOpen(true);
+    setShowSettings(true);
+    setShowConditionalLogic(false);
+    setExpandedGroups([]);
   };
 
   // Helper function to map API question types to our format
@@ -1788,842 +2468,58 @@ const Index = () => {
   };
 
   const closeQuestionSettings = useCallback(() => {
-    setIsModalOpen(false);
+    setShowSettings(false);
     setSelectedQuestion(null);
-    setIsNewQuestion(false);
-    setPendingQuestionData(null);
+    setShowConditionalLogic(false);
+    setExpandedGroups([]);
   }, []);
 
-  const openConditionModal = useCallback((question: Question) => {
-    setConditionQuestion(question);
-    setIsConditionModalOpen(true);
+  const openConditionModal = useCallback((question: Question | ApiQuestion) => {
+    console.log("🔄 openConditionModal called with:", question);
+    console.log("🔍 Question id:", question.id);
+    console.log("🔍 Question mappings:", (question as any).mappings);
+
+    // ConditionalLogicModal با ApiQuestion کار می‌کند، بنابراین فقط mappings را اضافه می‌کنیم
+    if ("is_required" in question) {
+      // این ApiQuestion است - مستقیماً استفاده کن
+      console.log("🔄 Setting selectedApiQuestion...");
+      setSelectedApiQuestion(question as ApiQuestion);
+      console.log("✅ Using ApiQuestion directly for ConditionalLogicModal");
+    } else {
+      // این Question است - نیاز به تبدیل به ApiQuestion داریم (اما این نباید اتفاق بیفتد)
+      console.warn(
+        "⚠️ Got Question instead of ApiQuestion - this shouldn't happen with current setup"
+      );
+      // TODO: تبدیل Question به ApiQuestion اگر لازم باشد
+    }
+
+    console.log("🔄 Setting showConditionalLogic to true...");
+    setShowConditionalLogic(true);
+    console.log("✅ Modal should open now");
   }, []);
 
   const closeConditionModal = useCallback(() => {
-    setIsConditionModalOpen(false);
-    setConditionQuestion(null);
+    setShowConditionalLogic(false);
+    setSelectedApiQuestion(null);
   }, []);
 
   // Update FormBuilder component to show question title
   const renderQuestionTitle = (question: ApiQuestion) => {
+    // Map the question type for display
+    const displayType = mapApiQuestionType(question.type, question.style);
+
     return (
       <div className="flex items-center gap-2">
         <span className="text-gray-900 font-medium">{question.title}</span>
         {question.is_required && (
           <span className="text-red-500 text-sm">*</span>
         )}
+        {/* Show question type */}
+        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+          {displayType}
+        </span>
       </div>
     );
-  };
-
-  const handleDragUpdate = (update: DragUpdate) => {
-    if (!update.destination) {
-      setPlaceholderProps({ show: false });
-      return;
-    }
-
-    console.log("Drag update detected:", update);
-
-    const draggableId = update.draggableId;
-    const destinationIndex = update.destination.index;
-
-    // Find the dragged element using the data attribute
-    const queryAttr = "data-rbd-drag-handle-draggable-id";
-    const domQuery = `[${queryAttr}='${draggableId}']`;
-    const draggedDOM = document.querySelector(domQuery) as HTMLElement;
-
-    if (!draggedDOM) {
-      console.log("Dragged DOM not found for:", draggableId);
-      setPlaceholderProps({ show: false });
-      return;
-    }
-
-    const { clientHeight, clientWidth } = draggedDOM;
-    const parentNode = draggedDOM.parentNode as HTMLElement;
-
-    if (!parentNode) {
-      console.log("Parent node not found");
-      setPlaceholderProps({ show: false });
-      return;
-    }
-
-    console.log("Parent node:", parentNode);
-    console.log("Parent node tag:", parentNode.tagName);
-    console.log("Parent node children count:", parentNode.children.length);
-
-    // Use fixed positioning for placeholder to prevent horizontal movement
-    // Calculate fixed position based on the droppable area type
-    let exactClientX = 48; // Increased left margin for all questions (more spacing from right)
-    let exactClientWidth = clientWidth;
-
-    // Check if the destination is near a group question or within a group
-    let isGroupArea = false;
-    if (update.destination) {
-      const destinationIndex = update.destination.index;
-
-      // Check if we're dropping near/after a group question or within group questions
-      const questionAtDestination = questions[destinationIndex];
-      const questionBeforeDestination = questions[destinationIndex - 1];
-
-      // Check if destination is within a group - only between group question and exit area
-      // NOT above the group question and NOT below the exit area
-      if (questionAtDestination?.related_group) {
-        // We're dropping on a question that's inside a group
-        isGroupArea = true;
-      } else if (
-        questionBeforeDestination?.related_group &&
-        questionBeforeDestination?.type !== "question_group"
-      ) {
-        // We're dropping after a question that's inside a group (but not after the group question itself)
-        // But we need to check if this is the last question in the group
-        const groupId = questionBeforeDestination.related_group;
-        const groupQuestions = questions.filter(
-          (q) => q.related_group === groupId
-        );
-        const lastGroupQuestion = groupQuestions[groupQuestions.length - 1];
-
-        // If the previous question is the last in the group, this destination is likely after the exit area
-        if (questionBeforeDestination.id === lastGroupQuestion.id) {
-          // Check if there are any questions after this position that belong to the same group
-          const questionsAfterDest = questions.slice(destinationIndex);
-          const hasMoreGroupQuestions = questionsAfterDest.some(
-            (q) => q.related_group === groupId
-          );
-
-          // If no more group questions after this position, we're after the exit area
-          isGroupArea = hasMoreGroupQuestions;
-        } else {
-          isGroupArea = true;
-        }
-      } else {
-        // All other cases: above group question, below exit area, or outside groups
-        isGroupArea = false;
-      }
-    }
-
-    if (isGroupArea) {
-      // For group areas, indent much more to the right to show nesting
-      exactClientX = 80; // Much more indentation for group questions
-      // Also make the width smaller for group areas
-      exactClientWidth = clientWidth * 0.96; // 85% of original width for group areas
-    }
-
-    console.log("Destination info:", {
-      destinationId: update.destination?.droppableId,
-      isGroupArea,
-      startsWithGroup: update.destination?.droppableId.startsWith("group-"),
-      endsWithExit: update.destination?.droppableId.endsWith("-exit"),
-    });
-
-    console.log("Fixed positioning:", {
-      exactClientX,
-      exactClientWidth,
-      isGroupArea,
-    });
-
-    // Simple calculation based on item height and destination index
-    const itemHeight = 64; // 60px height + 4px margin
-    let clientY = destinationIndex * itemHeight;
-
-    // Try to get padding if available
-    try {
-      const parentStyle = window.getComputedStyle(parentNode);
-      const paddingTop = parseFloat(parentStyle.paddingTop) || 0;
-
-      // Use exact positioning from question elements with additional offset
-      clientY += paddingTop + 24; // Move 8px down
-
-      console.log("Padding top:", paddingTop);
-    } catch (error) {
-      console.log("Error getting padding:", error);
-      // Fallback offset if padding calculation fails
-      clientY += 8; // Move 8px down
-    }
-
-    // Add additional offset based on area type
-    if (isGroupArea) {
-      // For group areas, add a bit more offset
-      exactClientX -= 56;
-    } else {
-      // For main area, add more offset
-      exactClientX -= 24;
-    }
-
-    // Set fixed height as requested
-    const fixedHeight = 50;
-
-    console.log("Calculated positions:", {
-      clientY,
-      clientX: exactClientX,
-      itemHeight,
-      destinationIndex,
-    });
-
-    console.log("Placeholder props:", {
-      clientHeight,
-      clientWidth,
-      clientY,
-      clientX: exactClientX,
-      destinationIndex,
-      parentNodeChildren: parentNode.children.length,
-    });
-
-    setPlaceholderProps({
-      show: true,
-      draggableId: update.draggableId,
-      clientHeight: fixedHeight, // Fixed 50px height
-      clientWidth: exactClientWidth, // Exact width from question elements
-      clientY,
-      clientX: exactClientX, // Exact left position from question elements
-    });
-  };
-
-  const handleDragEnd = (result: DropResult) => {
-    // Reset placeholder
-    setPlaceholderProps({ show: false });
-
-    const { source, destination, type, draggableId } = result;
-
-    // If dropped outside a droppable area or same position
-    if (
-      !destination ||
-      (source.droppableId === destination.droppableId &&
-        source.index === destination.index)
-    ) {
-      return;
-    }
-
-    // Handle dropping in group exit area first
-    if (
-      destination.droppableId.startsWith("group-") &&
-      destination.droppableId.endsWith("-exit")
-    ) {
-      const groupId = destination.droppableId
-        .replace("group-", "")
-        .replace("-exit", "");
-      const questionId = draggableId;
-      const question = questions.find((q) => q.id == questionId);
-
-      if (question) {
-        // Find the group's position in the main list
-        const groupIndex = questions.findIndex((q) => q.id == groupId);
-        if (groupIndex === -1) return;
-
-        // Get all questions in the group
-        const groupQuestions = questions.filter(
-          (q) => q.related_group == groupId
-        );
-        // Get the last question in the group
-        const lastGroupQuestion = groupQuestions[groupQuestions.length - 1];
-        // Set the new order to be the same as the last question in the group
-        const newOrder = lastGroupQuestion.order;
-
-        const updateData = {
-          id: questionId,
-          order: newOrder,
-          related_group: null,
-        };
-
-        // First update local state for better UX
-        setQuestions((prevQuestions) => {
-          const updatedQuestions = prevQuestions.map((q) => {
-            if (q.id === questionId) {
-              return {
-                ...q,
-                order: newOrder,
-                related_group: null,
-              };
-            }
-            // Update orders of questions after the group
-            if (q.order > newOrder) {
-              return {
-                ...q,
-                order: q.order + 1,
-              };
-            }
-            return q;
-          });
-          return updatedQuestions.sort((a, b) => a.order - b.order);
-        });
-
-        // Then make API call
-        fetch(
-          `${BASE_URL}/api/v1/questionnaire/${questionId}/questions/update/`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(updateData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              // If API call fails, revert the local state
-              setQuestions((prevQuestions) =>
-                prevQuestions.map((q) =>
-                  q.id === questionId
-                    ? {
-                        ...q,
-                        order: question.order,
-                        related_group: question.related_group,
-                      }
-                    : q
-                )
-              );
-              throw new Error("خطا در بروزرسانی سوال");
-            }
-            return response.json();
-          })
-          .then(() => {
-            // Reorder all questions
-            if (questionnaire?.id) {
-              // Get all questions in their new order
-              const updatedQuestions = questions
-                .map((q) => {
-                  // If this is the dragged question, use its new order
-                  if (q.id === questionId) {
-                    return {
-                      ...q,
-                      order: newOrder,
-                    };
-                  }
-                  // Update orders of questions after the group
-                  if (q.order > newOrder) {
-                    return {
-                      ...q,
-                      order: q.order + 1,
-                    };
-                  }
-                  return q;
-                })
-                .sort((a, b) => a.order - b.order);
-
-              // Create reorder data with the new order
-              const reorderData = updatedQuestions.map((q, index) => ({
-                id: parseInt(q.id),
-                order: index + 1,
-              }));
-
-              return fetch(
-                `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/reorder/`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                  body: JSON.stringify(reorderData),
-                }
-              );
-            }
-          })
-          .then((response) => {
-            if (response && !response.ok) {
-              // If reorder fails, revert all changes
-              setQuestions((prevQuestions) =>
-                prevQuestions.map((q) =>
-                  q.id === questionId
-                    ? {
-                        ...q,
-                        order: question.order,
-                        related_group: question.related_group,
-                      }
-                    : q
-                )
-              );
-              throw new Error("خطا در مرتب‌سازی سوالات");
-            }
-            toast.success("سوال با موفقیت از گروه خارج شد");
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            toast.error(error.message || "خطا در بروزرسانی سوال");
-          });
-      }
-      return;
-    }
-
-    // Handle adding new question from sidebar
-    if (type === "QUESTION_TYPE" && source.droppableId === "questionTypes") {
-      addQuestion(draggableId, destination.index);
-      return;
-    }
-
-    // Handle reordering questions
-    if (type === "QUESTION_TYPE") {
-      // Get all questions in the main list (not in groups)
-      const mainQuestions = questions.filter((q) => !q.related_group);
-
-      // Find the destination question and dragged question
-      const destQuestion = questions[destination.index];
-      const draggedQuestion = questions.find(
-        (q) => String(q.id) === String(draggableId)
-      );
-
-      if (!draggedQuestion) {
-        return;
-      }
-
-      // Check if dropping above an exit area - add to group
-      const allItems = questions.reduce((acc, question, index) => {
-        const isLastQuestionInGroup =
-          question.related_group &&
-          !questions
-            .slice(index + 1)
-            .some((q) => q.related_group === question.related_group);
-
-        acc.push({ type: "question", data: question, originalIndex: index });
-        if (isLastQuestionInGroup) {
-          acc.push({ type: "exit", data: question, originalIndex: index });
-        }
-        return acc;
-      }, [] as Array<{ type: "question" | "exit"; data: ApiQuestion; originalIndex: number }>);
-
-      const destinationItem = allItems[destination.index];
-
-      // If dropping on an exit area, add the question to that group
-      if (destinationItem?.type === "exit" && !draggedQuestion.related_group) {
-        const groupId = destinationItem.data.related_group;
-
-        if (groupId) {
-          // Add question to the group
-          const updateData = {
-            id: draggedQuestion.id,
-            order: destination.index + 1,
-            related_group: groupId,
-          };
-
-          // First update local state for better UX
-          setQuestions((prevQuestions) => {
-            const updatedQuestions = prevQuestions.map((q) =>
-              q.id === draggedQuestion.id
-                ? {
-                    ...q,
-                    order: updateData.order,
-                    related_group: updateData.related_group,
-                  }
-                : q
-            );
-            return updatedQuestions.sort((a, b) => a.order - b.order);
-          });
-
-          // Then make API call
-          fetch(
-            `${BASE_URL}/api/v1/questionnaire/${draggedQuestion.id}/questions/update/`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify(updateData),
-            }
-          )
-            .then((response) => {
-              if (!response.ok) {
-                // If API call fails, revert the local state
-                setQuestions((prevQuestions) =>
-                  prevQuestions.map((q) =>
-                    q.id === draggedQuestion.id
-                      ? {
-                          ...q,
-                          order: draggedQuestion.order,
-                          related_group: draggedQuestion.related_group,
-                        }
-                      : q
-                  )
-                );
-                throw new Error("خطا در بروزرسانی سوال");
-              }
-              return response.json();
-            })
-            .then(() => {
-              toast.success("سوال با موفقیت به گروه اضافه شد");
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              toast.error(error.message || "خطا در بروزرسانی سوال");
-            });
-          return;
-        }
-      }
-
-      // Rule 1: Question group cannot be a child of another group
-      if (
-        draggedQuestion.type === "question_group" &&
-        destQuestion?.related_group
-      ) {
-        toast.error("گروه سوال نمی‌تواند زیرمجموعه گروه سوال دیگری باشد");
-        return;
-      }
-
-      // Check if this is a simple reorder (no group changes)
-      const isSimpleReorder =
-        !draggedQuestion.related_group &&
-        !destQuestion?.related_group &&
-        destQuestion?.type !== "question_group";
-
-      if (isSimpleReorder) {
-        // Simple reordering - just update the order
-        // First update local state for better UX
-        setQuestions((prevQuestions) => {
-          const updatedQuestions = prevQuestions.map((q) => {
-            if (q.id === draggedQuestion.id) {
-              return {
-                ...q,
-                order: destination.index + 1,
-              };
-            }
-            // Adjust orders of questions between source and destination
-            if (destination.index > source.index) {
-              if (
-                q.order > draggedQuestion.order &&
-                q.order <= destination.index + 1
-              ) {
-                return { ...q, order: q.order - 1 };
-              }
-            } else {
-              if (
-                q.order >= destination.index + 1 &&
-                q.order < draggedQuestion.order
-              ) {
-                return { ...q, order: q.order + 1 };
-              }
-            }
-            return q;
-          });
-          return updatedQuestions.sort((a, b) => a.order - b.order);
-        });
-
-        // Then make API call to reorder
-        if (questionnaire?.id) {
-          // Get all questions in their new order
-          const updatedQuestions = questions
-            .map((q) => {
-              if (q.id === draggedQuestion.id) {
-                return {
-                  ...q,
-                  order: destination.index + 1,
-                };
-              }
-              if (destination.index > source.index) {
-                if (
-                  q.order > draggedQuestion.order &&
-                  q.order <= destination.index + 1
-                ) {
-                  return { ...q, order: q.order - 1 };
-                }
-              } else {
-                if (
-                  q.order >= destination.index + 1 &&
-                  q.order < draggedQuestion.order
-                ) {
-                  return { ...q, order: q.order + 1 };
-                }
-              }
-              return q;
-            })
-            .sort((a, b) => a.order - b.order);
-
-          // Create reorder data with the new order
-          const reorderData = updatedQuestions.map((q, index) => ({
-            id: parseInt(q.id),
-            order: index + 1,
-          }));
-
-          fetch(
-            `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/reorder/`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify(reorderData),
-            }
-          )
-            .then((response) => {
-              if (!response.ok) {
-                // If reorder fails, revert all changes
-                setQuestions((prevQuestions) =>
-                  prevQuestions.map((q) =>
-                    q.id === draggedQuestion.id
-                      ? {
-                          ...q,
-                          order: draggedQuestion.order,
-                        }
-                      : q
-                  )
-                );
-                throw new Error("خطا در مرتب‌سازی سوالات");
-              }
-              toast.success("ترتیب سوالات با موفقیت بروزرسانی شد");
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              toast.error(error.message || "خطا در مرتب‌سازی سوالات");
-            });
-        }
-        return;
-      }
-
-      // Handle group-related changes
-      const updateData = {
-        id: draggedQuestion.id,
-        order: destination.index + 1,
-        related_group: null as string | null,
-      };
-
-      // If question is moved to first position of main list, remove from group
-      if (destination.index === 0) {
-        updateData.related_group = null;
-      }
-      // If destination question is in a group, add dragged question to that group
-      else if (destQuestion?.related_group) {
-        updateData.related_group = destQuestion.related_group;
-      }
-      // If destination is a question group
-      else if (destQuestion?.type === "question_group") {
-        // Special case: if dragged question is from the same group as the destination group,
-        // remove it from the group instead of adding it back
-        if (draggedQuestion.related_group === destQuestion.id) {
-          updateData.related_group = null;
-        } else {
-          updateData.related_group = destQuestion.id;
-        }
-      }
-      // If question is being dragged from a group to main list
-      else if (
-        draggedQuestion.related_group &&
-        !destQuestion?.related_group &&
-        destQuestion?.type !== "question_group"
-      ) {
-        updateData.related_group = null;
-      }
-      // Handle last question in group being moved out
-      else if (draggedQuestion.related_group) {
-        const groupQuestions = questions.filter(
-          (q) => q.related_group === draggedQuestion.related_group
-        );
-        const isLastInGroup =
-          groupQuestions[groupQuestions.length - 1].id === draggedQuestion.id;
-        if (isLastInGroup) {
-          const groupIndex = mainQuestions.findIndex(
-            (q) => q.id === draggedQuestion.related_group
-          );
-          if (destination.index > groupIndex + groupQuestions.length) {
-            updateData.related_group = null;
-          }
-        }
-      }
-
-      // First update local state for better UX
-      setQuestions((prevQuestions) => {
-        // First update the dragged question's order and related_group
-        const updatedQuestions = prevQuestions.map((q) =>
-          q.id === draggedQuestion.id
-            ? {
-                ...q, // Keep all existing fields
-                order: updateData.order,
-                related_group: updateData.related_group,
-              }
-            : q
-        );
-
-        // Then reorder all questions based on their new positions
-        return updatedQuestions
-          .map((q) => {
-            // If this is the dragged question, keep its new order
-            if (q.id === draggedQuestion.id) {
-              return q;
-            }
-
-            // For other questions, adjust their order based on the drag
-            let newOrder = q.order;
-
-            // If the question was moved down (destination > source)
-            if (destination.index > source.index) {
-              // If this question is between source and destination, decrease its order
-              if (
-                q.order > draggedQuestion.order &&
-                q.order <= updateData.order
-              ) {
-                newOrder = q.order - 1;
-              }
-            }
-            // If the question was moved up (destination < source)
-            else {
-              // If this question is between destination and source, increase its order
-              if (
-                q.order >= updateData.order &&
-                q.order < draggedQuestion.order
-              ) {
-                newOrder = q.order + 1;
-              }
-            }
-
-            return {
-              ...q,
-              order: newOrder,
-            };
-          })
-          .sort((a, b) => a.order - b.order); // Sort by order to ensure correct sequence
-      });
-
-      // Then make API call
-      fetch(
-        `${BASE_URL}/api/v1/questionnaire/${draggedQuestion.id}/questions/update/`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(updateData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            // If API call fails, revert the local state
-            setQuestions((prevQuestions) =>
-              prevQuestions.map((q) =>
-                q.id === draggedQuestion.id
-                  ? {
-                      ...q,
-                      order: draggedQuestion.order,
-                      related_group: draggedQuestion.related_group,
-                    }
-                  : q
-              )
-            );
-            throw new Error("خطا در بروزرسانی سوال");
-          }
-          return response.json();
-        })
-        .then(() => {
-          // Reorder all questions
-          if (questionnaire?.id) {
-            // Get all questions in their new order
-            const updatedQuestions = questions
-              .map((q) => {
-                // If this is the dragged question, use its new order
-                if (q.id === draggedQuestion.id) {
-                  return {
-                    ...q,
-                    order: updateData.order,
-                  };
-                }
-
-                // For other questions, adjust their order based on the drag
-                let newOrder = q.order;
-
-                // If the question was moved down (destination > source)
-                if (destination.index > source.index) {
-                  // If this question is between source and destination, decrease its order
-                  if (
-                    q.order > draggedQuestion.order &&
-                    q.order <= updateData.order
-                  ) {
-                    newOrder = q.order - 1;
-                  }
-                }
-                // If the question was moved up (destination < source)
-                else {
-                  // If this question is between destination and source, increase its order
-                  if (
-                    q.order >= updateData.order &&
-                    q.order < draggedQuestion.order
-                  ) {
-                    newOrder = q.order + 1;
-                  }
-                }
-
-                return {
-                  ...q,
-                  order: newOrder,
-                };
-              })
-              .sort((a, b) => a.order - b.order); // Sort by order to ensure correct sequence
-
-            // Create reorder data with the new order
-            const reorderData = updatedQuestions.map((q, index) => ({
-              id: parseInt(q.id),
-              order: index + 1,
-            }));
-
-            return fetch(
-              `${BASE_URL}/api/v1/questionnaire/${questionnaire.id}/questions/reorder/`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify(reorderData),
-              }
-            );
-          }
-        })
-        .then((response) => {
-          if (response && !response.ok) {
-            // If reorder fails, revert all changes
-            setQuestions((prevQuestions) =>
-              prevQuestions.map((q) =>
-                q.id === draggedQuestion.id
-                  ? {
-                      ...q,
-                      order: draggedQuestion.order,
-                      related_group: draggedQuestion.related_group,
-                    }
-                  : q
-              )
-            );
-            throw new Error("خطا در مرتب‌سازی سوالات");
-          }
-          toast.success("ترتیب سوالات با موفقیت بروزرسانی شد");
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          toast.error(error.message || "خطا در بروزرسانی سوال");
-        });
-    }
-  };
-
-  const getQuestionIcon = (type: string) => {
-    switch (type) {
-      case "text_question_short":
-        return <Type className="w-4 h-4" />;
-      case "text_question_long":
-        return <AlignLeft className="w-4 h-4" />;
-      case "text_question_email":
-        return <Mail className="w-4 h-4" />;
-      case "number_descriptive":
-        return <Hash className="w-4 h-4" />;
-      case "single_select":
-      case "multi_select":
-        return <List className="w-4 h-4" />;
-      case "combobox":
-        return <ChevronDown className="w-4 h-4" />;
-      case "range_slider":
-        return <SlidersHorizontal className="w-4 h-4" />;
-      case "matrix":
-        return <Table className="w-4 h-4" />;
-      case "prioritize":
-        return <ArrowUpDown className="w-4 h-4" />;
-      case "select_single_image":
-      case "select_multi_image":
-        return <Image className="w-4 h-4" />;
-      case "grading":
-        return <Star className="w-4 h-4" />;
-      case "question_group":
-        return <Folder className="w-4 h-4" />;
-      case "statement":
-        return <Info className="w-4 h-4" />;
-      default:
-        return <HelpCircle className="w-4 h-4" />;
-    }
   };
 
   if (loading) {
@@ -2644,92 +2540,49 @@ const Index = () => {
         setFormTitle={setFormTitle}
       />
 
-      <DragDropContext
-        onDragEnd={handleDragEnd}
-        onDragUpdate={handleDragUpdate}
-      >
-        <div className="flex flex-1 h-[calc(100vh-80px)] mt-20">
-          <QuestionSidebar onAddQuestion={addQuestion} />
+      <div className="flex flex-1 h-[calc(100vh-80px)] mt-20">
+        <QuestionSidebar onAddQuestion={addQuestion} />
 
-          <div className="flex-1 mr-96 relative">
-            {/* Test Placeholder */}
-            {placeholderProps.show && (
-              <div
-                style={{
-                  position: "fixed",
-                  top: "100px",
-                  right: "20px",
-                  background: "red",
-                  color: "white",
-                  padding: "10px",
-                  borderRadius: "4px",
-                  zIndex: 9999,
-                }}
-              >
-                Dragging: {placeholderProps.draggableId}
-              </div>
-            )}
-
-            {/* Real Custom Placeholder */}
-            {placeholderProps.show && placeholderProps.clientHeight && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: placeholderProps.clientY,
-                  left: placeholderProps.clientX,
-                  height: placeholderProps.clientHeight,
-                  width: placeholderProps.clientWidth,
-                  backgroundColor: "rgba(59, 130, 246, 0.2)",
-                  border: "2px dashed #3b82f6",
-                  borderRadius: "8px",
-                  pointerEvents: "none",
-                  zIndex: 1000,
-                }}
-              />
-            )}
-
-            <FormBuilder
-              questions={questions}
-              onRemoveQuestion={removeQuestion}
-              onUpdateQuestion={updateQuestionInList}
-              onMoveQuestion={moveQuestion}
-              onQuestionClick={openQuestionSettings}
-              onAddQuestion={addQuestion}
-              onDuplicateQuestion={duplicateQuestion}
-              onConditionClick={(question: ApiQuestion) => {
-                const mappedQuestion: Question = {
-                  id: question.id,
-                  type: question.type,
-                  label: question.title,
-                  title: question.title,
-                  isRequired: question.is_required,
-                  order: question.order,
-                  parentId: question.related_group,
-                };
-                openConditionModal(mappedQuestion);
-              }}
-              onMoveToGroup={moveToGroup}
-              expandedGroups={expandedGroups}
-              onToggleGroup={toggleGroup}
-              renderQuestionTitle={renderQuestionTitle}
-            />
-          </div>
+        <div className="flex-1 mr-96 relative">
+          <FormBuilder
+            questions={questions}
+            onRemoveQuestion={removeQuestion}
+            onUpdateQuestion={updateQuestionInList}
+            onMoveQuestion={moveQuestion}
+            onQuestionClick={openQuestionSettings}
+            onAddQuestion={addQuestion}
+            onDuplicateQuestion={duplicateQuestion}
+            onConditionClick={(question: ApiQuestion) => {
+              console.log(
+                "🎯 onConditionClick called with ApiQuestion:",
+                question.id
+              );
+              openConditionModal(question);
+            }}
+            onMoveToGroup={moveToGroup}
+            expandedGroups={expandedGroups}
+            onToggleGroup={toggleGroup}
+            renderQuestionTitle={renderQuestionTitle}
+            questionnaireId={questionnaire?.id}
+            accessToken={accessToken}
+            fetchQuestions={fetchQuestions}
+          />
         </div>
-      </DragDropContext>
+      </div>
 
       <QuestionSettingsModal
-        isOpen={isModalOpen}
+        isOpen={showSettings}
         onClose={closeQuestionSettings}
         question={selectedQuestion}
         onSave={handleQuestionSave}
         onCancel={handleQuestionCancel}
-        isNewQuestion={isNewQuestion}
+        isNewQuestion={showSettings}
       />
 
       <ConditionalLogicModal
-        isOpen={isConditionModalOpen}
+        isOpen={showConditionalLogic}
         onClose={closeConditionModal}
-        question={conditionQuestion}
+        question={selectedApiQuestion}
         questions={questions}
         onUpdateQuestion={updateQuestionInList}
       />

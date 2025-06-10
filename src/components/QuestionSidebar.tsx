@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Draggable,
-  Droppable,
-  DroppableProvided,
-  DroppableStateSnapshot,
-} from "react-beautiful-dnd";
+import { ReactSortable } from "react-sortablejs";
 import {
   SquareCheck,
   BarChart3,
@@ -19,79 +14,26 @@ import {
   Star,
   Mail,
   Sparkles,
+  GripVertical,
 } from "lucide-react";
 
-interface QuestionTypeProps {
+interface QuestionTypeItem {
+  id: string;
   type: string;
   label: string;
   icon: React.ReactNode;
   color: string;
-  onAdd: () => void;
-  index: number;
+  chosen?: boolean;
 }
-
-const QuestionType: React.FC<QuestionTypeProps> = ({
-  type,
-  label,
-  icon,
-  color,
-  onAdd,
-  index,
-}) => {
-  return (
-    <Draggable draggableId={type} index={index}>
-      {(provided, snapshot) => (
-        <>
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            style={{
-              ...provided.draggableProps.style,
-              left: "unset !important",
-              top: "unset !important",
-
-              transform: snapshot.isDragging
-                ? provided.draggableProps.style?.transform
-                : "translate(0px, 0px)",
-            }}
-            className={` flex items-center p-2.5 rounded-lg border cursor-move  hover:shadow-sm hover:scale-[1.02] ${color} `}
-            onClick={onAdd}
-          >
-            <div className="flex items-center gap-2 w-full">
-              <div className="flex-shrink-0  ">{icon}</div>
-              <span className="text-xs font-medium text-gray-700 truncate">
-                {label}
-              </span>
-            </div>
-          </div>
-
-          {snapshot.isDragging && (
-            <div
-              style={{ transform: "none !important", opacity: 0.7 }}
-              className={` flex items-center p-2.5 rounded-lg border cursor-move  hover:shadow-sm hover:scale-[1.02] ${color} `}
-            >
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex-shrink-0  ">{icon}</div>
-                <span className="text-xs font-medium text-gray-700 truncate">
-                  {label}
-                </span>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </Draggable>
-  );
-};
 
 interface QuestionSidebarProps {
   onAddQuestion: (type: string, insertIndex?: number) => void;
 }
 
 const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
-  const questionTypes = [
+  const questionTypes: QuestionTypeItem[] = [
     {
+      id: "text_question_short",
       type: "text_question_short",
       label: "متنی با پاسخ کوتاه",
       icon: <Type className="w-4 h-4 text-purple-600" />,
@@ -99,6 +41,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200",
     },
     {
+      id: "text_question_long",
       type: "text_question_long",
       label: "متنی با پاسخ بلند",
       icon: <Type className="w-4 h-4 text-purple-600" />,
@@ -106,6 +49,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200",
     },
     {
+      id: "single_select",
       type: "single_select",
       label: "چندگزینه‌ای",
       icon: <SquareCheck className="w-4 h-4 text-blue-600" />,
@@ -113,6 +57,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-blue-50 border-blue-100 hover:bg-blue-100 hover:border-blue-200",
     },
     {
+      id: "range_slider",
       type: "range_slider",
       label: "طیفی",
       icon: <BarChart3 className="w-4 h-4 text-indigo-600" />,
@@ -120,6 +65,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-indigo-50 border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200",
     },
     {
+      id: "question_group",
       type: "question_group",
       label: "گروه سوال",
       icon: <SquarePlus className="w-4 h-4 text-green-600" />,
@@ -127,6 +73,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-green-50 border-green-100 hover:bg-green-100 hover:border-green-200",
     },
     {
+      id: "statement",
       type: "statement",
       label: "متن بدون پاسخ",
       icon: <FileText className="w-4 h-4 text-gray-600" />,
@@ -134,6 +81,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200",
     },
     {
+      id: "number_descriptive",
       type: "number_descriptive",
       label: "عددی",
       icon: <Hash className="w-4 h-4 text-orange-600" />,
@@ -141,6 +89,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-orange-50 border-orange-100 hover:bg-orange-100 hover:border-orange-200",
     },
     {
+      id: "matrix",
       type: "matrix",
       label: "ماتریسی",
       icon: <Grid3X3 className="w-4 h-4 text-cyan-600" />,
@@ -148,6 +97,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-cyan-50 border-cyan-100 hover:bg-cyan-100 hover:border-cyan-200",
     },
     {
+      id: "prioritize",
       type: "prioritize",
       label: "اولویت‌دهی",
       icon: <ArrowUpDown className="w-4 h-4 text-pink-600" />,
@@ -155,6 +105,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-pink-50 border-pink-100 hover:bg-pink-100 hover:border-pink-200",
     },
     {
+      id: "select_multi_image",
       type: "select_multi_image",
       label: "چند‌گزینه‌ای تصویری",
       icon: <Image className="w-4 h-4 text-yellow-600" />,
@@ -162,6 +113,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-yellow-50 border-yellow-100 hover:bg-yellow-100 hover:border-yellow-200",
     },
     {
+      id: "combobox",
       type: "combobox",
       label: "لیست کشویی",
       icon: <ChevronDown className="w-4 h-4 text-teal-600" />,
@@ -169,6 +121,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-teal-50 border-teal-100 hover:bg-teal-100 hover:border-teal-200",
     },
     {
+      id: "grading",
       type: "grading",
       label: "درجه‌بندی",
       icon: <Star className="w-4 h-4 text-amber-600" />,
@@ -176,12 +129,34 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
         "bg-amber-50 border-amber-100 hover:bg-amber-100 hover:border-amber-200",
     },
     {
+      id: "text_question_email",
       type: "text_question_email",
       label: "ایمیل",
       icon: <Mail className="w-4 h-4 text-red-600" />,
       color: "bg-red-50 border-red-100 hover:bg-red-100 hover:border-red-200",
     },
   ];
+
+  const [items, setItems] = React.useState<QuestionTypeItem[]>(questionTypes);
+
+  const QuestionTypeCard: React.FC<{ item: QuestionTypeItem }> = ({ item }) => (
+    <div
+      className={`flex items-center p-2.5 rounded-lg border cursor-move hover:shadow-sm hover:scale-[1.02] transition-all ${
+        item.color
+      } ${item.chosen ? "opacity-50" : ""}`}
+      onClick={() => !item.chosen && onAddQuestion(item.type)}
+    >
+      <div className="flex items-center gap-2 w-full">
+        <div className="flex-shrink-0 cursor-grab active:cursor-grabbing">
+          <GripVertical className="w-3 h-3 text-gray-400" />
+        </div>
+        <div className="flex-shrink-0">{item.icon}</div>
+        <span className="text-xs font-medium text-gray-700 truncate">
+          {item.label}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200/70 h-[calc(100vh-80px)] fixed top-20 right-0 flex flex-col">
@@ -194,43 +169,72 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
             انواع سوالات
           </h2>
         </div>
-        <p className="text-xs text-gray-500">سوال مورد نظر را انتخاب کنید</p>
+        <p className="text-xs text-gray-500">سوال مورد نظر را بکشید به فرم</p>
       </div>
 
-      <Droppable
-        droppableId="questionTypes"
-        type="QUESTION_TYPE"
-        isDropDisabled={true}
-      >
-        {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className="flex-1 "
-          >
-            <div className="p-4">
-              <div className="flex flex-wrap gap-2">
-                {questionTypes.map((questionType, index) => (
-                  <div
-                    key={questionType.type + "_" + index}
-                    className="w-[calc(50%-4px)]"
-                  >
-                    <QuestionType
-                      type={questionType.type}
-                      label={questionType.label}
-                      icon={questionType.icon}
-                      color={questionType.color}
-                      onAdd={() => onAddQuestion(questionType.type)}
-                      index={index}
-                    />
-                  </div>
-                ))}
-              </div>
-              {provided.placeholder}
+      <div className="flex-1 p-4">
+        <ReactSortable
+          list={items}
+          setList={setItems}
+          group={{
+            name: "shared",
+            pull: "clone", // Enable cloning from sidebar
+            put: false, // Don't allow items to be dropped in sidebar
+          }}
+          clone={(item) => ({
+            ...item,
+            chosen: true,
+          })}
+          sort={false} // Disable sorting in sidebar
+          className="flex flex-wrap gap-2"
+          onClone={(evt) => {
+            // اضافه کردن attribute به clone شده element
+            console.log("🔄 Cloning item:", evt);
+            const clonedElement = evt.clone;
+            const originalElement = evt.item;
+            const questionType =
+              originalElement.getAttribute("data-question-type");
+
+            console.log("🔍 Clone details:", {
+              hasClone: !!clonedElement,
+              hasOriginal: !!originalElement,
+              originalQuestionType: questionType,
+              originalElement: originalElement,
+              clonedElement: clonedElement,
+            });
+
+            if (questionType && clonedElement) {
+              clonedElement.setAttribute("data-question-type", questionType);
+
+              // تأیید اینکه attribute اضافه شده
+              const verifyAttribute =
+                clonedElement.getAttribute("data-question-type");
+              console.log(
+                "✅ Added data-question-type to clone:",
+                questionType,
+                "Verification:",
+                verifyAttribute
+              );
+            } else {
+              console.error("❌ Failed to copy attribute:", {
+                questionType,
+                hasClone: !!clonedElement,
+                hasOriginal: !!originalElement,
+              });
+            }
+          }}
+        >
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="w-[calc(50%-4px)]"
+              data-question-type={item.type}
+            >
+              <QuestionTypeCard item={item} />
             </div>
-          </div>
-        )}
-      </Droppable>
+          ))}
+        </ReactSortable>
+      </div>
     </div>
   );
 };
