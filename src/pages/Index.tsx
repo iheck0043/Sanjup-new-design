@@ -44,6 +44,7 @@ export interface Question {
   hasNone?: boolean;
   defaultValue?: any;
   step?: number;
+  textType?: string;
 }
 
 const Index: React.FC = () => {
