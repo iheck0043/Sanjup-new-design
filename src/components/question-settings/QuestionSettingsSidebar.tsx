@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
@@ -30,30 +31,78 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
     switch (question.type) {
       case 'متنی با پاسخ کوتاه':
       case 'متنی با پاسخ بلند':
-        return <TextQuestionSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <TextQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'چندگزینه‌ای':
       case 'چندگزینه‌ای تصویری':
-        return <MultiChoiceQuestionSettings question={question} onUpdate={updates => onUpdateField('options', updates)} form={{ control: null }} />;
+        return <MultiChoiceQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'لیست کشویی':
-        return <DropdownQuestionSettings question={question} onUpdate={updates => onUpdateField('options', updates)} form={{ control: null }} />;
+        return <DropdownQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'طیفی':
-        return <ScaleQuestionSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <ScaleQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'ماتریسی':
-        return <MatrixQuestionSettings question={question} onUpdate={updates => onUpdateField('rows', updates)} form={{ control: null }} />;
+        return <MatrixQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'اولویت‌دهی':
-        return <PriorityQuestionSettings question={question} onUpdate={updates => onUpdateField('options', updates)} form={{ control: null }} />;
+        return <PriorityQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'چندگزینه‌ای تصویری':
-        return <ImageChoiceQuestionSettings question={question} onUpdate={updates => onUpdateField('imageOptions', updates)} form={{ control: null }} />;
+        return <ImageChoiceQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'درجه‌بندی':
-        return <RatingQuestionSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <RatingQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'عدد':
-        return <NumberQuestionSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <NumberQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'متن بدون پاسخ':
-        return <DescriptionQuestionSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <DescriptionQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'گروه سوال':
-        return <QuestionGroupSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <QuestionGroupSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       case 'ایمیل':
-        return <EmailQuestionSettings question={question} onUpdate={updates => onUpdateField('style', updates)} form={{ control: null }} />;
+        return <EmailQuestionSettings question={question} onUpdate={(updates) => {
+          Object.keys(updates).forEach(key => {
+            onUpdateField(key as keyof Question, updates[key]);
+          });
+        }} form={{ control: null }} />;
       default:
         return <div>No settings available for this question type.</div>;
     }
@@ -61,27 +110,18 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
 
   return (
     <div className="space-y-6 p-4">
-      <FormField
-        control={{}}
-        name="required"
-        render={() => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel htmlFor="required">اجباری</FormLabel>
-              {/* <FormDescription>
-                آیا پاسخ به این سوال اجباری است؟
-              </FormDescription> */}
-            </div>
-            <FormControl>
-              <Switch
-                id="required"
-                checked={question.required || false}
-                onCheckedChange={(value) => onUpdateField('required', value)}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
+      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+        <div className="space-y-0.5">
+          <FormLabel htmlFor="required">اجباری</FormLabel>
+        </div>
+        <FormControl>
+          <Switch
+            id="required"
+            checked={question.required || false}
+            onCheckedChange={(value) => onUpdateField('required', value)}
+          />
+        </FormControl>
+      </FormItem>
 
       {renderQuestionTypeSettings()}
     </div>

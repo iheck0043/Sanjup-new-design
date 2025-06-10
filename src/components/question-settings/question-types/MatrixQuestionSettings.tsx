@@ -1,8 +1,10 @@
+
 import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import type { Question } from "../../../pages/Index";
 
