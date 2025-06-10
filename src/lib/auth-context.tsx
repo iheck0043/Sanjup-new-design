@@ -30,7 +30,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(() => {
     const storedToken = localStorage.getItem("access_token");
@@ -83,7 +83,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Verify API response:", { status: response.status, data });
 
       if (!response.ok) {
-        // Check specifically for the new user case
         if (response.status === 400 && 
             data.info?.message === "User not found. Redirect to signup form." &&
             data.info?.attrs?.is_new_user === true) {
@@ -148,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export function useAuth() {
   const context = useContext(AuthContext);

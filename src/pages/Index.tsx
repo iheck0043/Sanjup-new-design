@@ -5,18 +5,19 @@ export interface Question {
   id: string;
   type: string;
   title: string;
-  label: string;
-  text: string;
+  label?: string;
+  text?: string;
   required?: boolean;
   isRequired?: boolean;
   is_required?: boolean;
-  order: number;
+  order?: number;
   related_group?: string | null;
   hasMedia?: boolean;
   mediaType?: string;
   mediaUrl?: string;
   attachment?: string;
   attachment_type?: string;
+  attachmentType?: string;
   description?: string;
   options?: string[];
   conditions?: Array<{
