@@ -1,21 +1,19 @@
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
-import type { Question } from "../../../pages/Index";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface PriorityQuestionSettingsProps {
   question: Question;
-  onUpdate: (updates: Partial<Question>) => void;
-  form: any;
+  onUpdateField: (field: keyof Question, value: any) => void;
 }
 
 const PriorityQuestionSettings: React.FC<PriorityQuestionSettingsProps> = ({
   question,
-  onUpdate,
-  form
+  onUpdateField,
 }) => {
   const addOption = () => {
     const currentOptions = question.options || ["گزینه ۱", "گزینه ۲"];
@@ -23,13 +21,13 @@ const PriorityQuestionSettings: React.FC<PriorityQuestionSettingsProps> = ({
       ...currentOptions,
       `گزینه ${currentOptions.length + 1}`,
     ];
-    onUpdate({ options: newOptions });
+    onUpdateField("options", newOptions);
   };
 
   const removeOption = (index: number) => {
     if (question.options && question.options.length > 2) {
       const newOptions = question.options.filter((_, i) => i !== index);
-      onUpdate({ options: newOptions });
+      onUpdateField("options", newOptions);
     }
   };
 
@@ -37,7 +35,7 @@ const PriorityQuestionSettings: React.FC<PriorityQuestionSettingsProps> = ({
     if (question.options) {
       const newOptions = [...question.options];
       newOptions[index] = value;
-      onUpdate({ options: newOptions });
+      onUpdateField("options", newOptions);
     }
   };
 
@@ -85,7 +83,7 @@ const PriorityQuestionSettings: React.FC<PriorityQuestionSettingsProps> = ({
           <Switch
             checked={question.shuffleOptions || false}
             onCheckedChange={(checked) =>
-              onUpdate({ shuffleOptions: checked })
+              onUpdateField("shuffleOptions", checked)
             }
           />
         </div>

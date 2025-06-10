@@ -1,97 +1,97 @@
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Question } from '../../../pages/Index';
+import React from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Star, Heart, ThumbsUp } from "lucide-react";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface RatingQuestionSettingsProps {
   question: Question;
-  onUpdate: (updates: Partial<Question>) => void;
-  form: any;
+  onUpdateField: (field: keyof Question, value: any) => void;
 }
 
 const RatingQuestionSettings: React.FC<RatingQuestionSettingsProps> = ({
   question,
-  onUpdate,
-  form
+  onUpdateField,
 }) => {
   return (
-    <div className="space-y-6">
-      <FormField
-        control={form.control}
-        name="label"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>عنوان سوال</FormLabel>
-            <FormControl>
-              <Input placeholder="عنوان سوال را وارد کنید" {...field} />
-            </FormControl>
-            <FormDescription>
-              این عنوان در بالای سوال نمایش داده می‌شود
-            </FormDescription>
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>توضیحات</FormLabel>
-            <FormControl>
-              <Input placeholder="توضیحات اضافی برای سوال (اختیاری)" {...field} />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="required"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel>اجباری</FormLabel>
-              <FormDescription>
-                آیا پاسخ به این سوال اجباری است؟
-              </FormDescription>
+    <div className="space-y-4">
+      <div>
+        <Label className="text-sm font-medium mb-3 block">تنظیم درجه</Label>
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-gray-600 mb-1 block">
+              تعداد درجه‌ها (1-10)
+            </Label>
+            <Slider
+              value={[question.ratingMax || 5]}
+              onValueChange={(value) => onUpdateField("ratingMax", value[0])}
+              min={1}
+              max={10}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1</span>
+              <span>10</span>
             </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
+          </div>
+          <div>
+            <Label className="text-xs text-gray-600 mb-1 block">
+              یا وارد کنید
+            </Label>
+            <Input
+              type="number"
+              value={question.ratingMax || 5}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (value >= 1 && value <= 10) {
+                  onUpdateField("ratingMax", value);
+                }
+              }}
+              min={1}
+              max={10}
+              className="w-24"
+            />
+          </div>
+        </div>
+      </div>
 
-      <FormField
-        control={form.control}
-        name="ratingType"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>نوع رتبه‌بندی</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="انتخاب نوع رتبه‌بندی" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="star">ستاره</SelectItem>
-                <SelectItem value="heart">قلب</SelectItem>
-                <SelectItem value="thumbs">لایک</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              نوع شکلی که برای رتبه‌بندی نمایش داده می‌شود را انتخاب کنید
-            </FormDescription>
-          </FormItem>
-        )}
-      />
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">شکل درجه‌بندی</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            {
+              type: "star",
+              icon: <Star className="w-5 h-5" />,
+              label: "ستاره",
+            },
+            {
+              type: "heart",
+              icon: <Heart className="w-5 h-5" />,
+              label: "قلب",
+            },
+            {
+              type: "thumbs",
+              icon: <ThumbsUp className="w-5 h-5" />,
+              label: "لایک",
+            },
+          ].map(({ type, icon, label }) => (
+            <button
+              key={type}
+              className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
+                question.ratingStyle === type
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+              onClick={() => onUpdateField("ratingStyle", type)}
+            >
+              {icon}
+              <span className="text-xs mt-1">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

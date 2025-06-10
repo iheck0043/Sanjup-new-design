@@ -1,33 +1,32 @@
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
-import type { Question } from "../../../pages/Index";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface MultiChoiceQuestionSettingsProps {
   question: Question;
-  onUpdate: (updates: Partial<Question>) => void;
-  form: any;
+  onUpdateField: (field: keyof Question, value: any) => void;
 }
 
 const MultiChoiceQuestionSettings: React.FC<
   MultiChoiceQuestionSettingsProps
-> = ({ question, onUpdate, form }) => {
+> = ({ question, onUpdateField }) => {
   const addOption = () => {
     const currentOptions = question.options || ["گزینه ۱", "گزینه ۲"];
     const newOptions = [
       ...currentOptions,
       `گزینه ${currentOptions.length + 1}`,
     ];
-    onUpdate({ options: newOptions });
+    onUpdateField("options", newOptions);
   };
 
   const removeOption = (index: number) => {
     if (question.options && question.options.length > 2) {
       const newOptions = question.options.filter((_, i) => i !== index);
-      onUpdate({ options: newOptions });
+      onUpdateField("options", newOptions);
     }
   };
 
@@ -35,7 +34,7 @@ const MultiChoiceQuestionSettings: React.FC<
     if (question.options) {
       const newOptions = [...question.options];
       newOptions[index] = value;
-      onUpdate({ options: newOptions });
+      onUpdateField("options", newOptions);
     }
   };
 
@@ -88,7 +87,7 @@ const MultiChoiceQuestionSettings: React.FC<
           <Switch
             checked={question.isMultiSelect || false}
             onCheckedChange={(checked) =>
-              onUpdate({ isMultiSelect: checked })
+              onUpdateField("isMultiSelect", checked)
             }
           />
         </div>
@@ -101,9 +100,10 @@ const MultiChoiceQuestionSettings: React.FC<
                 type="number"
                 value={question.minSelectableChoices || 2}
                 onChange={(e) =>
-                  onUpdate({
-                    minSelectableChoices: parseInt(e.target.value) || 2
-                  })
+                  onUpdateField(
+                    "minSelectableChoices",
+                    parseInt(e.target.value) || 2
+                  )
                 }
                 min={2}
                 className="mt-1"
@@ -115,9 +115,10 @@ const MultiChoiceQuestionSettings: React.FC<
                 type="number"
                 value={question.maxSelectableChoices || 4}
                 onChange={(e) =>
-                  onUpdate({
-                    maxSelectableChoices: parseInt(e.target.value) || 4
-                  })
+                  onUpdateField(
+                    "maxSelectableChoices",
+                    parseInt(e.target.value) || 4
+                  )
                 }
                 min={2}
                 className="mt-1"
@@ -131,7 +132,7 @@ const MultiChoiceQuestionSettings: React.FC<
           <Switch
             checked={question.shuffleOptions || false}
             onCheckedChange={(checked) =>
-              onUpdate({ shuffleOptions: checked })
+              onUpdateField("shuffleOptions", checked)
             }
           />
         </div>
@@ -141,7 +142,7 @@ const MultiChoiceQuestionSettings: React.FC<
             <Label className="text-sm font-medium">گزینه "سایر"</Label>
             <Switch
               checked={question.hasOther || false}
-              onCheckedChange={(checked) => onUpdate({ hasOther: checked })}
+              onCheckedChange={(checked) => onUpdateField("hasOther", checked)}
             />
           </div>
 
@@ -151,7 +152,7 @@ const MultiChoiceQuestionSettings: React.FC<
                 placeholder="متن گزینه سایر"
                 value={question.otherOptionText || "سایر"}
                 onChange={(e) =>
-                  onUpdate({ otherOptionText: e.target.value })
+                  onUpdateField("otherOptionText", e.target.value)
                 }
               />
             </div>
@@ -161,7 +162,7 @@ const MultiChoiceQuestionSettings: React.FC<
             <Label className="text-sm font-medium">گزینه "هیچکدام"</Label>
             <Switch
               checked={question.hasNone || false}
-              onCheckedChange={(checked) => onUpdate({ hasNone: checked })}
+              onCheckedChange={(checked) => onUpdateField("hasNone", checked)}
             />
           </div>
 
@@ -169,7 +170,7 @@ const MultiChoiceQuestionSettings: React.FC<
             <Label className="text-sm font-medium">گزینه "همه موارد"</Label>
             <Switch
               checked={question.hasAll || false}
-              onCheckedChange={(checked) => onUpdate({ hasAll: checked })}
+              onCheckedChange={(checked) => onUpdateField("hasAll", checked)}
             />
           </div>
         </div>

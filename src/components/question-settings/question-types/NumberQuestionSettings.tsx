@@ -1,41 +1,44 @@
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
-import { Switch } from '@/components/ui/switch';
-import type { Question } from '../../../pages/Index';
+import React from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface NumberQuestionSettingsProps {
   question: Question;
-  onUpdate: (updates: Partial<Question>) => void;
-  form: any;
+  onUpdateField: (field: keyof Question, value: any) => void;
 }
 
 const NumberQuestionSettings: React.FC<NumberQuestionSettingsProps> = ({
   question,
-  onUpdate,
-  form
+  onUpdateField,
 }) => {
   return (
-    <div className="space-y-6">
-      <FormField
-        control={form.control}
-        name="required"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel>اجباری</FormLabel>
-              <FormDescription>
-                آیا پاسخ به این سوال اجباری است؟
-              </FormDescription>
-            </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
+    <div className="space-y-4">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">حداقل مقدار</Label>
+          <Input
+            type="number"
+            value={question.minNumber || 0}
+            onChange={(e) =>
+              onUpdateField("minNumber", parseInt(e.target.value) || 0)
+            }
+            className="w-24"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">حداکثر مقدار</Label>
+          <Input
+            type="number"
+            value={question.maxNumber || 0}
+            onChange={(e) =>
+              onUpdateField("maxNumber", parseInt(e.target.value) || 0)
+            }
+            className="w-24"
+          />
+        </div>
+      </div>
     </div>
   );
 };
