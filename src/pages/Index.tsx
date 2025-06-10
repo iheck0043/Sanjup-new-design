@@ -7,6 +7,8 @@ export interface Question {
   title?: string;
   label?: string;
   required?: boolean;
+  isRequired?: boolean;
+  order?: number;
   related_group?: string | null;
   hasMedia?: boolean;
   mediaType?: string;
@@ -20,6 +22,24 @@ export interface Question {
     sourceOption: string;
     targetQuestionId: string;
   }>;
+  children?: Question[];
+  minNumber?: number;
+  maxNumber?: number;
+  maxLength?: number;
+  limit?: number;
+  rows?: string[];
+  columns?: string[];
+  imageOptions?: Array<{
+    text: string;
+    imageUrl: string;
+  }>;
+  isMultiSelect?: boolean;
+  minSelectableChoices?: number;
+  maxSelectableChoices?: number;
+  shuffleOptions?: boolean;
+  hasOther?: boolean;
+  hasNone?: boolean;
+  text?: string;
 }
 
 const Index: React.FC = () => {

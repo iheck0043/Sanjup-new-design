@@ -1,9 +1,10 @@
+
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import type { Question } from "../../../../pages/QuestionnaireForm";
+import { Trash2, Plus } from "lucide-react";
+import type { Question } from "../../../pages/Index";
 
 interface MatrixQuestionSettingsProps {
   question: Question;
@@ -57,77 +58,61 @@ const MatrixQuestionSettings: React.FC<MatrixQuestionSettingsProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <Label className="text-sm font-medium">سطرها</Label>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={addRow}
-            className="h-8 px-2"
-          >
-            <Plus className="w-4 h-4 ml-1" />
-            افزودن
-          </Button>
-        </div>
+        <Label className="text-sm font-medium mb-2 block">سطرها</Label>
         <div className="space-y-2">
           {(question.rows || ["سطر ۱", "سطر ۲"]).map((row, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div key={index} className="flex gap-2">
               <Input
                 value={row}
                 onChange={(e) => updateRow(index, e.target.value)}
                 className="flex-1"
               />
-              {(question.rows?.length || 2) > 2 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => removeRow(index)}
-                  className="h-8 w-8 p-0 text-red-500"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => removeRow(index)}
+                disabled={(question.rows?.length || 0) <= 2}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           ))}
         </div>
+        <Button type="button" onClick={addRow} className="mt-2" variant="outline">
+          <Plus className="w-4 h-4 ml-1" />
+          افزودن سطر
+        </Button>
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <Label className="text-sm font-medium">ستون‌ها</Label>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={addColumn}
-            className="h-8 px-2"
-          >
-            <Plus className="w-4 h-4 ml-1" />
-            افزودن
-          </Button>
-        </div>
+        <Label className="text-sm font-medium mb-2 block">ستون‌ها</Label>
         <div className="space-y-2">
           {(question.columns || ["ستون ۱", "ستون ۲"]).map((column, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div key={index} className="flex gap-2">
               <Input
                 value={column}
                 onChange={(e) => updateColumn(index, e.target.value)}
                 className="flex-1"
               />
-              {(question.columns?.length || 2) > 2 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => removeColumn(index)}
-                  className="h-8 w-8 p-0 text-red-500"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => removeColumn(index)}
+                disabled={(question.columns?.length || 0) <= 2}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           ))}
         </div>
+        <Button type="button" onClick={addColumn} className="mt-2" variant="outline">
+          <Plus className="w-4 h-4 ml-1" />
+          افزودن ستون
+        </Button>
       </div>
     </div>
   );

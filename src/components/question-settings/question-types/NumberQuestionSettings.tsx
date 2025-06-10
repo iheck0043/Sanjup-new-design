@@ -15,28 +15,27 @@ const NumberQuestionSettings: React.FC<NumberQuestionSettingsProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
           <Label className="text-sm font-medium">حداقل مقدار</Label>
           <Input
             type="number"
             value={question.minNumber || 0}
-            onChange={(e) =>
-              onUpdateField("minNumber", parseInt(e.target.value) || 0)
+            onChange={(e) => 
+              onUpdateField("minNumber", parseInt(e.target.value))
             }
-            className="w-24"
+            className="mt-1"
           />
         </div>
-
-        <div className="flex items-center justify-between">
+        <div>
           <Label className="text-sm font-medium">حداکثر مقدار</Label>
           <Input
             type="number"
-            value={question.maxNumber || 0}
-            onChange={(e) =>
-              onUpdateField("maxNumber", parseInt(e.target.value) || 0)
+            value={question.maxNumber || 100}
+            onChange={(e) => 
+              onUpdateField("maxNumber", parseInt(e.target.value))
             }
-            className="w-24"
+            className="mt-1"
           />
         </div>
       </div>
