@@ -1,29 +1,32 @@
 import React from "react";
-import { Label } from "@/components/ui/label";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import type { Question } from "../../../../pages/QuestionnaireForm";
+import type { Question } from "../../../pages/Index";
 
 interface MatrixQuestionSettingsProps {
   question: Question;
-  onUpdateField: (field: keyof Question, value: any) => void;
+  onUpdate: (updates: Partial<Question>) => void;
+  form: any;
 }
 
 const MatrixQuestionSettings: React.FC<MatrixQuestionSettingsProps> = ({
   question,
-  onUpdateField,
+  onUpdate,
+  form
 }) => {
   const addRow = () => {
     const currentRows = question.rows || ["سطر ۱", "سطر ۲"];
     const newRows = [...currentRows, `سطر ${currentRows.length + 1}`];
-    onUpdateField("rows", newRows);
+    onUpdate({ rows: newRows });
   };
 
   const removeRow = (index: number) => {
     if (question.rows && question.rows.length > 2) {
       const newRows = question.rows.filter((_, i) => i !== index);
-      onUpdateField("rows", newRows);
+      onUpdate({ rows: newRows });
     }
   };
 
@@ -31,20 +34,20 @@ const MatrixQuestionSettings: React.FC<MatrixQuestionSettingsProps> = ({
     if (question.rows) {
       const newRows = [...question.rows];
       newRows[index] = value;
-      onUpdateField("rows", newRows);
+      onUpdate({ rows: newRows });
     }
   };
 
   const addColumn = () => {
     const currentColumns = question.columns || ["ستون ۱", "ستون ۲"];
     const newColumns = [...currentColumns, `ستون ${currentColumns.length + 1}`];
-    onUpdateField("columns", newColumns);
+    onUpdate({ columns: newColumns });
   };
 
   const removeColumn = (index: number) => {
     if (question.columns && question.columns.length > 2) {
       const newColumns = question.columns.filter((_, i) => i !== index);
-      onUpdateField("columns", newColumns);
+      onUpdate({ columns: newColumns });
     }
   };
 
@@ -52,7 +55,7 @@ const MatrixQuestionSettings: React.FC<MatrixQuestionSettingsProps> = ({
     if (question.columns) {
       const newColumns = [...question.columns];
       newColumns[index] = value;
-      onUpdateField("columns", newColumns);
+      onUpdate({ columns: newColumns });
     }
   };
 

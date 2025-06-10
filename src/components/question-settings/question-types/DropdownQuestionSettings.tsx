@@ -1,19 +1,21 @@
 import React from "react";
-import { Label } from "@/components/ui/label";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
-import type { Question } from "../../../../pages/QuestionnaireForm";
+import type { Question } from "../../../pages/Index";
 
 interface DropdownQuestionSettingsProps {
   question: Question;
-  onUpdateField: (field: keyof Question, value: any) => void;
+  onUpdate: (updates: Partial<Question>) => void;
+  form: any;
 }
 
 const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
   question,
-  onUpdateField,
+  onUpdate,
+  form
 }) => {
   const addOption = () => {
     const currentOptions = question.options || ["گزینه ۱", "گزینه ۲"];
@@ -21,13 +23,13 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
       ...currentOptions,
       `گزینه ${currentOptions.length + 1}`,
     ];
-    onUpdateField("options", newOptions);
+    onUpdate({ options: newOptions });
   };
 
   const removeOption = (index: number) => {
     if (question.options && question.options.length > 2) {
       const newOptions = question.options.filter((_, i) => i !== index);
-      onUpdateField("options", newOptions);
+      onUpdate({ options: newOptions });
     }
   };
 
@@ -35,7 +37,7 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
     if (question.options) {
       const newOptions = [...question.options];
       newOptions[index] = value;
-      onUpdateField("options", newOptions);
+      onUpdate({ options: newOptions });
     }
   };
 
@@ -83,7 +85,7 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
           <Switch
             checked={question.isMultiSelect || false}
             onCheckedChange={(checked) =>
-              onUpdateField("isMultiSelect", checked)
+              onUpdate({ isMultiSelect: checked })
             }
           />
         </div>
@@ -96,10 +98,9 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
                 type="number"
                 value={question.minSelectableChoices || 2}
                 onChange={(e) =>
-                  onUpdateField(
-                    "minSelectableChoices",
-                    parseInt(e.target.value) || 2
-                  )
+                  onUpdate({
+                    minSelectableChoices: parseInt(e.target.value) || 2
+                  })
                 }
                 min={2}
                 className="mt-1"
@@ -111,10 +112,9 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
                 type="number"
                 value={question.maxSelectableChoices || 4}
                 onChange={(e) =>
-                  onUpdateField(
-                    "maxSelectableChoices",
-                    parseInt(e.target.value) || 4
-                  )
+                  onUpdate({
+                    maxSelectableChoices: parseInt(e.target.value) || 4
+                  })
                 }
                 min={2}
                 className="mt-1"
@@ -128,7 +128,7 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
           <Switch
             checked={question.shuffleOptions || false}
             onCheckedChange={(checked) =>
-              onUpdateField("shuffleOptions", checked)
+              onUpdate({ shuffleOptions: checked })
             }
           />
         </div>
@@ -138,7 +138,7 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
             <Label className="text-sm font-medium">گزینه "سایر"</Label>
             <Switch
               checked={question.hasOther || false}
-              onCheckedChange={(checked) => onUpdateField("hasOther", checked)}
+              onCheckedChange={(checked) => onUpdate({ hasOther: checked })}
             />
           </div>
 
@@ -146,7 +146,7 @@ const DropdownQuestionSettings: React.FC<DropdownQuestionSettingsProps> = ({
             <Label className="text-sm font-medium">گزینه "هیچکدام"</Label>
             <Switch
               checked={question.hasNone || false}
-              onCheckedChange={(checked) => onUpdateField("hasNone", checked)}
+              onCheckedChange={(checked) => onUpdate({ hasNone: checked })}
             />
           </div>
         </div>

@@ -1,97 +1,71 @@
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import type { Question } from "../../../../pages/QuestionnaireForm";
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import type { Question } from '../../../pages/Index';
 
 interface ScaleQuestionSettingsProps {
   question: Question;
-  onUpdateField: (field: keyof Question, value: any) => void;
+  onUpdate: (updates: Partial<Question>) => void;
+  form: any;
 }
 
 const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
   question,
-  onUpdateField,
+  onUpdate,
+  form
 }) => {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="text-sm font-medium mb-3 block">تنظیم طیف</Label>
-        <div className="space-y-3">
-          <div>
-            <Label className="text-xs text-gray-600 mb-1 block">
-              تعداد گزینه‌ها
-            </Label>
-            <Slider
-              value={[question.scaleMax || 5]}
-              onValueChange={(value) => onUpdateField("scaleMax", value[0])}
-              min={3}
-              max={11}
-              step={2}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>3</span>
-              <span>11</span>
-            </div>
-          </div>
-          <div>
-            <Label className="text-xs text-gray-600 mb-1 block">
-              یا وارد کنید
-            </Label>
-            <Input
-              type="number"
-              value={question.scaleMax || 5}
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (value >= 3 && value <= 11 && value % 2 === 1) {
-                  onUpdateField("scaleMax", value);
-                }
-              }}
-              min={3}
-              max={11}
-              step={2}
-              className="w-24"
-            />
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <FormField
+        control={form.control}
+        name="label"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>عنوان سوال</FormLabel>
+            <FormControl>
+              <Input placeholder="عنوان سوال را وارد کنید" {...field} />
+            </FormControl>
+            <FormDescription>
+              این عنوان در بالای سوال نمایش داده می‌شود
+            </FormDescription>
+          </FormItem>
+        )}
+      />
 
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">برچسب‌های طیف</Label>
-        <div className="space-y-2">
-          <Input
-            placeholder="برچسب چپ"
-            value={question.scaleLabels?.left || ""}
-            onChange={(e) =>
-              onUpdateField("scaleLabels", {
-                ...question.scaleLabels,
-                left: e.target.value,
-              })
-            }
-          />
-          <Input
-            placeholder="برچسب وسط"
-            value={question.scaleLabels?.center || ""}
-            onChange={(e) =>
-              onUpdateField("scaleLabels", {
-                ...question.scaleLabels,
-                center: e.target.value,
-              })
-            }
-          />
-          <Input
-            placeholder="برچسب راست"
-            value={question.scaleLabels?.right || ""}
-            onChange={(e) =>
-              onUpdateField("scaleLabels", {
-                ...question.scaleLabels,
-                right: e.target.value,
-              })
-            }
-          />
-        </div>
-      </div>
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>توضیحات</FormLabel>
+            <FormControl>
+              <Input placeholder="توضیحات اضافی برای سوال (اختیاری)" {...field} />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="required"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+            <div className="space-y-0.5">
+              <FormLabel>اجباری</FormLabel>
+              <FormDescription>
+                آیا پاسخ به این سوال اجباری است؟
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import FormHeader from '../components/FormHeader';
 import { 
@@ -237,7 +236,6 @@ const Audience = () => {
                                 <Switch 
                                   checked={quotasEnabled}
                                   onCheckedChange={setQuotasEnabled}
-                                  size="sm"
                                 />
                               </div>
                               
@@ -246,7 +244,6 @@ const Audience = () => {
                                 <Switch 
                                   checked={excludeSelected}
                                   onCheckedChange={setExcludeSelected}
-                                  size="sm"
                                 />
                               </div>
                             </div>
@@ -299,11 +296,11 @@ const Audience = () => {
                     <Input placeholder="Search options" className="mb-4" />
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Switch size="sm" />
+                        <Switch />
                         <span>Quotas</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Switch size="sm" />
+                        <Switch />
                         <span>Exclude selected options</span>
                       </div>
                       <Button variant="outline" size="sm">
@@ -349,11 +346,11 @@ const Audience = () => {
                     <Input placeholder="Search options" className="mb-4" />
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Switch size="sm" />
+                        <Switch />
                         <span>Quotas</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Switch size="sm" />
+                        <Switch />
                         <span>Exclude selected options</span>
                       </div>
                       <Button variant="outline" size="sm">
@@ -385,11 +382,11 @@ const Audience = () => {
                     <Input placeholder="Search options" className="mb-4" />
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Switch size="sm" />
+                        <Switch />
                         <span>Quotas</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Switch size="sm" />
+                        <Switch />
                         <span>Exclude selected options</span>
                       </div>
                       <Button variant="outline" size="sm">
