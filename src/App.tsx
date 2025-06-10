@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import QuestionnaireForm from "./pages/QuestionnaireForm";
 import QuestionnaireList from "./pages/QuestionnaireList";
 import Audience from "./pages/Audience";
+import Index from "./pages/Index";
 import { Toaster } from "sonner";
 
 function App() {
