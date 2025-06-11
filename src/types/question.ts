@@ -15,12 +15,27 @@ export interface Question {
   min?: number;
   max?: number;
   step?: number;
-  options?: string[];
+  options?: string[] | Array<{
+    id?: number;
+    question?: number;
+    depend_questionnaire?: string;
+    priority: number;
+    score: number;
+    value: string;
+    type: string;
+    label?: string;
+    option_kind: string;
+    text?: string;
+    is_other?: boolean;
+    is_none?: boolean;
+    is_all?: boolean;
+    image_url?: string;
+  }>;
   scaleMin?: number;
   scaleMax?: number;
   scaleMinLabel?: string;
   scaleMaxLabel?: string;
-  ratingType?: 'star' | 'heart' | 'thumbs';
+  ratingType?: 'star' | 'heart' | 'thumbs' | 'like';
   ratingMax?: number;
   matrixRows?: string[];
   matrixColumns?: string[];
@@ -28,6 +43,7 @@ export interface Question {
     id: string;
     label: string;
     imageUrl: string;
+    text?: string;
   }>;
   allowMultiple?: boolean;
   priorityItems?: string[];
@@ -40,6 +56,7 @@ export interface Question {
   mediaUrl?: string;
   attachment?: string;
   attachment_type?: string;
+  attachmentType?: string; // Additional compatibility
   rows?: string[];
   columns?: string[];
   isMultiSelect?: boolean;
@@ -54,4 +71,14 @@ export interface Question {
   maxNumber?: number;
   children?: Question[];
   defaultValue?: any; // For API compatibility
+  // API compatibility fields
+  depend_questionnaire?: string;
+  priority?: number;
+  score?: number;
+  value?: string;
+  option_kind?: string;
+  is_other?: boolean;
+  is_none?: boolean;
+  is_all?: boolean;
+  image_url?: string;
 }

@@ -63,13 +63,15 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           ...question,
           title: question.title || "سوال جدید",
           label: question.label || "سوال جدید",
+          text: question.text || "سوال جدید",
           isRequired: true,
         });
       } else {
         setLocalQuestion({
           ...question,
-          title: question.title || question.label || "",
-          label: question.title || question.label || "",
+          title: question.title || question.label || question.text || "",
+          label: question.title || question.label || question.text || "",
+          text: question.text || question.title || question.label || "",
         });
       }
       setHasChanges(isNewQuestion);
@@ -85,6 +87,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     if (field === "label") {
       updated.title = value;
       updated.label = value;
+      updated.text = value;
     }
 
     if (field === "hasMedia") {
@@ -92,6 +95,9 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       if (!value) {
         updated.mediaType = undefined;
         updated.mediaUrl = undefined;
+        updated.attachment = undefined;
+        updated.attachment_type = undefined;
+        updated.attachmentType = undefined;
       } else if (!updated.mediaType) {
         updated.mediaType = "image";
       }
@@ -108,13 +114,20 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
-    if (!localQuestion.title?.trim()) {
+    if (!localQuestion.title?.trim() && !localQuestion.label?.trim() && !localQuestion.text?.trim()) {
       inputRef.current?.focus();
       return;
     }
 
     if (hasChanges && localQuestion) {
-      onSave(localQuestion);
+      // Ensure all required fields are set
+      const questionToSave = {
+        ...localQuestion,
+        text: localQuestion.text || localQuestion.title || localQuestion.label || "",
+        label: localQuestion.label || localQuestion.title || localQuestion.text || "",
+        title: localQuestion.title || localQuestion.label || localQuestion.text || "",
+      };
+      onSave(questionToSave);
     } else {
       onClose();
     }
@@ -324,7 +337,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                 <Button
                   onClick={handleSave}
                   className="flex-1"
-                  disabled={!hasChanges || !localQuestion.title?.trim()}
+                  disabled={!hasChanges || (!localQuestion.title?.trim() && !localQuestion.label?.trim() && !localQuestion.text?.trim())}
                 >
                   ذخیره
                 </Button>

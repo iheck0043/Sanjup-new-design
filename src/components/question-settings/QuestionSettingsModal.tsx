@@ -41,6 +41,14 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       value
     );
     const updated = { ...localQuestion, [field]: value };
+    
+    // Ensure compatibility between different field names
+    if (field === "attachment_type") {
+      updated.attachmentType = value;
+    } else if (field === "attachmentType") {
+      updated.attachment_type = value;
+    }
+    
     console.log("QuestionSettingsModal - Updated question:", updated);
     setLocalQuestion(updated);
     onUpdateField(field, value);
@@ -54,16 +62,19 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           ...question,
           title: question.title || "سوال جدید",
           label: question.label || "سوال جدید",
+          text: question.text || "سوال جدید",
           isRequired: true,
           hasMedia: false,
           mediaType: undefined,
           mediaUrl: undefined,
           attachment: undefined,
           attachment_type: undefined,
+          attachmentType: undefined,
         };
         setLocalQuestion(initialQuestion);
         onUpdateField("title", initialQuestion.title);
         onUpdateField("label", initialQuestion.label);
+        onUpdateField("text", initialQuestion.text);
         onUpdateField("isRequired", initialQuestion.isRequired);
         onUpdateField("hasMedia", initialQuestion.hasMedia);
         onUpdateField("mediaType", initialQuestion.mediaType);
@@ -74,17 +85,20 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         console.log("QuestionSettingsModal - Updating existing question");
         const updatedQuestion = {
           ...question,
-          title: question.title || question.label || "",
-          label: question.title || question.label || "",
+          title: question.title || question.label || question.text || "",
+          label: question.title || question.label || question.text || "",
+          text: question.text || question.title || question.label || "",
           hasMedia: question.hasMedia || false,
           mediaType: question.mediaType || undefined,
           mediaUrl: question.mediaUrl || undefined,
           attachment: question.attachment || undefined,
           attachment_type: question.attachment_type || undefined,
+          attachmentType: question.attachmentType || undefined,
         };
         setLocalQuestion(updatedQuestion);
         onUpdateField("title", updatedQuestion.title);
         onUpdateField("label", updatedQuestion.label);
+        onUpdateField("text", updatedQuestion.text);
         onUpdateField("hasMedia", updatedQuestion.hasMedia);
         onUpdateField("mediaType", updatedQuestion.mediaType);
         onUpdateField("mediaUrl", updatedQuestion.mediaUrl);
@@ -95,6 +109,17 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   }, [question, isNewQuestion]);
 
   console.log("QuestionSettingsModal - Current localQuestion:", localQuestion);
+
+  const handleSave = () => {
+    // Ensure all required fields are properly set
+    const questionToSave = {
+      ...localQuestion,
+      text: localQuestion.text || localQuestion.title || localQuestion.label || "",
+      label: localQuestion.label || localQuestion.title || localQuestion.text || "",
+      title: localQuestion.title || localQuestion.label || localQuestion.text || "",
+    };
+    onSave(questionToSave);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -136,7 +161,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
               <Button variant="outline" onClick={onClose}>
                 انصراف
               </Button>
-              <Button onClick={() => onSave(localQuestion)}>ذخیره</Button>
+              <Button onClick={handleSave}>ذخیره</Button>
             </div>
           </div>
         </div>
