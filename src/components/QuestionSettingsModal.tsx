@@ -288,7 +288,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-none max-h-none w-screen h-screen p-0 m-0 rounded-none font-vazirmatn"
+        className="max-w-none max-h-none w-screen h-screen p-0 m-0 rounded-none"
         dir="rtl"
       >
         <div className="flex h-full">

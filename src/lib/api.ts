@@ -105,3 +105,91 @@ export const deleteQuestionnaire = async (
     throw new Error("Failed to delete questionnaire");
   }
 };
+
+export const createQuestionnaire = async (
+  title: string,
+  questionnaireType: string,
+  accessToken: string
+): Promise<{ data: { id: string; title: string; status: string } }> => {
+  if (!accessToken) {
+    throw new Error("No access token available");
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/api/v1/questionnaire/sanjup/create`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        title,
+        questionnaire_type: questionnaireType,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to create questionnaire");
+  }
+
+  return response.json();
+};
+
+export const setPublishMethods = async (
+  id: string,
+  accessToken: string
+): Promise<void> => {
+  if (!accessToken) {
+    throw new Error("No access token available");
+  }
+
+  const formData = new FormData();
+  formData.append("publish_public", "false");
+  formData.append("publish_single_user", "true");
+  formData.append("publish_questioner", "false");
+
+  const response = await fetch(
+    `${BASE_URL}/api/v1/questionnaire/sanjup/${id}/publish_methods/`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to set publish methods");
+  }
+};
+
+export const updateQuestionnaireType = async (
+  id: string,
+  questionnaireType: string,
+  accessToken: string
+): Promise<void> => {
+  if (!accessToken) {
+    throw new Error("No access token available");
+  }
+
+  const formData = new FormData();
+  formData.append("questionnaire_type", questionnaireType);
+
+  const response = await fetch(
+    `${BASE_URL}/api/v1/questionnaire/update-type/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update questionnaire type");
+  }
+};

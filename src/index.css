@@ -97,5 +97,46 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: "Vazirmatn", sans-serif;
   }
+}
+/* * {
+  direction: rtl !important;
+} */
+/* .swuerrrer {
+  direction: ltr !important;
+} */
+/* Custom slider styles */
+.slider::-webkit-slider-runnable-track {
+  background: #e0e2ec;
+  height: 0.25rem;
+  border-radius: 0.125rem;
+}
+
+.slider::-moz-range-track {
+  background: #e0e2ec;
+  height: 0.25rem;
+  border-radius: 0.125rem;
+}
+
+.slider::-webkit-slider-thumb {
+  border: 1px solid #405f91;
+  background: #405f91;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -8px;
+  box-shadow: 0px 1px 7px -1px rgba(0, 0, 0, 0.75);
+}
+
+.slider::-moz-range-thumb {
+  border: 1px solid #405f91;
+  background: #405f91;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0px 1px 7px -1px rgba(0, 0, 0, 0.75);
 }
