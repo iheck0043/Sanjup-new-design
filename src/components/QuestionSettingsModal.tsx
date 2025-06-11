@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ import {
   Play,
   Video,
 } from "lucide-react";
-import type { Question } from "../types/question";
+import type { Question } from "../pages/QuestionnaireForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import QuestionHeader from "./question-settings/QuestionHeader";
 import QuestionSettingsSidebar from "./question-settings/QuestionSettingsSidebar";
@@ -61,17 +60,14 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       if (isNewQuestion) {
         setLocalQuestion({
           ...question,
-          title: question.title || "سوال جدید",
-          label: question.label || "سوال جدید",
-          text: question.text || "سوال جدید",
-          isRequired: true,
+          title: "سوال جدید",
+          label: "سوال جدید",
+          required: true,
         });
       } else {
         setLocalQuestion({
           ...question,
-          title: question.title || question.label || question.text || "",
-          label: question.title || question.label || question.text || "",
-          text: question.text || question.title || question.label || "",
+          label: question.title || question.label || "",
         });
       }
       setHasChanges(isNewQuestion);
@@ -82,12 +78,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   const handleUpdateField = (field: keyof Question, value: any) => {
     console.log("Updating field:", field, "with value:", value);
-    const updated = { ...localQuestion } as Question;
+    const updated = { ...localQuestion };
 
     if (field === "label") {
       updated.title = value;
-      updated.label = value;
-      updated.text = value;
     }
 
     if (field === "hasMedia") {
@@ -95,9 +89,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       if (!value) {
         updated.mediaType = undefined;
         updated.mediaUrl = undefined;
-        updated.attachment = undefined;
-        updated.attachment_type = undefined;
-        updated.attachmentType = undefined;
       } else if (!updated.mediaType) {
         updated.mediaType = "image";
       }
@@ -105,7 +96,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       updated.mediaType = value;
       updated.mediaUrl = undefined;
     } else {
-      (updated as any)[field] = value;
+      updated[field] = value;
     }
 
     console.log("Updated question:", updated);
@@ -114,20 +105,13 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   };
 
   const handleSave = () => {
-    if (!localQuestion.title?.trim() && !localQuestion.label?.trim() && !localQuestion.text?.trim()) {
+    if (!localQuestion.label.trim()) {
       inputRef.current?.focus();
       return;
     }
 
     if (hasChanges && localQuestion) {
-      // Ensure all required fields are set
-      const questionToSave = {
-        ...localQuestion,
-        text: localQuestion.text || localQuestion.title || localQuestion.label || "",
-        label: localQuestion.label || localQuestion.title || localQuestion.text || "",
-        title: localQuestion.title || localQuestion.label || localQuestion.text || "",
-      };
-      onSave(questionToSave);
+      onSave(localQuestion);
     } else {
       onClose();
     }
@@ -193,50 +177,50 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
 
   // Matrix functions - fixed to ensure minimum 2 items
   const addRow = () => {
-    const currentRows = (localQuestion as any).rows || ["سطر ۱", "سطر ۲"];
+    const currentRows = localQuestion.rows || ["سطر ۱", "سطر ۲"];
     const newRows = [...currentRows, `سطر ${currentRows.length + 1}`];
-    handleUpdateField("rows" as keyof Question, newRows);
+    handleUpdateField("rows", newRows);
   };
 
   const removeRow = (index: number) => {
-    if ((localQuestion as any).rows && (localQuestion as any).rows.length > 2) {
-      const newRows = (localQuestion as any).rows.filter((_: any, i: number) => i !== index);
-      handleUpdateField("rows" as keyof Question, newRows);
+    if (localQuestion.rows && localQuestion.rows.length > 2) {
+      const newRows = localQuestion.rows.filter((_, i) => i !== index);
+      handleUpdateField("rows", newRows);
     }
   };
 
   const updateRow = (index: number, value: string) => {
-    if ((localQuestion as any).rows) {
-      const newRows = [...(localQuestion as any).rows];
+    if (localQuestion.rows) {
+      const newRows = [...localQuestion.rows];
       newRows[index] = value;
-      handleUpdateField("rows" as keyof Question, newRows);
+      handleUpdateField("rows", newRows);
     }
   };
 
   const addColumn = () => {
-    const currentColumns = (localQuestion as any).columns || ["ستون ۱", "ستون ۲"];
+    const currentColumns = localQuestion.columns || ["ستون ۱", "ستون ۲"];
     const newColumns = [...currentColumns, `ستون ${currentColumns.length + 1}`];
-    handleUpdateField("columns" as keyof Question, newColumns);
+    handleUpdateField("columns", newColumns);
   };
 
   const removeColumn = (index: number) => {
-    if ((localQuestion as any).columns && (localQuestion as any).columns.length > 2) {
-      const newColumns = (localQuestion as any).columns.filter((_: any, i: number) => i !== index);
-      handleUpdateField("columns" as keyof Question, newColumns);
+    if (localQuestion.columns && localQuestion.columns.length > 2) {
+      const newColumns = localQuestion.columns.filter((_, i) => i !== index);
+      handleUpdateField("columns", newColumns);
     }
   };
 
   const updateColumn = (index: number, value: string) => {
-    if ((localQuestion as any).columns) {
-      const newColumns = [...(localQuestion as any).columns];
+    if (localQuestion.columns) {
+      const newColumns = [...localQuestion.columns];
       newColumns[index] = value;
-      handleUpdateField("columns" as keyof Question, newColumns);
+      handleUpdateField("columns", newColumns);
     }
   };
 
   // Image choice functions - fixed
   const addImageOption = () => {
-    const currentOptions = (localQuestion as any).imageOptions || [
+    const currentOptions = localQuestion.imageOptions || [
       { text: "گزینه ۱", imageUrl: "" },
       { text: "گزینه ۲", imageUrl: "" },
     ];
@@ -244,15 +228,15 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
       ...currentOptions,
       { text: `گزینه ${currentOptions.length + 1}`, imageUrl: "" },
     ];
-    handleUpdateField("imageOptions" as keyof Question, newOptions);
+    handleUpdateField("imageOptions", newOptions);
   };
 
   const removeImageOption = (index: number) => {
-    if ((localQuestion as any).imageOptions && (localQuestion as any).imageOptions.length > 2) {
-      const newOptions = (localQuestion as any).imageOptions.filter(
-        (_: any, i: number) => i !== index
+    if (localQuestion.imageOptions && localQuestion.imageOptions.length > 2) {
+      const newOptions = localQuestion.imageOptions.filter(
+        (_, i) => i !== index
       );
-      handleUpdateField("imageOptions" as keyof Question, newOptions);
+      handleUpdateField("imageOptions", newOptions);
     }
   };
 
@@ -261,10 +245,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     field: "text" | "imageUrl",
     value: string
   ) => {
-    if ((localQuestion as any).imageOptions) {
-      const newOptions = [...(localQuestion as any).imageOptions];
+    if (localQuestion.imageOptions) {
+      const newOptions = [...localQuestion.imageOptions];
       newOptions[index] = { ...newOptions[index], [field]: value };
-      handleUpdateField("imageOptions" as keyof Question, newOptions);
+      handleUpdateField("imageOptions", newOptions);
     }
   };
 
@@ -304,7 +288,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-none max-h-none w-screen h-screen p-0 m-0 rounded-none font-vazirmatn"
+        className="max-w-none max-h-none w-screen h-screen p-0 m-0 rounded-none"
         dir="rtl"
       >
         <div className="flex h-full">
@@ -337,7 +321,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                 <Button
                   onClick={handleSave}
                   className="flex-1"
-                  disabled={!hasChanges || (!localQuestion.title?.trim() && !localQuestion.label?.trim() && !localQuestion.text?.trim())}
+                  disabled={!hasChanges || !localQuestion.label.trim()}
                 >
                   ذخیره
                 </Button>

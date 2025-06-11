@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import type { Question } from "../../../types/question";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface NumberQuestionSettingsProps {
   question: Question;
@@ -15,27 +14,28 @@ const NumberQuestionSettings: React.FC<NumberQuestionSettingsProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">حداقل مقدار</Label>
           <Input
             type="number"
             value={question.minNumber || 0}
-            onChange={(e) => 
-              onUpdateField("minNumber", parseInt(e.target.value))
+            onChange={(e) =>
+              onUpdateField("minNumber", parseInt(e.target.value) || 0)
             }
-            className="mt-1"
+            className="w-24"
           />
         </div>
-        <div>
+
+        <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">حداکثر مقدار</Label>
           <Input
             type="number"
-            value={question.maxNumber || 100}
-            onChange={(e) => 
-              onUpdateField("maxNumber", parseInt(e.target.value))
+            value={question.maxNumber || 0}
+            onChange={(e) =>
+              onUpdateField("maxNumber", parseInt(e.target.value) || 0)
             }
-            className="mt-1"
+            className="w-24"
           />
         </div>
       </div>

@@ -3,24 +3,39 @@ import { ArrowLeft, Eye, Edit3, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 
+interface Step {
+  id: number;
+  title: string;
+  path: string;
+}
+
 interface FormHeaderProps {
   formTitle: string;
   setFormTitle: (title: string) => void;
+  steps?: Step[];
+  backPath?: string;
 }
 
-const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
+const FormHeader: React.FC<FormHeaderProps> = ({
+  formTitle,
+  setFormTitle,
+  steps,
+  backPath = "/",
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const steps = [
+  const defaultSteps = [
     { id: 1, title: "طراحی نظرسنجی", path: "/" },
     { id: 2, title: "انتخاب مخاطب", path: "/audience" },
     { id: 3, title: "گزارش نتایج", path: "/results" },
   ];
 
+  const currentSteps = steps || defaultSteps;
+
   const getCurrentStep = () => {
     const currentPath = location.pathname;
-    const step = steps.find((s) => s.path === currentPath);
+    const step = currentSteps.find((s) => s.path === currentPath);
     return step ? step.id : 1;
   };
 
@@ -32,7 +47,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(backPath)}
           className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
         >
           <ArrowRight className="w-5 h-5" />
@@ -54,7 +69,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
 
       {/* Centered Steps */}
       <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-        {steps.map((step, index) => (
+        {currentSteps.map((step, index) => (
           <React.Fragment key={step.id}>
             <button
               onClick={() => navigate(step.path)}
@@ -67,7 +82,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({ formTitle, setFormTitle }) => {
               <span className="ml-2">{step.id}</span>
               {step.title}
             </button>
-            {index < steps.length - 1 && (
+            {index < currentSteps.length - 1 && (
               <div className="w-8 h-px bg-gray-300 mx-1"></div>
             )}
           </React.Fragment>

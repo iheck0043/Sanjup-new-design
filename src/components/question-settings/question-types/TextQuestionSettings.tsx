@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import type { Question } from "../../../types/question";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface TextQuestionSettingsProps {
   question: Question;
@@ -13,35 +12,28 @@ const TextQuestionSettings: React.FC<TextQuestionSettingsProps> = ({
   question,
   onUpdateField,
 }) => {
-  const isLongText = question.type === "text_question_long";
-  const isEmail = question.type === "text_question_email";
+  // Get maxLength from either maxLength or limit property
+  const maxLength = question.maxLength || question.limit || 200;
 
   return (
     <div className="space-y-4">
-      {!isEmail && (
-        <div>
-          <Label className="text-sm font-medium">
-            {isLongText ? "حداکثر تعداد کاراکتر" : "حداکثر طول"}
-          </Label>
-          <Input
-            type="number"
-            min="1"
-            value={question.maxLength || question.limit || 100}
-            onChange={(e) => {
-              const value = parseInt(e.target.value);
-              onUpdateField("maxLength", value);
-              onUpdateField("limit", value);
-            }}
-            className="mt-1"
-          />
-        </div>
-      )}
-
-      {isEmail && (
-        <div className="text-sm text-gray-500">
-          این سوال به طور خودکار ایمیل را اعتبارسنجی می‌کند.
-        </div>
-      )}
+      <div className="space-y-3 border-t pt-4">
+        {(question.type === "text_question_short" ||
+          question.type === "text_question_long") && (
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">حداکثر تعداد کاراکتر</Label>
+            <Input
+              type="number"
+              value={maxLength}
+              onChange={(e) =>
+                onUpdateField("maxLength", parseInt(e.target.value))
+              }
+              className="w-24"
+              min={1}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

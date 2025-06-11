@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import type { Question } from "../../../types/question";
+import { Slider } from "@/components/ui/slider";
+import type { Question } from "../../../../pages/QuestionnaireForm";
 
 interface ScaleQuestionSettingsProps {
   question: Question;
@@ -16,53 +15,82 @@ const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label className="text-sm font-medium">حداقل مقدار</Label>
-          <Input
-            type="number"
-            value={question.minNumber || 0}
-            onChange={(e) => onUpdateField("minNumber", parseInt(e.target.value))}
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label className="text-sm font-medium">حداکثر مقدار</Label>
-          <Input
-            type="number"
-            value={question.maxNumber || 10}
-            onChange={(e) => onUpdateField("maxNumber", parseInt(e.target.value))}
-            className="mt-1"
-          />
+      <div>
+        <Label className="text-sm font-medium mb-3 block">تنظیم طیف</Label>
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-gray-600 mb-1 block">
+              تعداد گزینه‌ها
+            </Label>
+            <Slider
+              value={[question.scaleMax || 5]}
+              onValueChange={(value) => onUpdateField("scaleMax", value[0])}
+              min={3}
+              max={11}
+              step={2}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>3</span>
+              <span>11</span>
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-gray-600 mb-1 block">
+              یا وارد کنید
+            </Label>
+            <Input
+              type="number"
+              value={question.scaleMax || 5}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (value >= 3 && value <= 11 && value % 2 === 1) {
+                  onUpdateField("scaleMax", value);
+                }
+              }}
+              min={3}
+              max={11}
+              step={2}
+              className="w-24"
+            />
+          </div>
         </div>
       </div>
 
-      <div>
-        <Label className="text-sm font-medium">برچسب حداقل</Label>
-        <Input
-          value={question.options?.[0] || ""}
-          onChange={(e) => {
-            const newOptions = [...(question.options || ["", ""])];
-            newOptions[0] = e.target.value;
-            onUpdateField("options", newOptions);
-          }}
-          className="mt-1"
-          placeholder="برچسب حداقل مقدار"
-        />
-      </div>
-
-      <div>
-        <Label className="text-sm font-medium">برچسب حداکثر</Label>
-        <Input
-          value={question.options?.[1] || ""}
-          onChange={(e) => {
-            const newOptions = [...(question.options || ["", ""])];
-            newOptions[1] = e.target.value;
-            onUpdateField("options", newOptions);
-          }}
-          className="mt-1"
-          placeholder="برچسب حداکثر مقدار"
-        />
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">برچسب‌های طیف</Label>
+        <div className="space-y-2">
+          <Input
+            placeholder="برچسب چپ"
+            value={question.scaleLabels?.left || ""}
+            onChange={(e) =>
+              onUpdateField("scaleLabels", {
+                ...question.scaleLabels,
+                left: e.target.value,
+              })
+            }
+          />
+          <Input
+            placeholder="برچسب وسط"
+            value={question.scaleLabels?.center || ""}
+            onChange={(e) =>
+              onUpdateField("scaleLabels", {
+                ...question.scaleLabels,
+                center: e.target.value,
+              })
+            }
+          />
+          <Input
+            placeholder="برچسب راست"
+            value={question.scaleLabels?.right || ""}
+            onChange={(e) =>
+              onUpdateField("scaleLabels", {
+                ...question.scaleLabels,
+                right: e.target.value,
+              })
+            }
+          />
+        </div>
       </div>
     </div>
   );

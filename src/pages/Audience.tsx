@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect } from 'react';
-import FormHeader from '../components/FormHeader';
-import { 
-  Users, 
-  Target, 
-  ChevronDown, 
+import React, { useState, useEffect } from "react";
+import FormHeader from "../components/FormHeader";
+import {
+  Users,
+  Target,
+  ChevronDown,
   ChevronRight,
   X,
   Plus,
@@ -13,17 +12,30 @@ import {
   DollarSign,
   AlertTriangle,
   GraduationCap,
-  Building
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { toast } from 'sonner';
+  Building,
+  Settings,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { toast } from "sonner";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../lib/auth-context";
 
 interface Segment {
   id: string;
@@ -42,95 +54,135 @@ interface FilterOption {
   label: string;
 }
 
+interface QuestionnaireCompleted {
+  answer_count: number;
+}
+
+interface Questionnaire {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  created: number;
+  questionnaire_completed: QuestionnaireCompleted;
+}
+
+interface QuestionnaireResponse {
+  data: Questionnaire;
+  info: {
+    status: number;
+    message: string;
+  };
+}
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const Audience = () => {
-  const [formTitle, setFormTitle] = useState('بدون عنوان');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { accessToken } = useAuth();
+
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [formTitle, setFormTitle] = useState("بدون عنوان");
   const [segments, setSegments] = useState<Segment[]>([
     {
-      id: '1',
-      title: 'سگمنت 1',
+      id: "1",
+      title: "سگمنت 1",
       filters: {},
       count: 100,
-      possible: true
-    }
+      possible: true,
+    },
   ]);
-  const [selectedSegmentId, setSelectedSegmentId] = useState('1');
+  const [selectedSegmentId, setSelectedSegmentId] = useState("1");
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
 
   // Filter options data
   const genderOptions: FilterOption[] = [
-    { value: 'male', label: 'مرد' },
-    { value: 'female', label: 'زن' }
+    { value: "male", label: "مرد" },
+    { value: "female", label: "زن" },
   ];
 
   const educationOptions: FilterOption[] = [
-    { value: 'under_diploma', label: 'زیر دیپلم' },
-    { value: 'diploma', label: 'دیپلم' },
-    { value: 'bachelor', label: 'کارشناسی' },
-    { value: 'master', label: 'کارشناسی ارشد' },
-    { value: 'phd', label: 'دکتری' }
+    { value: "under_diploma", label: "زیر دیپلم" },
+    { value: "diploma", label: "دیپلم" },
+    { value: "bachelor", label: "کارشناسی" },
+    { value: "master", label: "کارشناسی ارشد" },
+    { value: "phd", label: "دکتری" },
   ];
 
   const socialLevelOptions: FilterOption[] = [
-    { value: 'A', label: 'A (بالا)' },
-    { value: 'B1', label: 'B1' },
-    { value: 'B2', label: 'B2' },
-    { value: 'C1', label: 'C1' },
-    { value: 'C2', label: 'C2' },
-    { value: 'D', label: 'D' },
-    { value: 'E', label: 'E (پایین)' }
+    { value: "A", label: "A (بالا)" },
+    { value: "B1", label: "B1" },
+    { value: "B2", label: "B2" },
+    { value: "C1", label: "C1" },
+    { value: "C2", label: "C2" },
+    { value: "D", label: "D" },
+    { value: "E", label: "E (پایین)" },
   ];
 
   const onlinePurchaseOptions: FilterOption[] = [
-    { value: 'low', label: 'کم' },
-    { value: 'medium', label: 'متوسط' },
-    { value: 'high', label: 'زیاد' }
+    { value: "low", label: "کم" },
+    { value: "medium", label: "متوسط" },
+    { value: "high", label: "زیاد" },
   ];
 
   const provinces = [
-    'تهران', 'اصفهان', 'فارس', 'خوزستان', 'کرمان', 'مازندران', 'گیلان'
+    "تهران",
+    "اصفهان",
+    "فارس",
+    "خوزستان",
+    "کرمان",
+    "مازندران",
+    "گیلان",
   ];
 
   const cities: Record<string, string[]> = {
-    'تهران': ['تهران', 'کرج', 'شهریار', 'ورامین'],
-    'اصفهان': ['اصفهان', 'کاشان', 'نجف‌آباد'],
-    'فارس': ['شیراز', 'مرودشت', 'کازرون'],
-    'خوزستان': ['اهواز', 'آبادان', 'خرمشهر'],
-    'کرمان': ['کرمان', 'رفسنجان', 'سیرجان'],
-    'مازندران': ['ساری', 'بابل', 'آمل'],
-    'گیلان': ['رشت', 'انزلی', 'لاهیجان']
+    تهران: ["تهران", "کرج", "شهریار", "ورامین"],
+    اصفهان: ["اصفهان", "کاشان", "نجف‌آباد"],
+    فارس: ["شیراز", "مرودشت", "کازرون"],
+    خوزستان: ["اهواز", "آبادان", "خرمشهر"],
+    کرمان: ["کرمان", "رفسنجان", "سیرجان"],
+    مازندران: ["ساری", "بابل", "آمل"],
+    گیلان: ["رشت", "انزلی", "لاهیجان"],
   };
 
   const filterCategories = [
-    { id: 'demographic', label: 'اطلاعات دموگرافیک', icon: Users },
-    { id: 'education', label: 'تحصیلات', icon: GraduationCap },
-    { id: 'geographic', label: 'اطلاعات جغرافیایی', icon: MapPin },
-    { id: 'socioeconomic', label: 'اطلاعات اجتماعی-اقتصادی', icon: DollarSign }
+    { id: "demographic", label: "اطلاعات دموگرافیک", icon: Users },
+    { id: "education", label: "تحصیلات", icon: GraduationCap },
+    { id: "geographic", label: "اطلاعات جغرافیایی", icon: MapPin },
+    { id: "socioeconomic", label: "اطلاعات اجتماعی-اقتصادی", icon: DollarSign },
   ];
 
   const filtersByCategory: Record<string, any[]> = {
     demographic: [
-      { id: 'age', label: 'محدوده سنی' },
-      { id: 'gender', label: 'جنسیت' }
+      { id: "age", label: "محدوده سنی" },
+      { id: "gender", label: "جنسیت" },
     ],
-    education: [
-      { id: 'education', label: 'سطح تحصیلات' }
-    ],
-    geographic: [
-      { id: 'location', label: 'محل سکونت' }
-    ],
+    education: [{ id: "education", label: "سطح تحصیلات" }],
+    geographic: [{ id: "location", label: "محل سکونت" }],
     socioeconomic: [
-      { id: 'socialLevel', label: 'سطح اجتماعی' },
-      { id: 'onlinePurchase', label: 'میزان خرید آنلاین' }
-    ]
+      { id: "socialLevel", label: "سطح اجتماعی" },
+      { id: "onlinePurchase", label: "میزان خرید آنلاین" },
+    ],
   };
 
-  const selectedSegment = segments.find(s => s.id === selectedSegmentId);
+  const selectedSegment = segments.find((s) => s.id === selectedSegmentId);
 
   // Calculate total cost for all segments
-  const totalCost = segments.reduce((sum, segment) => sum + (segment.cost || 0), 0);
-  const totalRespondents = segments.reduce((sum, segment) => sum + segment.count, 0);
-  const allSegmentsPossible = segments.every(segment => segment.possible !== false);
+  const totalCost = segments.reduce(
+    (sum, segment) => sum + (segment.cost || 0),
+    0
+  );
+  const totalRespondents = segments.reduce(
+    (sum, segment) => sum + segment.count,
+    0
+  );
+  const allSegmentsPossible = segments.every(
+    (segment) => segment.possible !== false
+  );
 
   // Debounced API call for cost calculation
   useEffect(() => {
@@ -145,29 +197,31 @@ const Audience = () => {
     setLoading(true);
     try {
       // Simulate API call
-      const updatedSegments = segments.map(segment => {
+      const updatedSegments = segments.map((segment) => {
         const filterCount = Object.keys(segment.filters).length;
         const basePrice = 1000; // Base price per person
         const multiplier = Math.max(1, filterCount * 0.2 + 1);
         const perUnitPrice = Math.round(basePrice * multiplier);
         const cost = segment.count * perUnitPrice;
-        
+
         // Simulate feasibility check
         const possible = segment.count <= 3000 && filterCount <= 10;
-        
+
         return {
           ...segment,
           perUnitPrice,
           cost,
-          estimatedTime: '2-3 روز کاری',
+          estimatedTime: "2-3 روز کاری",
           possible,
-          errorMessage: !possible ? 'با این فیلترها تعداد پاسخ‌دهنده کافی یافت نمی‌شود. لطفاً تنظیمات را تغییر دهید.' : undefined
+          errorMessage: !possible
+            ? "با این فیلترها تعداد پاسخ‌دهنده کافی یافت نمی‌شود. لطفاً تنظیمات را تغییر دهید."
+            : undefined,
         };
       });
-      
+
       setSegments(updatedSegments);
     } catch (error) {
-      toast.error('خطا در محاسبه هزینه');
+      toast.error("خطا در محاسبه هزینه");
     } finally {
       setLoading(false);
     }
@@ -179,7 +233,7 @@ const Audience = () => {
       title: `سگمنت ${segments.length + 1}`,
       filters: {},
       count: 100,
-      possible: true
+      possible: true,
     };
     setSegments([...segments, newSegment]);
     setSelectedSegmentId(newSegment.id);
@@ -187,7 +241,7 @@ const Audience = () => {
 
   const removeSegment = (id: string) => {
     if (segments.length > 1) {
-      const updatedSegments = segments.filter(s => s.id !== id);
+      const updatedSegments = segments.filter((s) => s.id !== id);
       setSegments(updatedSegments);
       if (selectedSegmentId === id) {
         setSelectedSegmentId(updatedSegments[0].id);
@@ -199,81 +253,91 @@ const Audience = () => {
     const newSegment: Segment = {
       ...segment,
       id: Date.now().toString(),
-      title: `${segment.title} (کپی)`
+      title: `${segment.title} (کپی)`,
     };
     setSegments([...segments, newSegment]);
     setSelectedSegmentId(newSegment.id);
   };
 
   const updateSegment = (id: string, updates: Partial<Segment>) => {
-    setSegments(segments.map(s => s.id === id ? { ...s, ...updates } : s));
+    setSegments(segments.map((s) => (s.id === id ? { ...s, ...updates } : s)));
   };
 
-  const updateSegmentFilter = (segmentId: string, filterKey: string, value: any) => {
-    setSegments(segments.map(s => 
-      s.id === segmentId 
-        ? { ...s, filters: { ...s.filters, [filterKey]: value } }
-        : s
-    ));
+  const updateSegmentFilter = (
+    segmentId: string,
+    filterKey: string,
+    value: any
+  ) => {
+    setSegments(
+      segments.map((s) =>
+        s.id === segmentId
+          ? { ...s, filters: { ...s.filters, [filterKey]: value } }
+          : s
+      )
+    );
   };
 
   const removeAppliedFilter = (filterKey: string) => {
-    setSegments(segments.map(s => {
-      if (s.id === selectedSegmentId) {
-        const newFilters = { ...s.filters };
-        delete newFilters[filterKey];
-        return { ...s, filters: newFilters };
-      }
-      return s;
-    }));
+    setSegments(
+      segments.map((s) => {
+        if (s.id === selectedSegmentId) {
+          const newFilters = { ...s.filters };
+          delete newFilters[filterKey];
+          return { ...s, filters: newFilters };
+        }
+        return s;
+      })
+    );
   };
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => 
+    setExpandedCategories((prev) =>
       prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
+        ? prev.filter((id) => id !== categoryId)
         : [...prev, categoryId]
     );
   };
 
   const selectFilter = (filterId: string) => {
     if (!selectedSegment) return;
-    
+
     // Add filter to segment if it doesn't exist
     if (!selectedSegment.filters[filterId]) {
       let defaultValue;
-      
+
       // Set default values based on filter type
       switch (filterId) {
-        case 'age':
+        case "age":
           defaultValue = [18, 100];
           break;
-        case 'gender':
-        case 'education':
-        case 'socialLevel':
-        case 'onlinePurchase':
+        case "gender":
+        case "education":
+        case "socialLevel":
+        case "onlinePurchase":
           defaultValue = [];
           break;
-        case 'location':
-          defaultValue = { selectedProvince: '', selectedCity: '' };
+        case "location":
+          defaultValue = { selectedProvince: "", selectedCity: "" };
           break;
         default:
-          defaultValue = '';
+          defaultValue = "";
       }
-      
+
       updateSegmentFilter(selectedSegmentId, filterId, defaultValue);
     }
   };
 
   const renderFilterSettings = (filterId: string, value: any) => {
     switch (filterId) {
-      case 'age':
+      case "age":
         return (
           <div className="space-y-4">
             <h4 className="font-medium">محدوده سنی (18-100 سال)</h4>
             <Slider
               value={value || [18, 100]}
-              onValueChange={(newValue) => updateSegmentFilter(selectedSegmentId, 'age', newValue)}
+              onValueChange={(newValue) =>
+                updateSegmentFilter(selectedSegmentId, "age", newValue)
+              }
               min={18}
               max={100}
               step={1}
@@ -286,13 +350,16 @@ const Audience = () => {
           </div>
         );
 
-      case 'gender':
+      case "gender":
         return (
           <div className="space-y-4">
             <h4 className="font-medium">جنسیت</h4>
             <div className="space-y-2">
               {genderOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
+                <div
+                  key={option.value}
+                  className="flex items-center space-x-2 space-x-reverse"
+                >
                   <Checkbox
                     checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
@@ -300,7 +367,7 @@ const Audience = () => {
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((g: string) => g !== option.value);
-                      updateSegmentFilter(selectedSegmentId, 'gender', updated);
+                      updateSegmentFilter(selectedSegmentId, "gender", updated);
                     }}
                   />
                   <span className="text-sm">{option.label}</span>
@@ -310,13 +377,16 @@ const Audience = () => {
           </div>
         );
 
-      case 'education':
+      case "education":
         return (
           <div className="space-y-4">
             <h4 className="font-medium">سطح تحصیلات</h4>
             <div className="space-y-2">
               {educationOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
+                <div
+                  key={option.value}
+                  className="flex items-center space-x-2 space-x-reverse"
+                >
                   <Checkbox
                     checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
@@ -324,7 +394,11 @@ const Audience = () => {
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((e: string) => e !== option.value);
-                      updateSegmentFilter(selectedSegmentId, 'education', updated);
+                      updateSegmentFilter(
+                        selectedSegmentId,
+                        "education",
+                        updated
+                      );
                     }}
                   />
                   <span className="text-sm">{option.label}</span>
@@ -334,18 +408,24 @@ const Audience = () => {
           </div>
         );
 
-      case 'location':
+      case "location":
         return (
           <div className="space-y-4">
             <h4 className="font-medium">محل سکونت</h4>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">استان</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  استان
+                </label>
                 <Select
-                  value={(value || {}).selectedProvince || ''}
+                  value={(value || {}).selectedProvince || ""}
                   onValueChange={(newValue) => {
-                    const updated = { ...(value || {}), selectedProvince: newValue, selectedCity: '' };
-                    updateSegmentFilter(selectedSegmentId, 'location', updated);
+                    const updated = {
+                      ...(value || {}),
+                      selectedProvince: newValue,
+                      selectedCity: "",
+                    };
+                    updateSegmentFilter(selectedSegmentId, "location", updated);
                   }}
                 >
                   <SelectTrigger>
@@ -360,15 +440,24 @@ const Audience = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {(value || {}).selectedProvince && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">شهر</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    شهر
+                  </label>
                   <Select
-                    value={(value || {}).selectedCity || ''}
+                    value={(value || {}).selectedCity || ""}
                     onValueChange={(newValue) => {
-                      const updated = { ...(value || {}), selectedCity: newValue };
-                      updateSegmentFilter(selectedSegmentId, 'location', updated);
+                      const updated = {
+                        ...(value || {}),
+                        selectedCity: newValue,
+                      };
+                      updateSegmentFilter(
+                        selectedSegmentId,
+                        "location",
+                        updated
+                      );
                     }}
                   >
                     <SelectTrigger>
@@ -388,13 +477,16 @@ const Audience = () => {
           </div>
         );
 
-      case 'socialLevel':
+      case "socialLevel":
         return (
           <div className="space-y-4">
             <h4 className="font-medium">سطح اجتماعی</h4>
             <div className="space-y-2">
               {socialLevelOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
+                <div
+                  key={option.value}
+                  className="flex items-center space-x-2 space-x-reverse"
+                >
                   <Checkbox
                     checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
@@ -402,7 +494,11 @@ const Audience = () => {
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((s: string) => s !== option.value);
-                      updateSegmentFilter(selectedSegmentId, 'socialLevel', updated);
+                      updateSegmentFilter(
+                        selectedSegmentId,
+                        "socialLevel",
+                        updated
+                      );
                     }}
                   />
                   <span className="text-sm">{option.label}</span>
@@ -412,13 +508,16 @@ const Audience = () => {
           </div>
         );
 
-      case 'onlinePurchase':
+      case "onlinePurchase":
         return (
           <div className="space-y-4">
             <h4 className="font-medium">میزان خرید آنلاین</h4>
             <div className="space-y-2">
               {onlinePurchaseOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
+                <div
+                  key={option.value}
+                  className="flex items-center space-x-2 space-x-reverse"
+                >
                   <Checkbox
                     checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
@@ -426,7 +525,11 @@ const Audience = () => {
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((o: string) => o !== option.value);
-                      updateSegmentFilter(selectedSegmentId, 'onlinePurchase', updated);
+                      updateSegmentFilter(
+                        selectedSegmentId,
+                        "onlinePurchase",
+                        updated
+                      );
                     }}
                   />
                   <span className="text-sm">{option.label}</span>
@@ -444,13 +547,20 @@ const Audience = () => {
   // Get filter label by ID
   const getFilterLabel = (filterId: string) => {
     switch (filterId) {
-      case 'age': return 'محدوده سنی';
-      case 'gender': return 'جنسیت';
-      case 'education': return 'سطح تحصیلات';
-      case 'location': return 'محل سکونت';
-      case 'socialLevel': return 'سطح اجتماعی';
-      case 'onlinePurchase': return 'میزان خرید آنلاین';
-      default: return 'فیلتر';
+      case "age":
+        return "محدوده سنی";
+      case "gender":
+        return "جنسیت";
+      case "education":
+        return "سطح تحصیلات";
+      case "location":
+        return "محل سکونت";
+      case "socialLevel":
+        return "سطح اجتماعی";
+      case "onlinePurchase":
+        return "میزان خرید آنلاین";
+      default:
+        return "فیلتر";
     }
   };
 
@@ -458,16 +568,96 @@ const Audience = () => {
   const hasValidFilterValue = (value: any) => {
     if (!value) return false;
     if (Array.isArray(value)) return value.length > 0;
-    if (typeof value === 'object') {
-      return Object.values(value).some(v => v && v !== '');
+    if (typeof value === "object") {
+      return Object.values(value).some((v) => v && v !== "");
     }
     return true;
   };
 
+  useEffect(() => {
+    if (!accessToken) {
+      toast.error("لطفا ابتدا وارد حساب کاربری خود شوید");
+      navigate("/login");
+      return;
+    }
+
+    if (id && id !== "new") {
+      fetchQuestionnaire();
+    } else {
+      setLoading(false);
+    }
+  }, [id, accessToken, navigate]);
+
+  const fetchQuestionnaire = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/v1/questionnaire/sanjup/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("خطا در دریافت اطلاعات پرسشنامه");
+      }
+
+      const data: QuestionnaireResponse = await response.json();
+      if (data.info.status === 200) {
+        setQuestionnaire(data.data);
+        setFormTitle(data.data.title);
+      } else {
+        throw new Error(data.info.message);
+      }
+    } catch (error) {
+      console.error("Error fetching questionnaire:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "خطا در دریافت اطلاعات پرسشنامه"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn']" dir="rtl">
-      <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
-      
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col font-['Vazirmatn']"
+      dir="rtl"
+    >
+      <FormHeader
+        formTitle={questionnaire?.title || formTitle}
+        setFormTitle={setFormTitle}
+        steps={
+          id
+            ? [
+                { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+                {
+                  id: 2,
+                  title: "انتخاب مخاطب",
+                  path: `/questionnaire/${id}/audience`,
+                },
+                {
+                  id: 3,
+                  title: "گزارش نتایج",
+                  path: `/questionnaire/${id}/results`,
+                },
+              ]
+            : undefined
+        }
+        backPath={id ? `/questionnaire/${id}` : "/"}
+      />
+
       <div className="flex-1 p-6 pt-24">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-12 gap-6">
@@ -479,19 +669,21 @@ const Audience = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {segments.map((segment) => (
-                    <div 
+                    <div
                       key={segment.id}
                       className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                        selectedSegmentId === segment.id 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-gray-300'
+                        selectedSegmentId === segment.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() => setSelectedSegmentId(segment.id)}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Input
                           value={segment.title}
-                          onChange={(e) => updateSegment(segment.id, { title: e.target.value })}
+                          onChange={(e) =>
+                            updateSegment(segment.id, { title: e.target.value })
+                          }
                           className="text-xs border-none p-0 h-auto bg-transparent font-medium"
                           placeholder="عنوان سگمنت"
                           onClick={(e) => e.stopPropagation()}
@@ -521,7 +713,7 @@ const Audience = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Response Count Slider */}
                       <div className="space-y-2">
                         <label className="block text-xs text-gray-600">
@@ -529,7 +721,9 @@ const Audience = () => {
                         </label>
                         <Slider
                           value={[segment.count]}
-                          onValueChange={(value) => updateSegment(segment.id, { count: value[0] })}
+                          onValueChange={(value) =>
+                            updateSegment(segment.id, { count: value[0] })
+                          }
                           min={1}
                           max={5000}
                           step={1}
@@ -540,7 +734,11 @@ const Audience = () => {
                           min="1"
                           max="5000"
                           value={segment.count}
-                          onChange={(e) => updateSegment(segment.id, { count: parseInt(e.target.value) || 1 })}
+                          onChange={(e) =>
+                            updateSegment(segment.id, {
+                              count: parseInt(e.target.value) || 1,
+                            })
+                          }
                           className="text-xs h-6"
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -554,7 +752,7 @@ const Audience = () => {
                       )}
                     </div>
                   ))}
-                  
+
                   <Button
                     onClick={addSegment}
                     variant="outline"
@@ -586,7 +784,9 @@ const Audience = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2 space-x-reverse">
                               <category.icon className="w-4 h-4" />
-                              <span className="text-sm font-medium">{category.label}</span>
+                              <span className="text-sm font-medium">
+                                {category.label}
+                              </span>
                             </div>
                             {expandedCategories.includes(category.id) ? (
                               <ChevronDown className="w-4 h-4" />
@@ -602,9 +802,9 @@ const Audience = () => {
                             <div
                               key={filter.id}
                               className={`p-2 rounded-lg cursor-pointer transition-colors border ${
-                                selectedSegment?.filters[filter.id] 
-                                  ? 'border-blue-500 bg-blue-50' 
-                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                selectedSegment?.filters[filter.id]
+                                  ? "border-blue-500 bg-blue-50"
+                                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                               }`}
                               onClick={() => selectFilter(filter.id)}
                             >
@@ -626,35 +826,43 @@ const Audience = () => {
                   <CardTitle className="text-base">تنظیمات فیلتر</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {!selectedSegment || Object.keys(selectedSegment.filters).length === 0 ? (
+                  {!selectedSegment ||
+                  Object.keys(selectedSegment.filters).length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
-                      <p className="text-sm">برای تنظیم فیلترها، یک فیلتر از فهرست انتخاب کنید</p>
+                      <p className="text-sm">
+                        برای تنظیم فیلترها، یک فیلتر از فهرست انتخاب کنید
+                      </p>
                     </div>
                   ) : (
-                    Object.entries(selectedSegment.filters).map(([filterId, value]) => {
-                      // Only show filters that have meaningful values
-                      if (!hasValidFilterValue(value)) {
-                        return null;
-                      }
-                      
-                      return (
-                        <div key={filterId} className="border rounded-lg p-4 bg-gray-50">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-medium text-sm">
-                              {getFilterLabel(filterId)}
-                            </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeAppliedFilter(filterId)}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
+                    Object.entries(selectedSegment.filters).map(
+                      ([filterId, value]) => {
+                        // Only show filters that have meaningful values
+                        if (!hasValidFilterValue(value)) {
+                          return null;
+                        }
+
+                        return (
+                          <div
+                            key={filterId}
+                            className="border rounded-lg p-4 bg-gray-50"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-medium text-sm">
+                                {getFilterLabel(filterId)}
+                              </h4>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeAppliedFilter(filterId)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            {renderFilterSettings(filterId, value)}
                           </div>
-                          {renderFilterSettings(filterId, value)}
-                        </div>
-                      );
-                    })
+                        );
+                      }
+                    )
                   )}
                 </CardContent>
               </Card>
@@ -681,10 +889,15 @@ const Audience = () => {
                   <div className="border-t pt-3 space-y-2">
                     <h4 className="font-medium text-xs mb-2">جزئیات محاسبه:</h4>
                     {segments.map((segment) => (
-                      <div key={segment.id} className="flex justify-between items-center text-xs">
+                      <div
+                        key={segment.id}
+                        className="flex justify-between items-center text-xs"
+                      >
                         <span>{segment.title}</span>
                         <span>
-                          {segment.count} × {segment.perUnitPrice?.toLocaleString() || 0} = {segment.cost?.toLocaleString() || 0} تومان
+                          {segment.count} ×{" "}
+                          {segment.perUnitPrice?.toLocaleString() || 0} ={" "}
+                          {segment.cost?.toLocaleString() || 0} تومان
                         </span>
                       </div>
                     ))}
@@ -694,11 +907,13 @@ const Audience = () => {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600">کل هزینه:</span>
                       <span className="font-bold text-base">
-                        {loading ? '...' : `${totalCost.toLocaleString()} تومان`}
+                        {loading
+                          ? "..."
+                          : `${totalCost.toLocaleString()} تومان`}
                       </span>
                     </div>
-                    
-                    {segments.some(s => s.estimatedTime) && (
+
+                    {segments.some((s) => s.estimatedTime) && (
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-gray-600">زمان تخمینی:</span>
                         <span>2-3 روز کاری</span>
@@ -707,7 +922,7 @@ const Audience = () => {
                   </div>
 
                   <div className="border-t pt-3">
-                    <Button 
+                    <Button
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       disabled={!allSegmentsPossible || totalCost === 0}
                       size="sm"
