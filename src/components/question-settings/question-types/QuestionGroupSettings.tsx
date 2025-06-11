@@ -3,7 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Question } from '../../../pages/QuestionnaireForm';
+import { Question } from '../../../types/question';
 
 interface QuestionGroupSettingsProps {
   question: Question;

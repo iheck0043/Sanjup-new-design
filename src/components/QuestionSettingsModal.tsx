@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import {
   Play,
   Video,
 } from "lucide-react";
-import type { Question } from "../pages/Index";
+import type { Question } from "../types/question";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import QuestionHeader from "./question-settings/QuestionHeader";
 import QuestionSettingsSidebar from "./question-settings/QuestionSettingsSidebar";
@@ -62,7 +63,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           ...question,
           title: question.title || "سوال جدید",
           label: question.label || "سوال جدید",
-          required: true,
+          isRequired: true,
         });
       } else {
         setLocalQuestion({

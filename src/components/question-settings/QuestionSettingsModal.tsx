@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import type { Question } from "../../pages/Index";
+import type { Question } from "../../types/question";
 import QuestionHeader from "./QuestionHeader";
 import QuestionSettingsSidebar from "./QuestionSettingsSidebar";
 import QuestionPreview from "./QuestionPreview";
@@ -54,7 +54,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           ...question,
           title: question.title || "سوال جدید",
           label: question.label || "سوال جدید",
-          required: true,
+          isRequired: true,
           hasMedia: false,
           mediaType: undefined,
           mediaUrl: undefined,
@@ -64,7 +64,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         setLocalQuestion(initialQuestion);
         onUpdateField("title", initialQuestion.title);
         onUpdateField("label", initialQuestion.label);
-        onUpdateField("required", initialQuestion.required);
+        onUpdateField("isRequired", initialQuestion.isRequired);
         onUpdateField("hasMedia", initialQuestion.hasMedia);
         onUpdateField("mediaType", initialQuestion.mediaType);
         onUpdateField("mediaUrl", initialQuestion.mediaUrl);

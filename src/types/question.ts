@@ -1,12 +1,13 @@
 
 export interface Question {
   id: string;
-  type: 'text' | 'textarea' | 'number' | 'email' | 'multi_choice' | 'dropdown' | 'scale' | 'rating' | 'matrix' | 'image_choice' | 'priority' | 'combobox' | 'description' | 'group' | 'single_select' | 'range_slider' | 'text_question_short' | 'text_question_long' | 'number_descriptive' | 'prioritize' | 'select_multi_image' | 'question_group' | 'statement' | 'grading' | 'text_question' | 'چندگزینه‌ای' | 'چندگزینه‌ای تصویری' | 'لیست کشویی';
+  type: 'text' | 'textarea' | 'number' | 'email' | 'multi_choice' | 'dropdown' | 'scale' | 'rating' | 'matrix' | 'image_choice' | 'priority' | 'combobox' | 'description' | 'group' | 'single_select' | 'range_slider' | 'text_question_short' | 'text_question_long' | 'text_question_email' | 'number_descriptive' | 'prioritize' | 'select_multi_image' | 'select_single_image' | 'question_group' | 'statement' | 'grading' | 'text_question' | 'multi_select' | 'چندگزینه‌ای' | 'چندگزینه‌ای تصویری' | 'لیست کشویی';
   text: string;
   label: string;
   title?: string;
   order?: number;
   isRequired?: boolean;
+  required?: boolean; // Added for compatibility
   placeholder?: string;
   minChars?: number;
   maxChars?: number;
@@ -36,4 +37,23 @@ export interface Question {
   hasMedia?: boolean;
   mediaType?: string;
   mediaUrl?: string;
+  attachment?: string; // Added for compatibility
+  attachment_type?: string; // Added for compatibility
+  // Matrix specific properties
+  rows?: string[];
+  columns?: string[];
+  // Multi-choice specific properties
+  isMultiSelect?: boolean;
+  minSelectableChoices?: number;
+  maxSelectableChoices?: number;
+  shuffleOptions?: boolean;
+  hasOther?: boolean;
+  hasNone?: boolean;
+  // Text/Number specific properties
+  maxLength?: number;
+  limit?: number;
+  minNumber?: number;
+  maxNumber?: number;
+  // Group specific properties
+  children?: Question[];
 }

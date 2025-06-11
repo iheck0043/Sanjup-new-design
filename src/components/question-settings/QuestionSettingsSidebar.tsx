@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, Video } from "lucide-react";
-import type { Question } from "../../pages/Index";
+import type { Question } from "../../types/question";
 import ScaleQuestionSettings from "./question-types/ScaleQuestionSettings";
 import PriorityQuestionSettings from "./question-types/PriorityQuestionSettings";
 import RatingQuestionSettings from "./question-types/RatingQuestionSettings";
@@ -162,8 +162,8 @@ const QuestionSettingsSidebar: React.FC<QuestionSettingsSidebarProps> = ({
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">اجباری</Label>
         <Switch
-          checked={question.required || false}
-          onCheckedChange={(checked) => onUpdateField("required", checked)}
+          checked={question.isRequired || false}
+          onCheckedChange={(checked) => onUpdateField("isRequired", checked)}
         />
       </div>
 

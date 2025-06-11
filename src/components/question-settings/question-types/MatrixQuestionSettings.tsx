@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus } from "lucide-react";
-import type { Question } from "../../../pages/Index";
+import type { Question } from "../../../types/question";
 
 interface MatrixQuestionSettingsProps {
   question: Question;

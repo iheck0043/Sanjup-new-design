@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus } from "lucide-react";
-import type { Question } from "../../../pages/Index";
+import type { Question } from "../../../types/question";
 
 interface PriorityQuestionSettingsProps {
   question: Question;
