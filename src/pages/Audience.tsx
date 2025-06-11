@@ -55,7 +55,7 @@ const Audience = () => {
   ]);
   const [selectedSegmentId, setSelectedSegmentId] = useState('1');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
 
   // Filter options data
@@ -216,11 +216,23 @@ const Audience = () => {
         ? { ...s, filters: { ...s.filters, [filterKey]: value } }
         : s
     ));
+    
+    // Update applied filters for current segment
+    if (segmentId === selectedSegmentId) {
+      setAppliedFilters(prev => ({ ...prev, [filterKey]: value }));
+    }
   };
 
-  const removeSegmentFilter = (segmentId: string, filterKey: string) => {
+  const removeAppliedFilter = (filterKey: string) => {
+    setAppliedFilters(prev => {
+      const newFilters = { ...prev };
+      delete newFilters[filterKey];
+      return newFilters;
+    });
+    
+    // Also remove from segment
     setSegments(segments.map(s => {
-      if (s.id === segmentId) {
+      if (s.id === selectedSegmentId) {
         const newFilters = { ...s.filters };
         delete newFilters[filterKey];
         return { ...s, filters: newFilters };
@@ -235,19 +247,30 @@ const Audience = () => {
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     );
-    setSelectedFilter(null);
   };
 
-  const renderFilterDetails = () => {
-    if (!selectedFilter || !selectedSegment) return null;
+  const selectFilter = (filterId: string) => {
+    if (!selectedSegment) return;
+    
+    // Load existing filter data for this segment
+    setAppliedFilters(selectedSegment.filters);
+  };
 
-    switch (selectedFilter) {
+  // Update applied filters when segment changes
+  useEffect(() => {
+    if (selectedSegment) {
+      setAppliedFilters(selectedSegment.filters);
+    }
+  }, [selectedSegmentId, selectedSegment]);
+
+  const renderFilterSettings = (filterId: string) => {
+    switch (filterId) {
       case 'age':
         return (
           <div className="space-y-4">
-            <h3 className="font-medium">محدوده سنی (18-100 سال)</h3>
+            <h4 className="font-medium">محدوده سنی (18-100 سال)</h4>
             <Slider
-              value={selectedSegment.filters.ageRange || [18, 100]}
+              value={appliedFilters.ageRange || [18, 100]}
               onValueChange={(value) => updateSegmentFilter(selectedSegmentId, 'ageRange', value)}
               min={18}
               max={100}
@@ -255,8 +278,8 @@ const Audience = () => {
               className="w-full"
             />
             <div className="flex justify-between text-sm text-gray-500">
-              <span>{selectedSegment.filters.ageRange?.[0] || 18} سال</span>
-              <span>{selectedSegment.filters.ageRange?.[1] || 100} سال</span>
+              <span>{appliedFilters.ageRange?.[0] || 18} سال</span>
+              <span>{appliedFilters.ageRange?.[1] || 100} سال</span>
             </div>
           </div>
         );
@@ -264,14 +287,14 @@ const Audience = () => {
       case 'gender':
         return (
           <div className="space-y-4">
-            <h3 className="font-medium">جنسیت</h3>
+            <h4 className="font-medium">جنسیت</h4>
             <div className="space-y-2">
               {genderOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={selectedSegment.filters.gender?.includes(option.value)}
+                    checked={appliedFilters.gender?.includes(option.value)}
                     onCheckedChange={(checked) => {
-                      const current = selectedSegment.filters.gender || [];
+                      const current = appliedFilters.gender || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((g: string) => g !== option.value);
@@ -288,14 +311,14 @@ const Audience = () => {
       case 'education':
         return (
           <div className="space-y-4">
-            <h3 className="font-medium">سطح تحصیلات</h3>
+            <h4 className="font-medium">سطح تحصیلات</h4>
             <div className="space-y-2">
               {educationOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={selectedSegment.filters.education?.includes(option.value)}
+                    checked={appliedFilters.education?.includes(option.value)}
                     onCheckedChange={(checked) => {
-                      const current = selectedSegment.filters.education || [];
+                      const current = appliedFilters.education || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((e: string) => e !== option.value);
@@ -312,12 +335,12 @@ const Audience = () => {
       case 'location':
         return (
           <div className="space-y-4">
-            <h3 className="font-medium">محل سکونت</h3>
+            <h4 className="font-medium">محل سکونت</h4>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">استان</label>
                 <Select
-                  value={selectedSegment.filters.selectedProvince || ''}
+                  value={appliedFilters.selectedProvince || ''}
                   onValueChange={(value) => {
                     updateSegmentFilter(selectedSegmentId, 'selectedProvince', value);
                     updateSegmentFilter(selectedSegmentId, 'selectedCity', '');
@@ -336,18 +359,18 @@ const Audience = () => {
                 </Select>
               </div>
               
-              {selectedSegment.filters.selectedProvince && (
+              {appliedFilters.selectedProvince && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">شهر</label>
                   <Select
-                    value={selectedSegment.filters.selectedCity || ''}
+                    value={appliedFilters.selectedCity || ''}
                     onValueChange={(value) => updateSegmentFilter(selectedSegmentId, 'selectedCity', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="انتخاب شهر" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cities[selectedSegment.filters.selectedProvince]?.map((city) => (
+                      {cities[appliedFilters.selectedProvince]?.map((city) => (
                         <SelectItem key={city} value={city}>
                           {city}
                         </SelectItem>
@@ -363,14 +386,14 @@ const Audience = () => {
       case 'socialLevel':
         return (
           <div className="space-y-4">
-            <h3 className="font-medium">سطح اجتماعی</h3>
+            <h4 className="font-medium">سطح اجتماعی</h4>
             <div className="space-y-2">
               {socialLevelOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={selectedSegment.filters.socialLevel?.includes(option.value)}
+                    checked={appliedFilters.socialLevel?.includes(option.value)}
                     onCheckedChange={(checked) => {
-                      const current = selectedSegment.filters.socialLevel || [];
+                      const current = appliedFilters.socialLevel || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((s: string) => s !== option.value);
@@ -387,14 +410,14 @@ const Audience = () => {
       case 'onlinePurchase':
         return (
           <div className="space-y-4">
-            <h3 className="font-medium">میزان خرید آنلاین</h3>
+            <h4 className="font-medium">میزان خرید آنلاین</h4>
             <div className="space-y-2">
               {onlinePurchaseOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={selectedSegment.filters.onlinePurchase?.includes(option.value)}
+                    checked={appliedFilters.onlinePurchase?.includes(option.value)}
                     onCheckedChange={(checked) => {
-                      const current = selectedSegment.filters.onlinePurchase || [];
+                      const current = appliedFilters.onlinePurchase || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((o: string) => o !== option.value);
@@ -419,23 +442,18 @@ const Audience = () => {
       
       <div className="flex-1 p-6 pt-24">
         <div className="max-w-7xl mx-auto">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">انتخاب جامعه هدف و تعداد پاسخ‌دهنده</h1>
-          </div>
-
           <div className="grid grid-cols-12 gap-6">
-            {/* Column 1: Segment List */}
-            <div className="col-span-3">
+            {/* Column 1: Segment List (smaller) */}
+            <div className="col-span-2">
               <Card className="rounded-2xl shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">سگمنت‌ها</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">سگمنت‌ها</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {segments.map((segment) => (
                     <div 
                       key={segment.id}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                         selectedSegmentId === segment.id 
                           ? 'border-blue-500 bg-blue-50' 
                           : 'border-gray-200 hover:border-gray-300'
@@ -446,7 +464,7 @@ const Audience = () => {
                         <Input
                           value={segment.title}
                           onChange={(e) => updateSegment(segment.id, { title: e.target.value })}
-                          className="text-sm border-none p-0 h-auto bg-transparent font-medium"
+                          className="text-xs border-none p-0 h-auto bg-transparent font-medium"
                           placeholder="عنوان سگمنت"
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -495,7 +513,7 @@ const Audience = () => {
                           max="5000"
                           value={segment.count}
                           onChange={(e) => updateSegment(segment.id, { count: parseInt(e.target.value) || 1 })}
-                          className="text-xs h-8"
+                          className="text-xs h-6"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
@@ -512,20 +530,21 @@ const Audience = () => {
                   <Button
                     onClick={addSegment}
                     variant="outline"
-                    className="w-full border-dashed border-2 h-12"
+                    className="w-full border-dashed border-2 h-10"
+                    size="sm"
                   >
-                    <Plus className="w-4 h-4 ml-2" />
+                    <Plus className="w-3 h-3 ml-2" />
                     افزودن سگمنت
                   </Button>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Column 2: Filter Categories & Filters */}
-            <div className="col-span-6">
+            {/* Column 2: Filter Categories (smaller) */}
+            <div className="col-span-3">
               <Card className="rounded-2xl shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">فیلترها</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">فیلترها</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {filterCategories.map((category) => (
@@ -535,10 +554,10 @@ const Audience = () => {
                       onOpenChange={() => toggleCategory(category.id)}
                     >
                       <CollapsibleTrigger className="w-full">
-                        <div className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                        <div className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2 space-x-reverse">
-                              <category.icon className="w-5 h-5" />
+                              <category.icon className="w-4 h-4" />
                               <span className="text-sm font-medium">{category.label}</span>
                             </div>
                             {expandedCategories.includes(category.id) ? (
@@ -550,18 +569,14 @@ const Audience = () => {
                         </div>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
-                        <div className="space-y-2 mt-2 mr-6">
+                        <div className="space-y-2 mt-2 mr-4">
                           {filtersByCategory[category.id]?.map((filter) => (
                             <div
                               key={filter.id}
-                              className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                selectedFilter === filter.id
-                                  ? 'bg-blue-50 border-blue-500 border-2'
-                                  : 'border border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => setSelectedFilter(filter.id)}
+                              className="p-2 rounded-lg cursor-pointer transition-colors border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                              onClick={() => selectFilter(filter.id)}
                             >
-                              <span className="text-sm font-medium">{filter.label}</span>
+                              <span className="text-sm">{filter.label}</span>
                             </div>
                           ))}
                         </div>
@@ -572,41 +587,72 @@ const Audience = () => {
               </Card>
             </div>
 
-            {/* Column 3: Filter Details & Summary */}
-            <div className="col-span-3 space-y-6">
-              {/* Filter Details */}
-              {selectedFilter && (
-                <Card className="rounded-2xl shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg">تنظیمات فیلتر</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {renderFilterDetails()}
-                  </CardContent>
-                </Card>
-              )}
+            {/* Column 3: Filter Settings (always visible, larger) */}
+            <div className="col-span-4">
+              <Card className="rounded-2xl shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">تنظیمات فیلتر</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {Object.keys(appliedFilters).length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      <p className="text-sm">برای تنظیم فیلترها، یک فیلتر از فهرست انتخاب کنید</p>
+                    </div>
+                  ) : (
+                    Object.entries(appliedFilters).map(([filterId, value]) => {
+                      if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                      
+                      return (
+                        <div key={filterId} className="border rounded-lg p-4 bg-gray-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-medium text-sm">
+                              {filterId === 'ageRange' && 'محدوده سنی'}
+                              {filterId === 'gender' && 'جنسیت'}
+                              {filterId === 'education' && 'سطح تحصیلات'}
+                              {filterId === 'selectedProvince' && 'استان'}
+                              {filterId === 'selectedCity' && 'شهر'}
+                              {filterId === 'socialLevel' && 'سطح اجتماعی'}
+                              {filterId === 'onlinePurchase' && 'میزان خرید آنلاین'}
+                            </h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAppliedFilter(filterId)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          {renderFilterSettings(filterId)}
+                        </div>
+                      );
+                    })
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
-              {/* Summary */}
+            {/* Column 4: Summary (smaller) */}
+            <div className="col-span-3">
               <Card className="rounded-2xl shadow-lg sticky top-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 space-x-reverse">
-                    <Target className="w-5 h-5" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center space-x-2 space-x-reverse text-base">
+                    <Target className="w-4 h-4" />
                     <span>خلاصه پروژه</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-blue-600">
                       {totalRespondents}
                     </div>
-                    <div className="text-sm text-gray-600">کل پاسخ‌دهنده</div>
+                    <div className="text-xs text-gray-600">کل پاسخ‌دهنده</div>
                   </div>
 
                   {/* Restaurant-style itemization */}
-                  <div className="border-t pt-4 space-y-2">
-                    <h4 className="font-medium text-sm mb-3">جزئیات محاسبه:</h4>
-                    {segments.map((segment, index) => (
-                      <div key={segment.id} className="flex justify-between items-center text-sm">
+                  <div className="border-t pt-3 space-y-2">
+                    <h4 className="font-medium text-xs mb-2">جزئیات محاسبه:</h4>
+                    {segments.map((segment) => (
+                      <div key={segment.id} className="flex justify-between items-center text-xs">
                         <span>{segment.title}</span>
                         <span>
                           {segment.count} × {segment.perUnitPrice?.toLocaleString() || 0} = {segment.cost?.toLocaleString() || 0} تومان
@@ -615,93 +661,31 @@ const Audience = () => {
                     ))}
                   </div>
 
-                  <div className="border-t pt-4">
+                  <div className="border-t pt-3">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600">کل هزینه:</span>
-                      <span className="font-bold text-lg">
+                      <span className="font-bold text-base">
                         {loading ? '...' : `${totalCost.toLocaleString()} تومان`}
                       </span>
                     </div>
                     
                     {segments.some(s => s.estimatedTime) && (
-                      <div className="flex justify-between items-center text-sm">
+                      <div className="flex justify-between items-center text-xs">
                         <span className="text-gray-600">زمان تخمینی:</span>
                         <span>2-3 روز کاری</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="border-t pt-4 space-y-3">
+                  <div className="border-t pt-3">
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       disabled={!allSegmentsPossible || totalCost === 0}
+                      size="sm"
                     >
                       پرداخت
                     </Button>
                   </div>
-
-                  {/* Applied Filters Summary */}
-                  {selectedSegment && Object.keys(selectedSegment.filters).length > 0 && (
-                    <div className="border-t pt-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">فیلترهای اعمال شده:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(selectedSegment.filters).map(([key, value]) => {
-                          if (Array.isArray(value) && value.length > 0) {
-                            return value.map((v: string) => (
-                              <Badge key={`${key}-${v}`} variant="secondary" className="flex items-center space-x-1 space-x-reverse">
-                                <span className="text-xs">{v}</span>
-                                <X 
-                                  className="w-3 h-3 cursor-pointer" 
-                                  onClick={() => {
-                                    const updated = value.filter((item: string) => item !== v);
-                                    if (updated.length === 0) {
-                                      removeSegmentFilter(selectedSegmentId, key);
-                                    } else {
-                                      updateSegmentFilter(selectedSegmentId, key, updated);
-                                    }
-                                  }}
-                                />
-                              </Badge>
-                            ));
-                          }
-                          if (key === 'ageRange' && Array.isArray(value)) {
-                            return (
-                              <Badge key={key} variant="secondary" className="flex items-center space-x-1 space-x-reverse">
-                                <span className="text-xs">سن: {value[0]}-{value[1]} سال</span>
-                                <X 
-                                  className="w-3 h-3 cursor-pointer" 
-                                  onClick={() => removeSegmentFilter(selectedSegmentId, key)}
-                                />
-                              </Badge>
-                            );
-                          }
-                          if (key === 'selectedProvince' && value) {
-                            return (
-                              <Badge key={key} variant="secondary" className="flex items-center space-x-1 space-x-reverse">
-                                <span className="text-xs">استان: {value}</span>
-                                <X 
-                                  className="w-3 h-3 cursor-pointer" 
-                                  onClick={() => removeSegmentFilter(selectedSegmentId, key)}
-                                />
-                              </Badge>
-                            );
-                          }
-                          if (key === 'selectedCity' && value) {
-                            return (
-                              <Badge key={key} variant="secondary" className="flex items-center space-x-1 space-x-reverse">
-                                <span className="text-xs">شهر: {value}</span>
-                                <X 
-                                  className="w-3 h-3 cursor-pointer" 
-                                  onClick={() => removeSegmentFilter(selectedSegmentId, key)}
-                                />
-                              </Badge>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
