@@ -55,7 +55,6 @@ const Audience = () => {
   ]);
   const [selectedSegmentId, setSelectedSegmentId] = useState('1');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
 
   // Filter options data
@@ -216,21 +215,9 @@ const Audience = () => {
         ? { ...s, filters: { ...s.filters, [filterKey]: value } }
         : s
     ));
-    
-    // Update applied filters for current segment
-    if (segmentId === selectedSegmentId) {
-      setAppliedFilters(prev => ({ ...prev, [filterKey]: value }));
-    }
   };
 
   const removeAppliedFilter = (filterKey: string) => {
-    setAppliedFilters(prev => {
-      const newFilters = { ...prev };
-      delete newFilters[filterKey];
-      return newFilters;
-    });
-    
-    // Also remove from segment
     setSegments(segments.map(s => {
       if (s.id === selectedSegmentId) {
         const newFilters = { ...s.filters };
@@ -252,34 +239,49 @@ const Audience = () => {
   const selectFilter = (filterId: string) => {
     if (!selectedSegment) return;
     
-    // Load existing filter data for this segment
-    setAppliedFilters(selectedSegment.filters);
+    // Add filter to segment if it doesn't exist
+    if (!selectedSegment.filters[filterId]) {
+      let defaultValue;
+      
+      // Set default values based on filter type
+      switch (filterId) {
+        case 'age':
+          defaultValue = [18, 100];
+          break;
+        case 'gender':
+        case 'education':
+        case 'socialLevel':
+        case 'onlinePurchase':
+          defaultValue = [];
+          break;
+        case 'location':
+          defaultValue = { selectedProvince: '', selectedCity: '' };
+          break;
+        default:
+          defaultValue = '';
+      }
+      
+      updateSegmentFilter(selectedSegmentId, filterId, defaultValue);
+    }
   };
 
-  // Update applied filters when segment changes
-  useEffect(() => {
-    if (selectedSegment) {
-      setAppliedFilters(selectedSegment.filters);
-    }
-  }, [selectedSegmentId, selectedSegment]);
-
-  const renderFilterSettings = (filterId: string) => {
+  const renderFilterSettings = (filterId: string, value: any) => {
     switch (filterId) {
       case 'age':
         return (
           <div className="space-y-4">
             <h4 className="font-medium">محدوده سنی (18-100 سال)</h4>
             <Slider
-              value={appliedFilters.ageRange || [18, 100]}
-              onValueChange={(value) => updateSegmentFilter(selectedSegmentId, 'ageRange', value)}
+              value={value || [18, 100]}
+              onValueChange={(newValue) => updateSegmentFilter(selectedSegmentId, 'age', newValue)}
               min={18}
               max={100}
               step={1}
               className="w-full"
             />
             <div className="flex justify-between text-sm text-gray-500">
-              <span>{appliedFilters.ageRange?.[0] || 18} سال</span>
-              <span>{appliedFilters.ageRange?.[1] || 100} سال</span>
+              <span>{value?.[0] || 18} سال</span>
+              <span>{value?.[1] || 100} سال</span>
             </div>
           </div>
         );
@@ -292,9 +294,9 @@ const Audience = () => {
               {genderOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={appliedFilters.gender?.includes(option.value)}
+                    checked={value?.includes(option.value) || false}
                     onCheckedChange={(checked) => {
-                      const current = appliedFilters.gender || [];
+                      const current = value || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((g: string) => g !== option.value);
@@ -316,9 +318,9 @@ const Audience = () => {
               {educationOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={appliedFilters.education?.includes(option.value)}
+                    checked={value?.includes(option.value) || false}
                     onCheckedChange={(checked) => {
-                      const current = appliedFilters.education || [];
+                      const current = value || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((e: string) => e !== option.value);
@@ -340,10 +342,10 @@ const Audience = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">استان</label>
                 <Select
-                  value={appliedFilters.selectedProvince || ''}
-                  onValueChange={(value) => {
-                    updateSegmentFilter(selectedSegmentId, 'selectedProvince', value);
-                    updateSegmentFilter(selectedSegmentId, 'selectedCity', '');
+                  value={value?.selectedProvince || ''}
+                  onValueChange={(newValue) => {
+                    const updated = { ...value, selectedProvince: newValue, selectedCity: '' };
+                    updateSegmentFilter(selectedSegmentId, 'location', updated);
                   }}
                 >
                   <SelectTrigger>
@@ -359,18 +361,21 @@ const Audience = () => {
                 </Select>
               </div>
               
-              {appliedFilters.selectedProvince && (
+              {value?.selectedProvince && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">شهر</label>
                   <Select
-                    value={appliedFilters.selectedCity || ''}
-                    onValueChange={(value) => updateSegmentFilter(selectedSegmentId, 'selectedCity', value)}
+                    value={value?.selectedCity || ''}
+                    onValueChange={(newValue) => {
+                      const updated = { ...value, selectedCity: newValue };
+                      updateSegmentFilter(selectedSegmentId, 'location', updated);
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="انتخاب شهر" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cities[appliedFilters.selectedProvince]?.map((city) => (
+                      {cities[value.selectedProvince]?.map((city) => (
                         <SelectItem key={city} value={city}>
                           {city}
                         </SelectItem>
@@ -391,9 +396,9 @@ const Audience = () => {
               {socialLevelOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={appliedFilters.socialLevel?.includes(option.value)}
+                    checked={value?.includes(option.value) || false}
                     onCheckedChange={(checked) => {
-                      const current = appliedFilters.socialLevel || [];
+                      const current = value || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((s: string) => s !== option.value);
@@ -415,9 +420,9 @@ const Audience = () => {
               {onlinePurchaseOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={appliedFilters.onlinePurchase?.includes(option.value)}
+                    checked={value?.includes(option.value) || false}
                     onCheckedChange={(checked) => {
-                      const current = appliedFilters.onlinePurchase || [];
+                      const current = value || [];
                       const updated = checked
                         ? [...current, option.value]
                         : current.filter((o: string) => o !== option.value);
@@ -433,6 +438,19 @@ const Audience = () => {
 
       default:
         return null;
+    }
+  };
+
+  // Get filter label by ID
+  const getFilterLabel = (filterId: string) => {
+    switch (filterId) {
+      case 'age': return 'محدوده سنی';
+      case 'gender': return 'جنسیت';
+      case 'education': return 'سطح تحصیلات';
+      case 'location': return 'محل سکونت';
+      case 'socialLevel': return 'سطح اجتماعی';
+      case 'onlinePurchase': return 'میزان خرید آنلاین';
+      default: return 'فیلتر';
     }
   };
 
@@ -540,7 +558,7 @@ const Audience = () => {
               </Card>
             </div>
 
-            {/* Column 2: Filter Categories (smaller) */}
+            {/* Column 2: Filter Categories and Filters */}
             <div className="col-span-3">
               <Card className="rounded-2xl shadow-lg">
                 <CardHeader className="pb-3">
@@ -573,7 +591,11 @@ const Audience = () => {
                           {filtersByCategory[category.id]?.map((filter) => (
                             <div
                               key={filter.id}
-                              className="p-2 rounded-lg cursor-pointer transition-colors border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                              className={`p-2 rounded-lg cursor-pointer transition-colors border ${
+                                selectedSegment?.filters[filter.id] 
+                                  ? 'border-blue-500 bg-blue-50' 
+                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              }`}
                               onClick={() => selectFilter(filter.id)}
                             >
                               <span className="text-sm">{filter.label}</span>
@@ -594,25 +616,24 @@ const Audience = () => {
                   <CardTitle className="text-base">تنظیمات فیلتر</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {Object.keys(appliedFilters).length === 0 ? (
+                  {!selectedSegment || Object.keys(selectedSegment.filters).length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
                       <p className="text-sm">برای تنظیم فیلترها، یک فیلتر از فهرست انتخاب کنید</p>
                     </div>
                   ) : (
-                    Object.entries(appliedFilters).map(([filterId, value]) => {
-                      if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                    Object.entries(selectedSegment.filters).map(([filterId, value]) => {
+                      // Skip filters with empty values
+                      if (!value || (Array.isArray(value) && value.length === 0) || 
+                          (typeof value === 'object' && !Array.isArray(value) && 
+                           Object.values(value).every(v => !v))) {
+                        return null;
+                      }
                       
                       return (
                         <div key={filterId} className="border rounded-lg p-4 bg-gray-50">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="font-medium text-sm">
-                              {filterId === 'ageRange' && 'محدوده سنی'}
-                              {filterId === 'gender' && 'جنسیت'}
-                              {filterId === 'education' && 'سطح تحصیلات'}
-                              {filterId === 'selectedProvince' && 'استان'}
-                              {filterId === 'selectedCity' && 'شهر'}
-                              {filterId === 'socialLevel' && 'سطح اجتماعی'}
-                              {filterId === 'onlinePurchase' && 'میزان خرید آنلاین'}
+                              {getFilterLabel(filterId)}
                             </h4>
                             <Button
                               variant="ghost"
@@ -622,7 +643,7 @@ const Audience = () => {
                               <X className="w-4 h-4" />
                             </Button>
                           </div>
-                          {renderFilterSettings(filterId)}
+                          {renderFilterSettings(filterId, value)}
                         </div>
                       );
                     })
