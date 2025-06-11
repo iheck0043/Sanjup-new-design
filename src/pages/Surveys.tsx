@@ -54,6 +54,10 @@ import {
   type Questionnaire,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import ReadySurveyModal from "@/components/ReadySurveyModal";
+import AISurveyModal from "@/components/AISurveyModal";
+import DesignWithUsModal from "@/components/DesignWithUsModal";
+import UploadSurveyModal from "@/components/UploadSurveyModal";
 
 // Helper function to convert English numbers to Persian
 const toPersianNumbers = (str: string | number) => {
@@ -79,6 +83,10 @@ const Surveys = () => {
   // Modal states
   const [isMainModalOpen, setIsMainModalOpen] = useState(false);
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
+  const [isReadySurveyModalOpen, setIsReadySurveyModalOpen] = useState(false);
+  const [isAISurveyModalOpen, setIsAISurveyModalOpen] = useState(false);
+  const [isDesignWithUsModalOpen, setIsDesignWithUsModalOpen] = useState(false);
+  const [isUploadSurveyModalOpen, setIsUploadSurveyModalOpen] = useState(false);
   const [surveyTitle, setSurveyTitle] = useState("");
   const [apiLoading, setApiLoading] = useState(false);
   const [adTestLoading, setAdTestLoading] = useState(false);
@@ -376,7 +384,7 @@ const Surveys = () => {
               <h2 className="text-xl font-bold text-gray-900">
                 نظرسنجی های من
               </h2>
-              <Select dir="rtl" value={status} onValueChange={setStatus}>
+              <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="w-[180px] focus:ring-0 focus:ring-offset-0 focus:outline-none border-gray-300 focus:border-blue-500">
                   <SelectValue placeholder="وضعیت" />
                 </SelectTrigger>
@@ -607,7 +615,13 @@ const Surveys = () => {
               </Card>
 
               {/* نظرسنجی آماده */}
-              <Card className="cursor-pointer border-gray-200 hover:border-green-300 transition-colors">
+              <Card
+                className="cursor-pointer border-gray-200 hover:border-green-300 transition-colors"
+                onClick={() => {
+                  setIsMainModalOpen(false);
+                  setIsReadySurveyModalOpen(true);
+                }}
+              >
                 <CardContent className="flex items-center p-3">
                   <div className="flex justify-center items-center p-3 rounded-lg bg-green-50 ml-4">
                     <Target className="w-6 h-6 text-green-600" />
@@ -652,7 +666,13 @@ const Surveys = () => {
               </Card>
 
               {/* طراحی نظرسنجی با هوش مصنوعی */}
-              <Card className="cursor-pointer border-gray-200 hover:border-purple-300 transition-colors">
+              <Card
+                className="cursor-pointer border-gray-200 hover:border-purple-300 transition-colors"
+                onClick={() => {
+                  setIsMainModalOpen(false);
+                  setIsAISurveyModalOpen(true);
+                }}
+              >
                 <CardContent className="flex items-center p-3">
                   <div className="flex justify-center items-center p-3 rounded-lg bg-purple-50 ml-4">
                     <Sparkles className="w-6 h-6 text-purple-600" />
@@ -672,7 +692,13 @@ const Surveys = () => {
               </Card>
 
               {/* طراحی نظرسنجی با ما */}
-              <Card className="cursor-pointer border-gray-200 hover:border-red-300 transition-colors">
+              <Card
+                className="cursor-pointer border-gray-200 hover:border-red-300 transition-colors"
+                onClick={() => {
+                  setIsMainModalOpen(false);
+                  setIsDesignWithUsModalOpen(true);
+                }}
+              >
                 <CardContent className="flex items-center p-3">
                   <div className="flex justify-center items-center p-3 rounded-lg bg-red-50 ml-4">
                     <Eye className="w-6 h-6 text-red-600" />
@@ -690,7 +716,13 @@ const Surveys = () => {
               </Card>
 
               {/* بارگذاری نظرسنجی */}
-              <Card className="cursor-pointer border-gray-200 hover:border-orange-300 transition-colors">
+              <Card
+                className="cursor-pointer border-gray-200 hover:border-orange-300 transition-colors"
+                onClick={() => {
+                  setIsMainModalOpen(false);
+                  setIsUploadSurveyModalOpen(true);
+                }}
+              >
                 <CardContent className="flex items-center p-3">
                   <div className="flex justify-center items-center p-3 rounded-lg bg-orange-50 ml-4">
                     <Upload className="w-6 h-6 text-orange-600" />
@@ -746,6 +778,39 @@ const Surveys = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Ready Survey Modal */}
+      <ReadySurveyModal
+        open={isReadySurveyModalOpen}
+        onOpenChange={setIsReadySurveyModalOpen}
+        onTemplateSelect={(templateId) => {
+          navigate(`/questionnaire/${templateId}`);
+        }}
+      />
+
+      {/* AI Survey Modal */}
+      <AISurveyModal
+        open={isAISurveyModalOpen}
+        onOpenChange={setIsAISurveyModalOpen}
+        onSurveyCreated={(surveyId) => {
+          navigate(`/questionnaire/${surveyId}`);
+        }}
+      />
+
+      {/* Design With Us Modal */}
+      <DesignWithUsModal
+        open={isDesignWithUsModalOpen}
+        onOpenChange={setIsDesignWithUsModalOpen}
+      />
+
+      {/* Upload Survey Modal */}
+      <UploadSurveyModal
+        open={isUploadSurveyModalOpen}
+        onOpenChange={setIsUploadSurveyModalOpen}
+        onSurveyCreated={(surveyId) => {
+          navigate(`/questionnaire/${surveyId}`);
+        }}
+      />
     </div>
   );
 };
