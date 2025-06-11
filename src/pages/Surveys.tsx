@@ -18,6 +18,7 @@ import {
   LogOut,
   Settings,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Progress } from "../components/ui/progress";
@@ -539,6 +540,19 @@ const Surveys = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() =>
+                              navigate(
+                                `/questionnaire/${questionnaire.id}/results`
+                              )
+                            }
+                            className="h-7 w-7 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-all duration-200"
+                            title="گزارش نتایج"
+                          >
+                            <BarChart3 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-7 w-7 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200"
                             title="کپی نظرسنجی"
                           >
@@ -557,7 +571,7 @@ const Surveys = () => {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-all duration-200"
-                            title="گزینه‌های بیشتر"
+                            title="گزینه‌های بیشتр"
                           >
                             <MoreVertical className="w-3.5 h-3.5" />
                           </Button>

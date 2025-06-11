@@ -425,3 +425,97 @@ export const importPorslineSurvey = async (
 
   return response.json();
 };
+
+// Report and Dashboard APIs
+export interface ReportSummary {
+  id: string;
+  title: string;
+  status: "draft" | "published" | "finished" | "expired";
+  created: string;
+  single_user_publish_date?: string;
+  single_user_expire_at?: string;
+  questionnaire_completed?: {
+    percent: number;
+    answer_count: number;
+    user_limit: number;
+  };
+}
+
+export interface ExportStatus {
+  waiting: boolean;
+  file_address: string;
+  updated: string;
+}
+
+export const fetchReportSummary = async (
+  id: string,
+  accessToken: string
+): Promise<{ data: ReportSummary }> => {
+  if (!accessToken) {
+    throw new Error("No access token available");
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/api/v1/dashboard/dashboard-initial/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch report summary");
+  }
+
+  return response.json();
+};
+
+export const checkExportStatus = async (
+  id: string,
+  accessToken: string
+): Promise<{ data: ExportStatus }> => {
+  if (!accessToken) {
+    throw new Error("No access token available");
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/api/v2/questionnaire/export/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to check export status");
+  }
+
+  return response.json();
+};
+
+export const createExport = async (
+  id: string,
+  accessToken: string
+): Promise<{ data: ExportStatus }> => {
+  if (!accessToken) {
+    throw new Error("No access token available");
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/api/v2/questionnaire/export/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to create export");
+  }
+
+  return response.json();
+};
