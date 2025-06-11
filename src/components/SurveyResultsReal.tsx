@@ -171,23 +171,24 @@ const SurveyChart: React.FC<{
     <ChartContainer config={chartConfig} className="h-96 w-full">
       <BarChart
         data={chartData}
-        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+        margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
       >
         <XAxis
           dataKey="name"
-          tick={{ fontSize: 11 }}
+          tick={{ fontSize: 10 }}
           angle={-45}
           textAnchor="end"
-          height={80}
+          height={60}
           interval={0}
         />
-        <YAxis tick={{ fontSize: 11 }} />
+        <YAxis tick={{ fontSize: 10 }} />
         <Bar dataKey="value" radius={4}>
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.fill} />
           ))}
         </Bar>
         <ChartTooltip
+          cursor={false}
           content={
             <ChartTooltipContent
               formatter={(value, name) => [`${value} نفر`, name]}

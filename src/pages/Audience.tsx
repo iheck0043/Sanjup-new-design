@@ -54,6 +54,39 @@ interface FilterOption {
   label: string;
 }
 
+interface FilterMetric {
+  id: number;
+  title: string;
+  priority: number;
+}
+
+interface FilterLabel {
+  id: number;
+  title: string;
+  metrics: FilterMetric[];
+}
+
+interface FilterCategory {
+  id: number;
+  title: string;
+  priority: number;
+  icon: string;
+  labels: FilterLabel[];
+}
+
+interface FilterApiResponse {
+  data: FilterCategory[];
+  info: {
+    response_type: string;
+    status: number;
+    message: string;
+    attrs: any[];
+    count: number;
+    next: string;
+    previous: string;
+  };
+}
+
 interface QuestionnaireCompleted {
   answer_count: number;
 }
@@ -98,75 +131,43 @@ const Audience = () => {
   ]);
   const [selectedSegmentId, setSelectedSegmentId] = useState("1");
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [filterCategories, setFilterCategories] = useState<FilterCategory[]>(
+    []
+  );
+  const [filtersLoading, setFiltersLoading] = useState(true);
+  const [selectedFilterForSettings, setSelectedFilterForSettings] = useState<
+    number | null
+  >(null);
 
-  // Filter options data
-  const genderOptions: FilterOption[] = [
-    { value: "male", label: "مرد" },
-    { value: "female", label: "زن" },
-  ];
+  // Fetch filter categories from API
+  const fetchFilterCategories = async () => {
+    try {
+      setFiltersLoading(true);
+      const response = await fetch(
+        `${BASE_URL}/api/v1/filtering/sanjup/filter/label`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-  const educationOptions: FilterOption[] = [
-    { value: "under_diploma", label: "زیر دیپلم" },
-    { value: "diploma", label: "دیپلم" },
-    { value: "bachelor", label: "کارشناسی" },
-    { value: "master", label: "کارشناسی ارشد" },
-    { value: "phd", label: "دکتری" },
-  ];
+      if (!response.ok) {
+        throw new Error("خطا در دریافت فیلترها");
+      }
 
-  const socialLevelOptions: FilterOption[] = [
-    { value: "A", label: "A (بالا)" },
-    { value: "B1", label: "B1" },
-    { value: "B2", label: "B2" },
-    { value: "C1", label: "C1" },
-    { value: "C2", label: "C2" },
-    { value: "D", label: "D" },
-    { value: "E", label: "E (پایین)" },
-  ];
-
-  const onlinePurchaseOptions: FilterOption[] = [
-    { value: "low", label: "کم" },
-    { value: "medium", label: "متوسط" },
-    { value: "high", label: "زیاد" },
-  ];
-
-  const provinces = [
-    "تهران",
-    "اصفهان",
-    "فارس",
-    "خوزستان",
-    "کرمان",
-    "مازندران",
-    "گیلان",
-  ];
-
-  const cities: Record<string, string[]> = {
-    تهران: ["تهران", "کرج", "شهریار", "ورامین"],
-    اصفهان: ["اصفهان", "کاشان", "نجف‌آباد"],
-    فارس: ["شیراز", "مرودشت", "کازرون"],
-    خوزستان: ["اهواز", "آبادان", "خرمشهر"],
-    کرمان: ["کرمان", "رفسنجان", "سیرجان"],
-    مازندران: ["ساری", "بابل", "آمل"],
-    گیلان: ["رشت", "انزلی", "لاهیجان"],
-  };
-
-  const filterCategories = [
-    { id: "demographic", label: "اطلاعات دموگرافیک", icon: Users },
-    { id: "education", label: "تحصیلات", icon: GraduationCap },
-    { id: "geographic", label: "اطلاعات جغرافیایی", icon: MapPin },
-    { id: "socioeconomic", label: "اطلاعات اجتماعی-اقتصادی", icon: DollarSign },
-  ];
-
-  const filtersByCategory: Record<string, any[]> = {
-    demographic: [
-      { id: "age", label: "محدوده سنی" },
-      { id: "gender", label: "جنسیت" },
-    ],
-    education: [{ id: "education", label: "سطح تحصیلات" }],
-    geographic: [{ id: "location", label: "محل سکونت" }],
-    socioeconomic: [
-      { id: "socialLevel", label: "سطح اجتماعی" },
-      { id: "onlinePurchase", label: "میزان خرید آنلاین" },
-    ],
+      const data: FilterApiResponse = await response.json();
+      if (data.info.status === 200) {
+        setFilterCategories(data.data);
+      } else {
+        throw new Error(data.info.message);
+      }
+    } catch (error) {
+      console.error("Error fetching filters:", error);
+      toast.error("خطا در دریافت فیلترها");
+    } finally {
+      setFiltersLoading(false);
+    }
   };
 
   const selectedSegment = segments.find((s) => s.id === selectedSegmentId);
@@ -290,278 +291,65 @@ const Audience = () => {
     );
   };
 
-  const toggleCategory = (categoryId: string) => {
+  const toggleCategory = (categoryId: number) => {
+    const categoryIdStr = categoryId.toString();
     setExpandedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
+      prev.includes(categoryIdStr)
+        ? prev.filter((id) => id !== categoryIdStr)
+        : [...prev, categoryIdStr]
     );
   };
 
-  const selectFilter = (filterId: string) => {
-    if (!selectedSegment) return;
-
-    // Add filter to segment if it doesn't exist
-    if (!selectedSegment.filters[filterId]) {
-      let defaultValue;
-
-      // Set default values based on filter type
-      switch (filterId) {
-        case "age":
-          defaultValue = [18, 100];
-          break;
-        case "gender":
-        case "education":
-        case "socialLevel":
-        case "onlinePurchase":
-          defaultValue = [];
-          break;
-        case "location":
-          defaultValue = { selectedProvince: "", selectedCity: "" };
-          break;
-        default:
-          defaultValue = "";
-      }
-
-      updateSegmentFilter(selectedSegmentId, filterId, defaultValue);
-    }
+  const selectFilter = (filterId: number) => {
+    setSelectedFilterForSettings(filterId);
   };
 
-  const renderFilterSettings = (filterId: string, value: any) => {
-    switch (filterId) {
-      case "age":
-        return (
-          <div className="space-y-4">
-            <h4 className="font-medium">محدوده سنی (18-100 سال)</h4>
-            <Slider
-              value={value || [18, 100]}
-              onValueChange={(newValue) =>
-                updateSegmentFilter(selectedSegmentId, "age", newValue)
-              }
-              min={18}
-              max={100}
-              step={1}
-              className="w-full"
-            />
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>{value?.[0] || 18} سال</span>
-              <span>{value?.[1] || 100} سال</span>
+  const renderFilterSettings = () => {
+    if (!selectedFilterForSettings) return null;
+
+    // Find the filter label from API data
+    const filterLabel = filterCategories
+      .flatMap((category) => category.labels)
+      .find((label) => label.id === selectedFilterForSettings);
+
+    if (!filterLabel) return null;
+
+    const filterIdStr = selectedFilterForSettings.toString();
+    const currentValue = selectedSegment?.filters[filterIdStr] || [];
+
+    return (
+      <div className="space-y-4">
+        <h4 className="font-medium">{filterLabel.title}</h4>
+        <div className="space-y-2">
+          {filterLabel.metrics.map((metric) => (
+            <div
+              key={metric.id}
+              className="flex items-center space-x-2 space-x-reverse"
+            >
+              <Checkbox
+                checked={currentValue.includes(metric.id)}
+                onCheckedChange={(checked) => {
+                  const updated = checked
+                    ? [...currentValue, metric.id]
+                    : currentValue.filter((id: number) => id !== metric.id);
+                  updateSegmentFilter(selectedSegmentId, filterIdStr, updated);
+                }}
+              />
+              <span className="text-sm">{metric.title}</span>
             </div>
-          </div>
-        );
-
-      case "gender":
-        return (
-          <div className="space-y-4">
-            <h4 className="font-medium">جنسیت</h4>
-            <div className="space-y-2">
-              {genderOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className="flex items-center space-x-2 space-x-reverse"
-                >
-                  <Checkbox
-                    checked={(value || []).includes(option.value)}
-                    onCheckedChange={(checked) => {
-                      const current = value || [];
-                      const updated = checked
-                        ? [...current, option.value]
-                        : current.filter((g: string) => g !== option.value);
-                      updateSegmentFilter(selectedSegmentId, "gender", updated);
-                    }}
-                  />
-                  <span className="text-sm">{option.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case "education":
-        return (
-          <div className="space-y-4">
-            <h4 className="font-medium">سطح تحصیلات</h4>
-            <div className="space-y-2">
-              {educationOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className="flex items-center space-x-2 space-x-reverse"
-                >
-                  <Checkbox
-                    checked={(value || []).includes(option.value)}
-                    onCheckedChange={(checked) => {
-                      const current = value || [];
-                      const updated = checked
-                        ? [...current, option.value]
-                        : current.filter((e: string) => e !== option.value);
-                      updateSegmentFilter(
-                        selectedSegmentId,
-                        "education",
-                        updated
-                      );
-                    }}
-                  />
-                  <span className="text-sm">{option.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case "location":
-        return (
-          <div className="space-y-4">
-            <h4 className="font-medium">محل سکونت</h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  استان
-                </label>
-                <Select
-                  value={(value || {}).selectedProvince || ""}
-                  onValueChange={(newValue) => {
-                    const updated = {
-                      ...(value || {}),
-                      selectedProvince: newValue,
-                      selectedCity: "",
-                    };
-                    updateSegmentFilter(selectedSegmentId, "location", updated);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="انتخاب استان" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {provinces.map((province) => (
-                      <SelectItem key={province} value={province}>
-                        {province}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {(value || {}).selectedProvince && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    شهر
-                  </label>
-                  <Select
-                    value={(value || {}).selectedCity || ""}
-                    onValueChange={(newValue) => {
-                      const updated = {
-                        ...(value || {}),
-                        selectedCity: newValue,
-                      };
-                      updateSegmentFilter(
-                        selectedSegmentId,
-                        "location",
-                        updated
-                      );
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="انتخاب شهر" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities[(value || {}).selectedProvince]?.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case "socialLevel":
-        return (
-          <div className="space-y-4">
-            <h4 className="font-medium">سطح اجتماعی</h4>
-            <div className="space-y-2">
-              {socialLevelOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className="flex items-center space-x-2 space-x-reverse"
-                >
-                  <Checkbox
-                    checked={(value || []).includes(option.value)}
-                    onCheckedChange={(checked) => {
-                      const current = value || [];
-                      const updated = checked
-                        ? [...current, option.value]
-                        : current.filter((s: string) => s !== option.value);
-                      updateSegmentFilter(
-                        selectedSegmentId,
-                        "socialLevel",
-                        updated
-                      );
-                    }}
-                  />
-                  <span className="text-sm">{option.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case "onlinePurchase":
-        return (
-          <div className="space-y-4">
-            <h4 className="font-medium">میزان خرید آنلاین</h4>
-            <div className="space-y-2">
-              {onlinePurchaseOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className="flex items-center space-x-2 space-x-reverse"
-                >
-                  <Checkbox
-                    checked={(value || []).includes(option.value)}
-                    onCheckedChange={(checked) => {
-                      const current = value || [];
-                      const updated = checked
-                        ? [...current, option.value]
-                        : current.filter((o: string) => o !== option.value);
-                      updateSegmentFilter(
-                        selectedSegmentId,
-                        "onlinePurchase",
-                        updated
-                      );
-                    }}
-                  />
-                  <span className="text-sm">{option.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+          ))}
+        </div>
+      </div>
+    );
   };
 
   // Get filter label by ID
   const getFilterLabel = (filterId: string) => {
-    switch (filterId) {
-      case "age":
-        return "محدوده سنی";
-      case "gender":
-        return "جنسیت";
-      case "education":
-        return "سطح تحصیلات";
-      case "location":
-        return "محل سکونت";
-      case "socialLevel":
-        return "سطح اجتماعی";
-      case "onlinePurchase":
-        return "میزان خرید آنلاین";
-      default:
-        return "فیلتر";
-    }
+    const filterLabel = filterCategories
+      .flatMap((category) => category.labels)
+      .find((label) => label.id.toString() === filterId);
+
+    return filterLabel ? filterLabel.title : "فیلتر";
   };
 
   // Check if filter has meaningful values
@@ -580,6 +368,9 @@ const Audience = () => {
       navigate("/login");
       return;
     }
+
+    // Fetch filter categories
+    fetchFilterCategories();
 
     if (id && id !== "new") {
       fetchQuestionnaire();
@@ -773,48 +564,58 @@ const Audience = () => {
                   <CardTitle className="text-base">فیلترها</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {filterCategories.map((category) => (
-                    <Collapsible
-                      key={category.id}
-                      open={expandedCategories.includes(category.id)}
-                      onOpenChange={() => toggleCategory(category.id)}
-                    >
-                      <CollapsibleTrigger className="w-full">
-                        <div className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2 space-x-reverse">
-                              <category.icon className="w-4 h-4" />
-                              <span className="text-sm font-medium">
-                                {category.label}
-                              </span>
+                  {filtersLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                    </div>
+                  ) : (
+                    filterCategories.map((category) => (
+                      <Collapsible
+                        key={category.id}
+                        open={expandedCategories.includes(
+                          category.id.toString()
+                        )}
+                        onOpenChange={() => toggleCategory(category.id)}
+                      >
+                        <CollapsibleTrigger className="w-full">
+                          <div className="p-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2 space-x-reverse">
+                                <img
+                                  src={category.icon}
+                                  alt=""
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-sm font-medium">
+                                  {category.title}
+                                </span>
+                              </div>
+                              {expandedCategories.includes(
+                                category.id.toString()
+                              ) ? (
+                                <ChevronDown className="w-4 h-4" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4" />
+                              )}
                             </div>
-                            {expandedCategories.includes(category.id) ? (
-                              <ChevronDown className="w-4 h-4" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4" />
-                            )}
                           </div>
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="space-y-2 mt-2 mr-4">
-                          {filtersByCategory[category.id]?.map((filter) => (
-                            <div
-                              key={filter.id}
-                              className={`p-2 rounded-lg cursor-pointer transition-colors border ${
-                                selectedSegment?.filters[filter.id]
-                                  ? "border-blue-500 bg-blue-50"
-                                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                              }`}
-                              onClick={() => selectFilter(filter.id)}
-                            >
-                              <span className="text-sm">{filter.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="space-y-2 mt-2 mr-4">
+                            {category.labels?.map((label) => (
+                              <div
+                                key={label.id}
+                                className="p-2 rounded-lg cursor-pointer transition-colors border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                onClick={() => selectFilter(label.id)}
+                              >
+                                <span className="text-sm">{label.title}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -826,43 +627,28 @@ const Audience = () => {
                   <CardTitle className="text-base">تنظیمات فیلتر</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {!selectedSegment ||
-                  Object.keys(selectedSegment.filters).length === 0 ? (
+                  {!selectedFilterForSettings ? (
                     <div className="text-center text-gray-500 py-8">
                       <p className="text-sm">
                         برای تنظیم فیلترها، یک فیلتر از فهرست انتخاب کنید
                       </p>
                     </div>
                   ) : (
-                    Object.entries(selectedSegment.filters).map(
-                      ([filterId, value]) => {
-                        // Only show filters that have meaningful values
-                        if (!hasValidFilterValue(value)) {
-                          return null;
-                        }
-
-                        return (
-                          <div
-                            key={filterId}
-                            className="border rounded-lg p-4 bg-gray-50"
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-medium text-sm">
-                                {getFilterLabel(filterId)}
-                              </h4>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeAppliedFilter(filterId)}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            {renderFilterSettings(filterId, value)}
-                          </div>
-                        );
-                      }
-                    )
+                    <div className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-sm">
+                          {getFilterLabel(selectedFilterForSettings.toString())}
+                        </h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedFilterForSettings(null)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {renderFilterSettings()}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -902,6 +688,46 @@ const Audience = () => {
                       </div>
                     ))}
                   </div>
+
+                  {/* Applied Filters Summary */}
+                  {selectedSegment &&
+                    Object.keys(selectedSegment.filters).length > 0 && (
+                      <div className="border-t pt-3">
+                        <h4 className="font-medium text-xs mb-2">
+                          فیلترهای اعمال شده:
+                        </h4>
+                        <div className="space-y-1">
+                          {Object.entries(selectedSegment.filters).map(
+                            ([filterId, value]) => {
+                              if (!hasValidFilterValue(value)) return null;
+
+                              const filterLabel = getFilterLabel(filterId);
+                              const selectedMetrics =
+                                filterCategories
+                                  .flatMap((cat) => cat.labels)
+                                  .find(
+                                    (label) => label.id.toString() === filterId
+                                  )
+                                  ?.metrics.filter((metric) =>
+                                    value.includes(metric.id)
+                                  )
+                                  .map((metric) => metric.title) || [];
+
+                              return (
+                                <div key={filterId} className="text-xs">
+                                  <span className="font-medium">
+                                    {filterLabel}:
+                                  </span>{" "}
+                                  <span className="text-gray-600">
+                                    {selectedMetrics.join(", ")}
+                                  </span>
+                                </div>
+                              );
+                            }
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                   <div className="border-t pt-3">
                     <div className="flex justify-between items-center mb-2">
