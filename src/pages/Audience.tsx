@@ -294,7 +294,7 @@ const Audience = () => {
               {genderOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={value?.includes(option.value) || false}
+                    checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
                       const current = value || [];
                       const updated = checked
@@ -318,7 +318,7 @@ const Audience = () => {
               {educationOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={value?.includes(option.value) || false}
+                    checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
                       const current = value || [];
                       const updated = checked
@@ -342,9 +342,9 @@ const Audience = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">استان</label>
                 <Select
-                  value={value?.selectedProvince || ''}
+                  value={(value || {}).selectedProvince || ''}
                   onValueChange={(newValue) => {
-                    const updated = { ...value, selectedProvince: newValue, selectedCity: '' };
+                    const updated = { ...(value || {}), selectedProvince: newValue, selectedCity: '' };
                     updateSegmentFilter(selectedSegmentId, 'location', updated);
                   }}
                 >
@@ -361,13 +361,13 @@ const Audience = () => {
                 </Select>
               </div>
               
-              {value?.selectedProvince && (
+              {(value || {}).selectedProvince && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">شهر</label>
                   <Select
-                    value={value?.selectedCity || ''}
+                    value={(value || {}).selectedCity || ''}
                     onValueChange={(newValue) => {
-                      const updated = { ...value, selectedCity: newValue };
+                      const updated = { ...(value || {}), selectedCity: newValue };
                       updateSegmentFilter(selectedSegmentId, 'location', updated);
                     }}
                   >
@@ -375,7 +375,7 @@ const Audience = () => {
                       <SelectValue placeholder="انتخاب شهر" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cities[value.selectedProvince]?.map((city) => (
+                      {cities[(value || {}).selectedProvince]?.map((city) => (
                         <SelectItem key={city} value={city}>
                           {city}
                         </SelectItem>
@@ -396,7 +396,7 @@ const Audience = () => {
               {socialLevelOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={value?.includes(option.value) || false}
+                    checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
                       const current = value || [];
                       const updated = checked
@@ -420,7 +420,7 @@ const Audience = () => {
               {onlinePurchaseOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2 space-x-reverse">
                   <Checkbox
-                    checked={value?.includes(option.value) || false}
+                    checked={(value || []).includes(option.value)}
                     onCheckedChange={(checked) => {
                       const current = value || [];
                       const updated = checked
@@ -452,6 +452,16 @@ const Audience = () => {
       case 'onlinePurchase': return 'میزان خرید آنلاین';
       default: return 'فیلتر';
     }
+  };
+
+  // Check if filter has meaningful values
+  const hasValidFilterValue = (value: any) => {
+    if (!value) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object') {
+      return Object.values(value).some(v => v && v !== '');
+    }
+    return true;
   };
 
   return (
@@ -622,10 +632,8 @@ const Audience = () => {
                     </div>
                   ) : (
                     Object.entries(selectedSegment.filters).map(([filterId, value]) => {
-                      // Skip filters with empty values
-                      if (!value || (Array.isArray(value) && value.length === 0) || 
-                          (typeof value === 'object' && !Array.isArray(value) && 
-                           Object.values(value).every(v => !v))) {
+                      // Only show filters that have meaningful values
+                      if (!hasValidFilterValue(value)) {
                         return null;
                       }
                       

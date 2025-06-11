@@ -7,7 +7,8 @@ export interface Question {
   title?: string;
   order?: number;
   isRequired?: boolean;
-  required?: boolean; // Added for compatibility
+  required?: boolean;
+  is_required?: boolean; // For API compatibility
   placeholder?: string;
   minChars?: number;
   maxChars?: number;
@@ -37,23 +38,20 @@ export interface Question {
   hasMedia?: boolean;
   mediaType?: string;
   mediaUrl?: string;
-  attachment?: string; // Added for compatibility
-  attachment_type?: string; // Added for compatibility
-  // Matrix specific properties
+  attachment?: string;
+  attachment_type?: string;
   rows?: string[];
   columns?: string[];
-  // Multi-choice specific properties
   isMultiSelect?: boolean;
   minSelectableChoices?: number;
   maxSelectableChoices?: number;
   shuffleOptions?: boolean;
   hasOther?: boolean;
   hasNone?: boolean;
-  // Text/Number specific properties
   maxLength?: number;
   limit?: number;
   minNumber?: number;
   maxNumber?: number;
-  // Group specific properties
   children?: Question[];
+  defaultValue?: any; // For API compatibility
 }
