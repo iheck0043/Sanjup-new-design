@@ -10,6 +10,9 @@ import Surveys from "./pages/Surveys";
 import BillboardTest from "./pages/BillboardTest";
 import AdTestQuestions from "./pages/AdTestQuestions";
 import Audience from "./pages/Audience";
+import ReportResults from "./pages/ReportResults";
+import SurveyResultsDemo from "./components/SurveyResultsDemo";
+import SurveyResultsRealDemo from "./components/SurveyResultsRealDemo";
 import { Toaster } from "sonner";
 
 function App() {
@@ -74,6 +77,19 @@ function App() {
                 <QuestionnaireList />
               </PrivateRoute>
             }
+          />
+          <Route
+            path="/questionnaire/:id/results"
+            element={
+              <PrivateRoute>
+                <ReportResults />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/survey-results-demo" element={<SurveyResultsDemo />} />
+          <Route
+            path="/survey-results-real"
+            element={<SurveyResultsRealDemo />}
           />
           <Route
             path="/"
