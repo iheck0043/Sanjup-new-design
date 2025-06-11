@@ -2538,6 +2538,23 @@ const Index = () => {
       <FormHeader
         formTitle={questionnaire?.title || "پرسشنامه جدید"}
         setFormTitle={setFormTitle}
+        steps={
+          id && id !== "new"
+            ? [
+                { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+                {
+                  id: 2,
+                  title: "انتخاب مخاطب",
+                  path: `/questionnaire/${id}/audience`,
+                },
+                {
+                  id: 3,
+                  title: "گزارش نتایج",
+                  path: `/questionnaire/${id}/results`,
+                },
+              ]
+            : undefined
+        }
       />
 
       <div className="flex flex-1 h-[calc(100vh-80px)] mt-20">

@@ -9,6 +9,7 @@ import QuestionnaireList from "./pages/QuestionnaireList";
 import Surveys from "./pages/Surveys";
 import BillboardTest from "./pages/BillboardTest";
 import AdTestQuestions from "./pages/AdTestQuestions";
+import Audience from "./pages/Audience";
 import { Toaster } from "sonner";
 
 function App() {
@@ -31,6 +32,14 @@ function App() {
             element={
               <PrivateRoute>
                 <QuestionnaireForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/questionnaire/:id/audience"
+            element={
+              <PrivateRoute>
+                <Audience />
               </PrivateRoute>
             }
           />
