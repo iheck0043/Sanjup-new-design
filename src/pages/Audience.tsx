@@ -4,16 +4,13 @@ import FormHeader from '../components/FormHeader';
 import { 
   Users, 
   Target, 
-  Settings, 
   ChevronDown, 
   ChevronRight,
   X,
   Plus,
-  Search,
   Copy,
   MapPin,
   DollarSign,
-  Clock,
   AlertTriangle,
   GraduationCap,
   Building
@@ -25,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
 interface Segment {
@@ -56,7 +54,7 @@ const Audience = () => {
     }
   ]);
   const [selectedSegmentId, setSelectedSegmentId] = useState('1');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -229,6 +227,15 @@ const Audience = () => {
       }
       return s;
     }));
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+    setSelectedFilter(null);
   };
 
   const renderFilterDetails = () => {
@@ -415,7 +422,6 @@ const Audience = () => {
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">انتخاب جامعه هدف و تعداد پاسخ‌دهنده</h1>
-            <p className="text-gray-600">فیلترها را با دقت تنظیم کنید تا داده‌های دقیق و قابل‌اعتماد دریافت کنید.</p>
           </div>
 
           <div className="grid grid-cols-12 gap-6">
@@ -515,67 +521,58 @@ const Audience = () => {
               </Card>
             </div>
 
-            {/* Column 2: Filter Categories */}
-            <div className="col-span-3">
-              <Card className="rounded-2xl shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">دسته‌بندی فیلترها</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {filterCategories.map((category) => (
-                    <div
-                      key={category.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedCategory === category.id
-                          ? 'bg-blue-50 border-blue-500 border-2'
-                          : 'border border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => {
-                        setSelectedCategory(category.id);
-                        setSelectedFilter(null);
-                      }}
-                    >
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <category.icon className="w-5 h-5" />
-                        <span className="text-sm font-medium">{category.label}</span>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Column 3: Filters */}
-            <div className="col-span-3">
+            {/* Column 2: Filter Categories & Filters */}
+            <div className="col-span-6">
               <Card className="rounded-2xl shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-lg">فیلترها</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {selectedCategory && filtersByCategory[selectedCategory]?.map((filter) => (
-                    <div
-                      key={filter.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedFilter === filter.id
-                          ? 'bg-blue-50 border-blue-500 border-2'
-                          : 'border border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setSelectedFilter(filter.id)}
+                  {filterCategories.map((category) => (
+                    <Collapsible
+                      key={category.id}
+                      open={expandedCategories.includes(category.id)}
+                      onOpenChange={() => toggleCategory(category.id)}
                     >
-                      <span className="text-sm font-medium">{filter.label}</span>
-                    </div>
+                      <CollapsibleTrigger className="w-full">
+                        <div className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 space-x-reverse">
+                              <category.icon className="w-5 h-5" />
+                              <span className="text-sm font-medium">{category.label}</span>
+                            </div>
+                            {expandedCategories.includes(category.id) ? (
+                              <ChevronDown className="w-4 h-4" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4" />
+                            )}
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="space-y-2 mt-2 mr-6">
+                          {filtersByCategory[category.id]?.map((filter) => (
+                            <div
+                              key={filter.id}
+                              className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                                selectedFilter === filter.id
+                                  ? 'bg-blue-50 border-blue-500 border-2'
+                                  : 'border border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => setSelectedFilter(filter.id)}
+                            >
+                              <span className="text-sm font-medium">{filter.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   ))}
-                  
-                  {!selectedCategory && (
-                    <p className="text-sm text-gray-500 text-center py-8">
-                      ابتدا یک دسته‌بندی انتخاب کنید
-                    </p>
-                  )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Column 4: Summary & Filter Details */}
+            {/* Column 3: Filter Details & Summary */}
             <div className="col-span-3 space-y-6">
               {/* Filter Details */}
               {selectedFilter && (
