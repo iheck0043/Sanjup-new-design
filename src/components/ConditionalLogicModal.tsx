@@ -524,16 +524,8 @@ const ConditionalLogicModal: React.FC<ConditionalLogicModalProps> = ({
         className="max-w-4xl max-h-[80vh] overflow-y-auto"
         dir="rtl"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <h2 className="text-lg font-semibold">شرط‌گذاری پیشرفته</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="w-8 h-8 p-0 rounded-full"
-          >
-            <X className="w-4 h-4" />
-          </Button>
         </div>
 
         <div className="space-y-6">

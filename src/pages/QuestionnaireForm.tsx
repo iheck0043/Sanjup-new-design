@@ -281,6 +281,7 @@ const Index = () => {
     useState<ApiQuestion | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showConditionalLogic, setShowConditionalLogic] = useState(false);
+  const [isCreatingNewQuestion, setIsCreatingNewQuestion] = useState(false);
 
   // Debug state changes
   useEffect(() => {
@@ -1838,58 +1839,12 @@ const Index = () => {
       // Update state immediately (optimistic update)
       setQuestions(updatedQuestions);
 
-      // Call reorder API to persist the new order
-      if (insertIndex !== undefined) {
-        const reorderAllQuestionsAPI = async () => {
-          try {
-            const reorderData = updatedQuestions.map((question, index) => ({
-              id: parseInt(question.id.toString()),
-              order: index + 1,
-            }));
-
-            console.log(
-              "🚀 Sending reorder API call after new question insertion:",
-              reorderData
-            );
-
-            const BASE_URL = import.meta.env.VITE_BASE_URL;
-            const response = await fetch(
-              `${BASE_URL}/api/v1/questionnaire/${questionnaire?.id}/questions/reorder/`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify(reorderData),
-              }
-            );
-
-            if (response.ok) {
-              console.log("✅ Reorder API call successful after insertion");
-              // Fetch updated questions list
-              await fetchQuestions();
-            } else {
-              console.error("❌ Reorder API call failed after insertion");
-              const errorText = await response.text();
-              console.error("Error details:", errorText);
-            }
-          } catch (error) {
-            console.error(
-              "❌ Error in reorder API call after insertion:",
-              error
-            );
-          }
-        };
-
-        // Call API with slight delay to ensure UI update happens first
-        setTimeout(() => {
-          reorderAllQuestionsAPI();
-        }, 100);
-      }
+      // Don't call reorder API immediately - wait for question to be saved
+      // The reorder will happen after the question is successfully created
 
       // Set as new question and open modal
       setSelectedQuestion(newQuestion);
+      setIsCreatingNewQuestion(true);
       setShowSettings(true);
       setShowConditionalLogic(false);
       setExpandedGroups([]);
@@ -1917,6 +1872,7 @@ const Index = () => {
             // Close modal and reset states
             setShowSettings(false);
             setSelectedQuestion(null);
+            setIsCreatingNewQuestion(false);
             setShowConditionalLogic(false);
             setExpandedGroups([]);
 
@@ -2023,6 +1979,7 @@ const Index = () => {
           // Close modal and reset states
           setShowSettings(false);
           setSelectedQuestion(null);
+          setIsCreatingNewQuestion(false);
           setShowConditionalLogic(false);
           setExpandedGroups([]);
         }
@@ -2059,6 +2016,7 @@ const Index = () => {
     // Don't add question if cancelled
     setShowSettings(false);
     setSelectedQuestion(null);
+    setIsCreatingNewQuestion(false);
     setShowConditionalLogic(false);
     setExpandedGroups([]);
   }, [selectedQuestion, questions]);
@@ -2415,6 +2373,7 @@ const Index = () => {
 
     console.log("Final mapped question:", mappedQuestion);
     setSelectedQuestion(mappedQuestion);
+    setIsCreatingNewQuestion(false);
     setShowSettings(true);
     setShowConditionalLogic(false);
     setExpandedGroups([]);
@@ -2467,12 +2426,7 @@ const Index = () => {
     }
   };
 
-  const closeQuestionSettings = useCallback(() => {
-    setShowSettings(false);
-    setSelectedQuestion(null);
-    setShowConditionalLogic(false);
-    setExpandedGroups([]);
-  }, []);
+
 
   const openConditionModal = useCallback((question: Question | ApiQuestion) => {
     console.log("🔄 openConditionModal called with:", question);
@@ -2510,12 +2464,12 @@ const Index = () => {
 
     return (
       <div className="flex items-center gap-2">
-        <span className="text-gray-900 font-medium">{question.title}</span>
+        <span className="text-gray-900 dark:text-white font-medium">{question.title}</span>
         {question.is_required && (
           <span className="text-red-500 text-sm">*</span>
         )}
         {/* Show question type */}
-        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
           {displayType}
         </span>
       </div>
@@ -2524,15 +2478,15 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
       </div>
     );
   }
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col overflow-x-hidden"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col overflow-x-hidden"
       dir="rtl"
     >
       <FormHeader
@@ -2589,11 +2543,11 @@ const Index = () => {
 
       <QuestionSettingsModal
         isOpen={showSettings}
-        onClose={closeQuestionSettings}
+        onClose={handleQuestionCancel}
         question={selectedQuestion}
         onSave={handleQuestionSave}
         onCancel={handleQuestionCancel}
-        isNewQuestion={showSettings}
+        isNewQuestion={isCreatingNewQuestion}
       />
 
       <ConditionalLogicModal

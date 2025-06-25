@@ -445,24 +445,24 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     return (
       <div className="relative group mb-1" style={{ userSelect: "none" }}>
         {/* Group Header */}
-        <div className="h-[50px] border rounded-lg p-2 bg-green-50 border-green-200 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing">
+        <div className="h-[50px] border rounded-lg p-2 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing">
           <div className="flex items-center justify-between h-full">
             <div className="flex items-center gap-2">
               <div className="flex-shrink-0">
                 <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
               </div>
               <div className="flex-shrink-0">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium bg-gray-100 text-gray-600">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                   {index + 1}
                 </div>
               </div>
               <div className="flex-shrink-0">
                 {getQuestionTypeIcon(item.data.type, item.data)}
               </div>
-              <div className="text-sm text-gray-700 truncate">
+              <div className="text-sm text-gray-700 dark:text-gray-300 truncate">
                 {renderQuestionTitle(item.data)}
               </div>
-              <div className="flex-shrink-0 text-xs text-gray-500 bg-green-100 px-2 py-1 rounded">
+              <div className="flex-shrink-0 text-xs text-gray-500 dark:text-gray-400 bg-green-100 dark:bg-green-800 px-2 py-1 rounded">
                 {item.children?.length || 0} سوال
               </div>
             </div>
@@ -755,21 +755,21 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         )}
 
         {/* Simple div instead of Card */}
-        <div className="h-[50px] border rounded-lg p-2 bg-white hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing border-gray-200">
+        <div className="h-[50px] border rounded-lg p-2 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing border-gray-200 dark:border-gray-600">
           <div className="flex items-center justify-between h-full">
             <div className="flex items-center gap-2">
               <div className="flex-shrink-0">
                 <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
               </div>
               <div className="flex-shrink-0">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium bg-gray-100 text-gray-600">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                   {isChild ? `${index + 1}.1` : `${index + 1}`}
                 </div>
               </div>
               <div className="flex-shrink-0">
                 {getQuestionTypeIcon(item.data.type, item.data)}
               </div>
-              <div className="text-sm text-gray-700 truncate">
+              <div className="text-sm text-gray-700 dark:text-gray-300 truncate">
                 {renderQuestionTitle(item.data)}
               </div>
             </div>
@@ -881,12 +881,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             put: true,
             pull: false,
           }}
-          className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg transition-all duration-200 border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-blue-100/50"
+          className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg transition-all duration-200 border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-900/20"
         >
-          <div className="mb-2 text-gray-400">
+          <div className="mb-2 text-gray-400 dark:text-gray-500">
             <MoveRight className="w-8 h-8" />
           </div>
-          <p className="text-sm text-center text-gray-500">
+          <p className="text-sm text-center text-gray-500 dark:text-gray-400">
             سوالات را از لیست سمت راست به اینجا بکشید
           </p>
         </ReactSortable>

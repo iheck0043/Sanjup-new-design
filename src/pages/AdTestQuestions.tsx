@@ -19,6 +19,12 @@ import {
   ChevronUp,
   Edit,
   Plus,
+  Monitor,
+  Play,
+  Palette,
+  Building,
+  MessageSquare,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import FormHeader from "../components/FormHeader";
@@ -78,6 +84,7 @@ const AdTestQuestions = () => {
   const [isAddAttrModalOpen, setIsAddAttrModalOpen] = useState(false);
   const [isAddCustomQuestionModalOpen, setIsAddCustomQuestionModalOpen] =
     useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   // Refs to hold current values during drag operations
   const currentAttributesRef = useRef<AdTestAttribute[]>([]);
@@ -96,6 +103,62 @@ const AdTestQuestions = () => {
     text_question: "متنی",
     range_slider: "طیفی",
     prioritize: "اولویت دهی",
+  };
+
+  // Get ad test type info
+  const getAdTestTypeInfo = () => {
+    const adTestType = questionnaire?.questionnaire_type;
+    
+    switch (adTestType) {
+      case "billboard":
+        return {
+          name: "تست تبلیغات محیطی (بیلبورد)",
+          icon: <Monitor className="w-6 h-6 text-slate-600" />,
+          color: "slate",
+          bgGradient: "from-gray-50 to-slate-50",
+          description: "ارزیابی تأثیر و کیفیت تبلیغات محیطی"
+        };
+      case "video":
+        return {
+          name: "تست تبلیغات ویدیویی",
+          icon: <Play className="w-6 h-6 text-slate-600" />,
+          color: "slate",
+          bgGradient: "from-gray-50 to-slate-50",
+          description: "ارزیابی تأثیر و کیفیت تبلیغات ویدیویی"
+        };
+      case "logo":
+        return {
+          name: "تست لوگو",
+          icon: <Palette className="w-6 h-6 text-slate-600" />,
+          color: "slate",
+          bgGradient: "from-gray-50 to-slate-50",
+          description: "ارزیابی تأثیر و کیفیت طراحی لوگو"
+        };
+      case "brand":
+        return {
+          name: "تست نام برند",
+          icon: <Building className="w-6 h-6 text-slate-600" />,
+          color: "slate",
+          bgGradient: "from-gray-50 to-slate-50",
+          description: "ارزیابی تأثیر و کیفیت نام برند"
+        };
+      case "slogan":
+        return {
+          name: "تست شعار برند",
+          icon: <MessageSquare className="w-6 h-6 text-slate-600" />,
+          color: "slate",
+          bgGradient: "from-gray-50 to-slate-50",
+          description: "ارزیابی تأثیر و کیفیت شعار برند"
+        };
+      default:
+        return {
+          name: "تست تبلیغات",
+          icon: <Monitor className="w-6 h-6 text-slate-600" />,
+          color: "slate",
+          bgGradient: "from-gray-50 to-slate-50",
+          description: "ارزیابی تأثیر و کیفیت تبلیغات"
+        };
+    }
   };
 
   const fetchQuestionnaire = async () => {
@@ -441,15 +504,18 @@ const AdTestQuestions = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 dark:border-gray-700 border-t-slate-600 dark:border-t-slate-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">در حال بارگذاری سؤالات...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col overflow-x-hidden"
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-x-hidden"
       dir="rtl"
     >
       <FormHeader
@@ -459,137 +525,323 @@ const AdTestQuestions = () => {
         backPath={`/adtest/${id}`}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 mt-20 p-6 pb-32">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              سؤالاتی که پس از نمایش محتوای شما از کاربران پرسیده خواهد شد:
-            </h2>
+      {/* Fixed Header Sidebar */}
+      {isSidebarVisible && (
+                  <div className="fixed top-16 right-0 w-80 h-[calc(100vh-64px)] bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-l border-gray-200 dark:border-gray-700 shadow-xl z-40 overflow-y-auto">
+        <div className="p-4">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-center mb-3">
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  {React.cloneElement(getAdTestTypeInfo().icon, { className: "w-4 h-4 text-slate-600" })}
+                </div>
+                <div className="text-center">
+                  <h1 className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5">
+                    {getAdTestTypeInfo().name}
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs">
+                    {getAdTestTypeInfo().description}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-750 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xs font-medium text-gray-900 dark:text-white mb-1 text-center leading-relaxed">
+                سؤالاتی که پس از نمایش محتوای شما از کاربران پرسیده خواهد شد
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 text-xs text-center leading-relaxed">
+                این سؤالات به شما کمک می‌کنند تا تأثیر و کیفیت {questionnaire?.questionnaire_type === "billboard" ? "بیلبورد" : 
+                questionnaire?.questionnaire_type === "video" ? "ویدیو" :
+                questionnaire?.questionnaire_type === "logo" ? "لوگو" :
+                questionnaire?.questionnaire_type === "brand" ? "نام برند" :
+                questionnaire?.questionnaire_type === "slogan" ? "شعار برند" : "تبلیغ"} خود را بهتر درک کنید
+              </p>
+            </div>
           </div>
+          
+          {/* Quick Stats */}
+          <div className="mt-4 space-y-2">
+            <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5 space-x-reverse">
+                  <div className="w-2 h-2 rounded-full bg-slate-500"></div>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">ویژگی‌های تست</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{attributes.length}</span>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5 space-x-reverse">
+                  <div className="w-2 h-2 rounded-full bg-slate-500"></div>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">سؤالات سفارشی</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{questions.length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      )}
+
+      {/* Toggle Sidebar Button - Hidden for now */}
+      {/* <div className="fixed top-24 right-4 z-50">
+        <Button
+          onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+          variant="outline"
+          size="sm"
+          className="bg-white/90 backdrop-blur-sm border-gray-300 hover:bg-white shadow-lg"
+        >
+          {isSidebarVisible ? (
+            <X className="w-4 h-4" />
+          ) : (
+            <Edit className="w-4 h-4" />
+          )}
+        </Button>
+      </div> */}
+
+      {/* Main Content */}
+      <div className={`flex-1 mt-16 p-4 pb-24 transition-all duration-300 ${isSidebarVisible ? 'pr-80' : 'pr-0'}`}>
+        <div className="max-w-4xl mx-auto">
 
           {/* Ad Type Attributes Section */}
-          <Card className="mb-6">
-            <CardContent className="p-8">
-              <ReactSortable
-                list={attributes}
-                setList={handleAttributesReorder}
-                animation={200}
-                handle=".drag-handle"
-                ghostClass="opacity-50"
-                onEnd={handleDragEnd}
-              >
-                {attributes.map((attribute, index) => (
+          <Card className="mb-4 border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
+            <CardHeader className="bg-slate-700 dark:bg-slate-800 text-white rounded-t-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className="w-7 h-7 bg-slate-600 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                    {React.cloneElement(getAdTestTypeInfo().icon, { className: "w-4 h-4 text-white" })}
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-base">ویژگی‌های تست تبلیغ</CardTitle>
+                    <p className="text-slate-200 text-xs">سؤالات مربوط به ویژگی‌های خاص این نوع تبلیغ</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setIsAddAttrModalOpen(true)}
+                  className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                  variant="outline"
+                >
+                  <Plus className="w-3.5 h-3.5 ml-1.5" />
+                  افزودن ویژگی تست
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {attributes.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    {React.cloneElement(getAdTestTypeInfo().icon, { className: "w-6 h-6 text-gray-400" })}
+                  </div>
+                  <h3 className="text-base font-medium text-gray-900 dark:text-white mb-2">
+                    هنوز ویژگی تست تبلیغی اضافه نشده
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    ویژگی‌های تست تبلیغ به شما کمک می‌کنند تا جنبه‌های مختلف {questionnaire?.questionnaire_type === "billboard" ? "بیلبورد" : 
+                    questionnaire?.questionnaire_type === "video" ? "ویدیو" :
+                    questionnaire?.questionnaire_type === "logo" ? "لوگو" :
+                    questionnaire?.questionnaire_type === "brand" ? "نام برند" :
+                    questionnaire?.questionnaire_type === "slogan" ? "شعار برند" : "تبلیغ"} خود را ارزیابی کنید
+                  </p>
+                </div>
+              ) : (
+                <ReactSortable
+                  list={attributes}
+                  setList={handleAttributesReorder}
+                  animation={200}
+                  handle=".drag-handle"
+                  ghostClass="opacity-50"
+                  onEnd={handleDragEnd}
+                >
+                  {attributes.map((attribute, index) => (
                   <div key={attribute.id} className="mb-4">
                     <Collapsible
                       open={expandedAttributes.includes(attribute.id)}
                       onOpenChange={() => toggleExpanded(attribute.id, true)}
                     >
-                      <Card className="border border-gray-200">
+                      <Card className={`border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${
+                        expandedAttributes.includes(attribute.id) 
+                          ? 'ring-2 ring-slate-200 dark:ring-slate-700' 
+                          : ''
+                      }`}>
                         <CollapsibleTrigger asChild>
-                          <CardHeader className="cursor-pointer hover:bg-gray-50 relative">
+                          <CardHeader className={`cursor-pointer relative transition-all duration-200 ${
+                            expandedAttributes.includes(attribute.id)
+                              ? 'bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700'
+                              : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}>
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3 space-x-reverse">
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-gray-100"
-                                >
-                                  {attribute.attribute}
-                                </Badge>
-                                <div className="flex items-center">
-                                  {renderDynamicTitle(
-                                    attribute.title,
-                                    attribute.dynamic_part || "",
-                                    index
-                                  )}
+                              <div className="flex items-center space-x-4 space-x-reverse">
+                                {/* Icon based on ad type */}
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                  expandedAttributes.includes(attribute.id)
+                                    ? 'bg-slate-100 dark:bg-slate-700'
+                                    : 'bg-gray-100 dark:bg-gray-700'
+                                } transition-all duration-300`}>
+                                  {React.cloneElement(getAdTestTypeInfo().icon, { 
+                                    className: `w-5 h-5 ${
+                                      expandedAttributes.includes(attribute.id)
+                                        ? 'text-slate-600'
+                                        : 'text-gray-500'
+                                    } transition-all duration-200`
+                                  })}
+                                </div>
+                                
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 space-x-reverse mb-1">
+                                    <Badge
+                                      variant="secondary"
+                                      className={`${
+                                        expandedAttributes.includes(attribute.id)
+                                          ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                                          : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                      } transition-all duration-200 font-medium`}
+                                    >
+                                      {attribute.attribute}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <span className={`text-sm font-medium ${
+                                      expandedAttributes.includes(attribute.id)
+                                        ? 'text-gray-900'
+                                        : 'text-gray-700'
+                                    } transition-all duration-300`}>
+                                      {renderDynamicTitle(
+                                        attribute.title,
+                                        attribute.dynamic_part || "",
+                                        index
+                                      )}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
+                              
                               <div className="flex items-center space-x-2 space-x-reverse">
-                                <div className="drag-handle cursor-move p-1">
-                                  <GripVertical className="w-4 h-4 text-gray-400" />
+                                <div className="drag-handle cursor-move p-2 rounded-lg hover:bg-white/50 transition-all duration-200">
+                                  <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                                 </div>
-                                {expandedAttributes.includes(attribute.id) ? (
-                                  <ChevronUp className="w-4 h-4" />
-                                ) : (
-                                  <ChevronDown className="w-4 h-4" />
-                                )}
+                                <div className={`p-2 rounded-lg transition-all duration-200 ${
+                                  expandedAttributes.includes(attribute.id)
+                                    ? 'bg-slate-100 dark:bg-slate-800'
+                                    : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
+                                }`}>
+                                  {expandedAttributes.includes(attribute.id) ? (
+                                    <ChevronUp className={`w-4 h-4 ${
+                                      expandedAttributes.includes(attribute.id)
+                                        ? 'text-slate-600 dark:text-slate-400'
+                                        : 'text-gray-500'
+                                    } transition-all duration-200`} />
+                                  ) : (
+                                    <ChevronDown className="w-4 h-4 text-gray-500 transition-all duration-200" />
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             {!attribute.dynamic_part && (
-                              <Badge
-                                variant="destructive"
-                                className="mt-2 w-fit"
-                              >
-                                جای خالی را باید با کلمه مناسب سوال تست خود آن
-                                را پر کنید. مثل: تبلیغ، محصول، ویدیو و …
-                              </Badge>
+                              <div className="mt-3 pt-3 border-t border-red-100">
+                                <div className="flex items-start space-x-2 space-x-reverse">
+                                  <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                  </div>
+                                  <p className="text-xs text-red-600 leading-relaxed">
+                                    جای خالی را باید با کلمه مناسب سوال تست خود پر کنید.
+                                    <br />
+                                    <span className="font-medium">مثال:</span> تبلیغ، محصول، ویدیو، لوگو و …
+                                  </p>
+                                </div>
+                              </div>
                             )}
                           </CardHeader>
                         </CollapsibleTrigger>
 
                         <CollapsibleContent>
-                          <CardContent className="pt-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                {attribute.type === "attribute" &&
-                                  attribute.options && (
-                                    <div>
-                                      <div className="mb-2 text-sm font-medium">
-                                        گزینه های سوال:
+                          <CardContent className="pt-0 bg-slate-50/30 dark:bg-slate-800/30">
+                            <div className="p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  {attribute.type === "attribute" &&
+                                    attribute.options && (
+                                      <div>
+                                        <div className="flex items-center space-x-2 space-x-reverse mb-3">
+                                          <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                            <div className="w-2 h-2 rounded-full bg-slate-500"></div>
+                                          </div>
+                                          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                            گزینه‌های سوال
+                                          </span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                          {attribute.options.map(
+                                            (option, oIndex) => (
+                                              <div
+                                                key={oIndex}
+                                                className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                                              >
+                                                <div className="flex items-center space-x-2 space-x-reverse">
+                                                  <div className="w-1.5 h-1.5 rounded-full bg-slate-500"></div>
+                                                  <span>{option.value}</span>
+                                                </div>
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
                                       </div>
-                                      <div className="flex flex-wrap gap-2">
-                                        {attribute.options.map(
-                                          (option, oIndex) => (
-                                            <Badge
-                                              key={oIndex}
-                                              variant="outline"
-                                            >
-                                              {option.value}
-                                            </Badge>
-                                          )
-                                        )}
+                                    )}
+
+                                  {attribute.type === "attribute_text_question" && (
+                                    <div className="flex items-center space-x-3 space-x-reverse">
+                                      <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                        <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">سوال متنی</p>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">کاربران پاسخ آزاد می‌دهند</p>
                                       </div>
                                     </div>
                                   )}
+                                </div>
 
-                                {attribute.type ===
-                                  "attribute_text_question" && (
-                                  <div className="text-sm text-gray-600">
-                                    سوال متنی است
-                                  </div>
-                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeQuestion(index, true)}
+                                  disabled={removingIndex === index && apiLoading}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-all duration-200 ml-4"
+                                >
+                                  {removingIndex === index && apiLoading ? (
+                                    <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                                  ) : (
+                                    <div className="flex items-center space-x-1 space-x-reverse">
+                                      <Trash2 className="w-4 h-4" />
+                                      <span className="text-xs font-medium">حذف</span>
+                                    </div>
+                                  )}
+                                </Button>
                               </div>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeQuestion(index, true)}
-                                disabled={removingIndex === index && apiLoading}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                {removingIndex === index && apiLoading ? (
-                                  <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                                ) : (
-                                  <Trash2 className="w-4 h-4" />
-                                )}
-                              </Button>
                             </div>
                           </CardContent>
                         </CollapsibleContent>
                       </Card>
                     </Collapsible>
                   </div>
-                ))}
-              </ReactSortable>
+                  ))}
+                </ReactSortable>
+              )}
 
-              <div className="mt-6">
+              <div className="mt-6 text-center">
                 <Button
                   onClick={() => setIsAddAttrModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className={`${getAdTestTypeInfo().color === "blue" ? "bg-blue-600 hover:bg-blue-700" :
+                    getAdTestTypeInfo().color === "red" ? "bg-red-600 hover:bg-red-700" :
+                    getAdTestTypeInfo().color === "purple" ? "bg-purple-600 hover:bg-purple-700" :
+                    getAdTestTypeInfo().color === "green" ? "bg-green-600 hover:bg-green-700" :
+                    getAdTestTypeInfo().color === "orange" ? "bg-orange-600 hover:bg-orange-700" :
+                    "bg-gray-600 hover:bg-gray-700"} text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200`}
                 >
-                  <Plus className="w-4 h-4 ml-2" />
+                  <Plus className="w-5 h-5 ml-2" />
                   افزودن ویژگی تست تبلیغ
                 </Button>
               </div>
@@ -597,48 +849,85 @@ const AdTestQuestions = () => {
           </Card>
 
           {/* Custom Questions Section */}
-          <Card>
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <p className="text-gray-700">
-                  با افزودن سوال سفارشی، می‌توانید پرسش‌هایی را طراحی کنید که
-                  دقیقاً متناسب با نیازهای خاص شما باشند.
-                </p>
+          <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
+            <CardHeader className="bg-slate-700 dark:bg-slate-800 text-white rounded-t-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className="w-7 h-7 bg-slate-600 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                    <Edit className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-base">سؤالات سفارشی</CardTitle>
+                    <p className="text-slate-200 text-xs">سؤالات اختصاصی متناسب با نیازهای شما</p>
+                  </div>
+                </div>
                 <Button
                   onClick={() => setIsAddCustomQuestionModalOpen(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                  variant="outline"
                 >
-                  <Plus className="w-4 h-4 ml-2" />
+                  <Plus className="w-3.5 h-3.5 ml-1.5" />
                   افزودن سوال سفارشی
                 </Button>
               </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
+                  با افزودن سوال سفارشی، می‌توانید پرسش‌هایی را طراحی کنید که
+                  دقیقاً متناسب با نیازهای خاص شما باشند.
+                </p>
+              </div>
 
-              <ReactSortable
-                list={questions}
-                setList={handleQuestionsReorder}
-                animation={200}
-                handle=".drag-handle"
-                ghostClass="opacity-50"
-                onEnd={handleDragEnd}
-              >
-                {questions.map((question, index) => (
+              {questions.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Edit className="w-8 h-8 text-gray-400 dark:text-gray-300" />
+                  </div>
+                  <h3 className="text-base font-medium text-gray-900 dark:text-white mb-2">
+                    هنوز سؤال سفارشی‌ای اضافه نشده
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto">
+                    با افزودن سؤالات سفارشی، می‌توانید اطلاعات بیشتری از کاربران جمع‌آوری کنید
+                  </p>
+                  <Button
+                    onClick={() => setIsAddCustomQuestionModalOpen(true)}
+                    className="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <Plus className="w-4 h-4 ml-1.5" />
+                    افزودن اولین سؤال سفارشی
+                  </Button>
+                </div>
+              ) : (
+                <ReactSortable
+                  list={questions}
+                  setList={handleQuestionsReorder}
+                  animation={200}
+                  handle=".drag-handle"
+                  ghostClass="opacity-50"
+                  onEnd={handleDragEnd}
+                >
+                  {questions.map((question, index) => (
                   <div key={question.id} className="mb-4">
                     <Collapsible
                       open={expandedQuestions.includes(question.id)}
                       onOpenChange={() => toggleExpanded(question.id, false)}
                     >
-                      <Card className="border border-gray-200">
-                        <CollapsibleTrigger asChild>
-                          <CardHeader className="cursor-pointer hover:bg-gray-50 relative">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <h3 className="text-sm font-medium">
-                                  {question.title}
-                                </h3>
-                              </div>
+                                          <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200">
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 relative border-l-4 border-l-transparent hover:border-l-slate-500 dark:hover:border-l-slate-400 transition-all duration-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                                {question.title}
+                              </h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {typeToString[question.type] || question.type}
+                              </p>
+                            </div>
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <div className="drag-handle cursor-move p-1">
-                                  <GripVertical className="w-4 h-4 text-gray-400" />
+                                  <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-300" />
                                 </div>
                                 {expandedQuestions.includes(question.id) ? (
                                   <ChevronUp className="w-4 h-4" />
@@ -692,7 +981,7 @@ const AdTestQuestions = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="text-blue-600 hover:text-blue-700"
+                                  className="text-slate-600 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200"
                                 >
                                   <Edit className="w-4 h-4 ml-1" />
                                   ویرایش
@@ -704,7 +993,7 @@ const AdTestQuestions = () => {
                                   disabled={
                                     removingIndex === index && apiLoading
                                   }
-                                  className="text-red-600 hover:text-red-700"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-all duration-200"
                                 >
                                   {removingIndex === index && apiLoading ? (
                                     <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
@@ -719,19 +1008,20 @@ const AdTestQuestions = () => {
                       </Card>
                     </Collapsible>
                   </div>
-                ))}
-              </ReactSortable>
+                                    ))}
+                </ReactSortable>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
 
       {/* Fixed Navigation Buttons */}
-      <div className="fixed bottom-6 left-6 flex items-center gap-4">
+      <div className={`fixed bottom-6 left-6 flex items-center justify-between z-50 transition-all duration-300 ${isSidebarVisible ? 'right-96' : 'right-6'}`}>
         <Button
           onClick={prevStep}
           variant="outline"
-          className="bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-700 hover:shadow-lg transition-all duration-200 px-6 py-3"
           size="lg"
         >
           <ArrowRight className="w-5 h-5 ml-2" />
@@ -739,7 +1029,7 @@ const AdTestQuestions = () => {
         </Button>
         <Button
           onClick={nextStep}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm hover:shadow-md transition-all duration-200 px-6 py-3"
           size="lg"
         >
           مرحله بعد

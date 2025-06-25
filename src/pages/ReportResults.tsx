@@ -34,6 +34,7 @@ import {
   type ExportStatus,
 } from "../lib/api";
 import SurveyResultsReal from "../components/SurveyResultsReal";
+import { ThemeToggle } from "../components/ui/theme-toggle";
 
 // Types imported from API
 
@@ -272,14 +273,25 @@ const ReportResults: React.FC = () => {
   if (isLoading) {
     return (
       <div
-        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
         dir="rtl"
       >
-        <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
+        <FormHeader 
+          formTitle={formTitle} 
+          setFormTitle={setFormTitle}
+          steps={
+            id ? [
+              { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+              { id: 2, title: "انتخاب مخاطب", path: `/questionnaire/${id}/audience` },
+              { id: 3, title: "گزارش نتایج", path: `/questionnaire/${id}/results` },
+            ] : undefined
+          }
+          backPath={id ? `/questionnaire/${id}/audience` : "/"}
+        />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <p className="text-gray-500">در حال بارگذاری گزارش...</p>
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">در حال بارگذاری گزارش...</p>
           </div>
         </div>
       </div>
@@ -289,10 +301,21 @@ const ReportResults: React.FC = () => {
   if (!reportData) {
     return (
       <div
-        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
         dir="rtl"
       >
-        <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
+        <FormHeader 
+          formTitle={formTitle} 
+          setFormTitle={setFormTitle}
+          steps={
+            id ? [
+              { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+              { id: 2, title: "انتخاب مخاطب", path: `/questionnaire/${id}/audience` },
+              { id: 3, title: "گزارش نتایج", path: `/questionnaire/${id}/results` },
+            ] : undefined
+          }
+          backPath={id ? `/questionnaire/${id}/audience` : "/"}
+        />
         <div className="flex-1 flex items-center justify-center p-6">
           <Alert>
             <AlertCircle className="h-4 w-4" />
@@ -307,146 +330,162 @@ const ReportResults: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
       dir="rtl"
     >
-      <FormHeader formTitle={formTitle} setFormTitle={setFormTitle} />
+      <FormHeader 
+        formTitle={formTitle} 
+        setFormTitle={setFormTitle}
+        steps={
+          id ? [
+            { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+            { id: 2, title: "انتخاب مخاطب", path: `/questionnaire/${id}/audience` },
+            { id: 3, title: "گزارش نتایج", path: `/questionnaire/${id}/results` },
+          ] : undefined
+        }
+        backPath={id ? `/questionnaire/${id}/audience` : "/"}
+      />
 
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Navigation */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={goToDashboard}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-white/50 transition-all duration-200"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium">بازگشت به داشبورد</span>
-          </Button>
-        </div>
-
-        {/* Summary Card */}
-        <Card className="mb-8 shadow-sm border-0 bg-white/70 backdrop-blur-sm">
-          <CardContent className="p-6">
-            {/* Header Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-xl text-gray-900">
-                    {reportData.title}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge
-                      className={`${
-                        STATUS_CONFIG[reportData.status]?.color
-                      } flex items-center gap-1 text-xs px-2 py-1`}
-                    >
-                      <StatusIcon className="w-3 h-3" />
-                      {STATUS_CONFIG[reportData.status]?.text}
-                    </Badge>
+      <div className="flex min-h-[calc(100vh-80px)]">
+        {/* Fixed Right Sidebar */}
+        <div className="fixed top-20 right-0 w-96 h-[calc(100vh-80px)] bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-lg z-10 overflow-y-auto">
+          <div className="p-6">
+            {/* Survey Info Card */}
+            <Card className="mb-6 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <CardContent className="p-6">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-semibold text-lg text-gray-700 dark:text-gray-200 line-clamp-2 leading-tight">
+                      {reportData.title}
+                    </h2>
+                    <div className="mt-2">
+                      <Badge
+                        className={`${
+                          STATUS_CONFIG[reportData.status]?.color
+                        } flex items-center gap-1 text-xs px-3 py-1 w-fit`}
+                      >
+                        <StatusIcon className="w-3 h-3" />
+                        {STATUS_CONFIG[reportData.status]?.text}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Export Button */}
-              <div className="mt-4 lg:mt-0">
+                {/* Progress Section */}
+                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                        پیشرفت نظرسنجی
+                      </span>
+                    </div>
+                    <span className="text-xl font-semibold text-gray-700 dark:text-gray-200">
+                      {reportData.questionnaire_completed?.percent}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={reportData.questionnaire_completed?.percent}
+                    className="h-3 mb-3"
+                  />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 dark:text-gray-400">پاسخ دریافت شده</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-200">
+                      {reportData.questionnaire_completed?.answer_count} از {reportData.questionnaire_completed?.user_limit} نفر
+                    </span>
+                  </div>
+                </div>
+
+                {/* Date Info */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">تاریخ ایجاد</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                      {formatDate(reportData.created)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">تاریخ انتشار</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                      {reportData.single_user_publish_date
+                        ? formatDate(reportData.single_user_publish_date)
+                        : "منتشر نشده"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Export Section */}
+            <Card className="shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+                  <Download className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  دانلود گزارش
+                </h3>
+                
                 <Button
                   onClick={handleExport}
                   disabled={isExporting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white relative min-w-[140px]"
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white relative h-12 text-base font-medium"
                 >
                   {isExporting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin ml-2" />
-                      در حال آماده سازی
+                      <Loader2 className="w-5 h-5 animate-spin ml-2" />
+                      در حال آماده سازی...
                       {countdownTimer > 0 && (
-                        <span className="absolute -top-1 -right-1 text-xs bg-orange-500 text-white px-1.5 py-0.5 rounded-full">
+                        <span className="absolute -top-2 -right-2 text-xs bg-orange-500 text-white px-2 py-1 rounded-full shadow-lg">
                           {formatTime(countdownTimer)}
                         </span>
                       )}
                     </>
                   ) : (
                     <>
-                      <Download className="w-4 h-4 ml-2" />
-                      دانلود اکسل
+                      <Download className="w-5 h-5 ml-2" />
+                      دانلود فایل اکسل
                     </>
                   )}
                 </Button>
+
                 {lastExportInfo && (
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    آخرین دانلود: {lastExportInfo}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Stats Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Progress */}
-              <div className="md:col-span-1">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">
-                      پیشرفت نظرسنجی
-                    </span>
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <Clock className="w-3 h-3 inline ml-1" />
+                      آخرین دانلود: {lastExportInfo}
+                    </p>
                   </div>
-                  <span className="text-base font-bold text-blue-600">
-                    {reportData.questionnaire_completed?.percent}%
-                  </span>
-                </div>
-                <Progress
-                  value={reportData.questionnaire_completed?.percent}
-                  className="h-2 mb-2"
-                />
-                <p className="text-xs text-gray-600">
-                  <span className="font-semibold text-gray-900">
-                    {reportData.questionnaire_completed?.answer_count}
-                  </span>
-                  {" از "}
-                  <span className="font-semibold text-gray-900">
-                    {reportData.questionnaire_completed?.user_limit}
-                  </span>
-                  {" نفر پاسخ داده‌اند"}
-                </p>
-              </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-              {/* Created Date */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="text-xs font-medium text-gray-700">
-                    تاریخ ایجاد
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-gray-900">
-                  {formatDate(reportData.created)}
-                </p>
-              </div>
-
-              {/* Publish Date */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Eye className="w-4 h-4 text-gray-500" />
-                  <span className="text-xs font-medium text-gray-700">
-                    تاریخ انتشار
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-gray-900">
-                  {reportData.single_user_publish_date
-                    ? formatDate(reportData.single_user_publish_date)
-                    : "منتشر نشده"}
-                </p>
-              </div>
+        {/* Main Content Area */}
+        <div className="flex-1 mr-96 p-6 pt-32">
+          <div className="max-w-none">
+            {/* Page Title */}
+            <div className="mb-8">
+              <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300 mb-2">تحلیل نتایج نظرسنجی</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">نمودارها و آمار تفصیلی پاسخ‌های دریافت شده</p>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Survey Results */}
-        <SurveyResultsReal pollId={id || ""} />
+            {/* Survey Results - Each chart in full width */}
+            <div className="space-y-8">
+              <SurveyResultsReal pollId={id || ""} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

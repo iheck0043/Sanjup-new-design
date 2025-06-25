@@ -73,24 +73,27 @@ interface SurveyResultsProps {
   pollId: string;
 }
 
-// Chart colors - Persian-friendly palette (moved outside component)
-const chartColors = [
-  "#FF9300",
-  "#0466C8",
-  "#635985",
-  "#86E5FF",
-  "#F4E4F4",
-  "#E4F4E4",
-  "#F4A4F4",
-  "#A4A4F4",
-];
+// Chart color themes
+const colorThemes = {
+  default: [
+    "#FF9300", "#0466C8", "#635985", "#86E5FF", "#F4E4F4", "#E4F4E4", "#F4A4F4", "#A4A4F4",
+  ],
+  green: [
+    "#27AE60", "#2ECC71", "#58D68D", "#82E0AA", "#A9DFBF", "#D5F4E6", "#16A085", "#48C9B0",
+  ],
+  blue: [
+    "#3498DB", "#5DADE2", "#85C1E9", "#AED6F1", "#D6EAF8", "#EBF5FB", "#2980B9", "#5499C7",
+  ],
+};
 
 // Shadcn Chart component using recharts
 const SurveyChart: React.FC<{
   options: SurveyOption[];
   type: "pie" | "column";
   showGender: boolean;
-}> = React.memo(({ options, type, showGender }) => {
+  colorTheme: 'default' | 'green' | 'blue';
+}> = React.memo(({ options, type, showGender, colorTheme }) => {
+  const chartColors = colorThemes[colorTheme];
   // Prepare chart data based on gender breakdown
   const chartData = React.useMemo(() => {
     if (showGender) {
@@ -120,7 +123,7 @@ const SurveyChart: React.FC<{
         percentage: option.percentage,
       }));
     }
-  }, [options, showGender]);
+  }, [options, showGender, chartColors]);
 
   // Chart config for shadcn
   const chartConfig: ChartConfig = React.useMemo(() => {
@@ -135,68 +138,81 @@ const SurveyChart: React.FC<{
 
   if (type === "pie") {
     return (
-      <ChartContainer config={chartConfig} className="h-96 w-full">
-        <RechartsPieChart>
-          <Pie
-            data={chartData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={120}
-            label={({ name, value, percentage }) =>
-              `${name}: ${value} ${percentage ? `(${percentage}%)` : ""}`
-            }
-            labelLine={false}
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} />
-            ))}
-          </Pie>
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(value, name) => [`${value} نفر`, name]}
-              />
-            }
-          />
-          <ChartLegend content={<ChartLegendContent />} />
-        </RechartsPieChart>
-      </ChartContainer>
+      <div className="bg-transparent dark:bg-transparent">
+        <ChartContainer config={chartConfig} className="h-[450px] w-full bg-transparent">
+          <RechartsPieChart>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={160}
+              innerRadius={0}
+              label={({ name, value, percentage }) =>
+                `${name}: ${value} ${percentage ? `(${percentage}%)` : ""}`
+              }
+              labelLine={false}
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Pie>
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value, name) => [`${value} نفر`, name]}
+                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                />
+              }
+            />
+            <ChartLegend 
+              content={<ChartLegendContent className="text-gray-900 dark:text-white" />} 
+            />
+          </RechartsPieChart>
+        </ChartContainer>
+      </div>
     );
   }
 
   // Bar chart using recharts
   return (
-    <ChartContainer config={chartConfig} className="h-96 w-full">
-      <BarChart
-        data={chartData}
-        margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
-      >
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 10 }}
-          angle={-45}
-          textAnchor="end"
-          height={60}
-          interval={0}
-        />
-        <YAxis tick={{ fontSize: 10 }} />
-        <Bar dataKey="value" radius={4}>
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.fill} />
-          ))}
-        </Bar>
-        <ChartTooltip
-          cursor={false}
-          content={
-            <ChartTooltipContent
-              formatter={(value, name) => [`${value} نفر`, name]}
-            />
-          }
-        />
-      </BarChart>
-    </ChartContainer>
+    <div className="bg-transparent dark:bg-transparent">
+      <ChartContainer config={chartConfig} className="h-[450px] w-full bg-transparent">
+        <BarChart
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+        >
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 12, fill: 'currentColor' }}
+            angle={-45}
+            textAnchor="end"
+            height={80}
+            interval={0}
+            className="text-gray-900 dark:text-white"
+          />
+          <YAxis 
+            tick={{ fontSize: 12, fill: 'currentColor' }} 
+            className="text-gray-900 dark:text-white"
+          />
+          <Bar dataKey="value" radius={6}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} />
+            ))}
+          </Bar>
+          <ChartTooltip
+            cursor={false}
+            content={
+              <ChartTooltipContent
+                formatter={(value, name) => [`${value} نفر`, name]}
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+              />
+            }
+          />
+        </BarChart>
+      </ChartContainer>
+    </div>
   );
 });
 
@@ -206,8 +222,9 @@ const IndividualSurveyChart: React.FC<{
   questionIndex: number;
   options: SurveyOption[];
   loading: boolean;
+  colorTheme: 'default' | 'green' | 'blue';
 }> = React.memo(
-  ({ questionId, questionIndex, options, loading }) => {
+  ({ questionId, questionIndex, options, loading, colorTheme }) => {
     const [chartType, setChartType] = useState<"pie" | "column">("pie");
     const [showGender, setShowGender] = useState(false);
 
@@ -267,6 +284,7 @@ const IndividualSurveyChart: React.FC<{
           options={options}
           type={chartType}
           showGender={showGender}
+          colorTheme={colorTheme}
         />
       </div>
     );
@@ -275,6 +293,7 @@ const IndividualSurveyChart: React.FC<{
     return (
       prevProps.questionId === nextProps.questionId &&
       prevProps.loading === nextProps.loading &&
+      prevProps.colorTheme === nextProps.colorTheme &&
       JSON.stringify(prevProps.options) === JSON.stringify(nextProps.options)
     );
   }
@@ -287,6 +306,7 @@ const SurveyResultsReal: React.FC<SurveyResultsProps> = ({ pollId }) => {
   const [aiAnalysis, setAIAnalysis] = useState<AIAnalysisResult>({});
   const [isComponentMounted, setIsComponentMounted] = useState(true);
   const [activeRequests, setActiveRequests] = useState<(() => void)[]>([]);
+  const [colorTheme, setColorTheme] = useState<'default' | 'green' | 'blue'>('default');
 
   // Loading states
   const [questionsLoading, setQuestionsLoading] = useState(false);
@@ -518,65 +538,116 @@ const SurveyResultsReal: React.FC<SurveyResultsProps> = ({ pollId }) => {
   return (
     <Card className="w-full shadow-none border-0 bg-transparent">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="sticky top-0 z-10 bg-background border-b">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="summary" className="text-base">
-              خلاصه نتایج
-            </TabsTrigger>
-            <TabsTrigger
-              value="details"
-              disabled
-              className="text-base opacity-50"
-            >
-              جزئیات پاسخ کاربران
-            </TabsTrigger>
-            <TabsTrigger value="ai-analysis" className="text-base">
-              تحلیل هوش مصنوعی
-            </TabsTrigger>
-          </TabsList>
+        <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm" dir="rtl">
+          <div className="px-6 py-4">
+                          <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-1 shadow-sm">
+              <TabsTrigger 
+                value="summary" 
+                className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm flex items-center gap-2 py-2 px-4 rounded-md transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600 data-[state=active]:hover:bg-blue-600 text-gray-900 dark:text-gray-100"
+              >
+                <BarChart3 className="w-4 h-4" />
+                خلاصه نتایج
+              </TabsTrigger>
+              <TabsTrigger
+                value="details"
+                disabled
+                className="text-sm opacity-40 flex items-center gap-2 py-2 px-4 cursor-not-allowed"
+              >
+                <Users className="w-4 h-4" />
+                جزئیات پاسخ کاربران
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ai-analysis" 
+                className="text-sm font-medium data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm flex items-center gap-2 py-2 px-4 rounded-md transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600 data-[state=active]:hover:bg-purple-600 text-gray-900 dark:text-gray-100"
+              >
+                <Brain className="w-4 h-4" />
+                تحلیل هوش مصنوعی
+              </TabsTrigger>
+            </TabsList>
+          </div>
         </div>
 
-        <TabsContent value="summary" className="mt-6">
-          <div className="container mx-auto  ">
+        <TabsContent value="summary" className="mt-6" dir="rtl">
+          <div className="w-full">
+            {/* Color Theme Selector */}
+            <div className="mb-6 flex items-center justify-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-3">انتخاب تم رنگی:</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={colorTheme === 'default' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setColorTheme('default')}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-4 h-4 rounded-full bg-gradient-to-r from-orange-400 to-blue-500"></div>
+                  پیش‌فرض
+                </Button>
+                <Button
+                  variant={colorTheme === 'green' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setColorTheme('green')}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-4 h-4 rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+                  سبز
+                </Button>
+                <Button
+                  variant={colorTheme === 'blue' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setColorTheme('blue')}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500"></div>
+                  آبی
+                </Button>
+              </div>
+            </div>
+
             {questionsLoading && questions.length === 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-8">
                 {[...Array(4)].map((_, i) => (
-                  <Card key={i} className="p-6">
-                    <Skeleton className="h-4 w-3/4 mb-4" />
-                    <Skeleton className="h-96 w-full" />
+                  <Card key={i} className="w-full shadow-lg border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+                      <Skeleton className="h-6 w-3/4" />
+                    </CardHeader>
+                    <CardContent className="p-8">
+                      <Skeleton className="h-96 w-full" />
+                    </CardContent>
                   </Card>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-8">
                 {questions.map((question, index) => (
                   <Card
                     key={`question-${question.id}`}
-                    className={`p-6 ${
-                      index % 2 === 0
-                        ? "border-r-2 border-r-dotted border-r-gray-300"
-                        : ""
-                    } ${
-                      index < questions.length - 2
-                        ? "border-b-2 border-b-gray-200"
-                        : ""
-                    }`}
+                    className="w-full shadow-xl border-0 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
                   >
-                    <CardHeader className="p-0 pb-4">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-medium">
-                          {index + 1} - {question.title}
-                        </CardTitle>
+                    {/* Enhanced Header */}
+                    <CardHeader className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 p-4 border-b border-gray-100 dark:border-gray-600">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+                          <span className="text-white font-bold text-sm">{index + 1}</span>
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="text-base font-semibold text-gray-900 dark:text-white leading-tight">
+                            {question.title}
+                          </CardTitle>
+                        </div>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-0">
-                      <IndividualSurveyChart
-                        questionId={question.id}
-                        questionIndex={index}
-                        options={surveyResults[index]?.options || []}
-                        loading={surveyResults[index]?.loading || false}
-                      />
+                    {/* Enhanced Content */}
+                    <CardContent className="p-4">
+                      <div className="bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600" dir="ltr">
+                        <IndividualSurveyChart
+                          questionId={question.id}
+                          questionIndex={index}
+                          options={surveyResults[index]?.options || []}
+                          loading={surveyResults[index]?.loading || false}
+                          colorTheme={colorTheme}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -585,48 +656,82 @@ const SurveyResultsReal: React.FC<SurveyResultsProps> = ({ pollId }) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="ai-analysis" className="mt-6">
-          <div className="container mx-auto  ">
+        <TabsContent value="ai-analysis" className="mt-6" dir="rtl">
+          <div className="w-full">
             <div className="mb-8">
-              <h3 className="text-lg font-light mb-6 text-right">
-                نگاه کلی به داده‌ها و تحلیل هوش مصنوعی
+              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white text-right">
+                تحلیل هوش مصنوعی
               </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-8 text-right">
+                نگاه کلی به داده‌ها و بینش‌های هوشمند از پاسخ‌های نظرسنجی
+              </p>
 
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                      <Brain className="w-6 h-6 text-primary-foreground" />
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 rounded-2xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                      <Brain className="w-8 h-8 text-white" />
                     </div>
-                    <CardTitle>تحلیل هوش مصنوعی</CardTitle>
+                    <div className="text-right">
+                      <CardTitle className="text-2xl font-bold mb-2">تحلیل هوش مصنوعی</CardTitle>
+                      <p className="text-purple-100">تحلیل پیشرفته داده‌های نظرسنجی</p>
+                    </div>
                   </div>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="p-8">
                   {aiAnalysisLoading || aiCreateLoading ? (
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">در حال بارگذاری تحلیل...</span>
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="relative">
+                        <Loader2 className="w-12 h-12 animate-spin text-purple-600" />
+                        <div className="absolute inset-0 w-12 h-12 border-4 border-purple-200 rounded-full animate-pulse"></div>
+                      </div>
+                      <span className="text-lg font-medium text-gray-700 mt-4">در حال تحلیل داده‌ها...</span>
+                      <span className="text-sm text-gray-500 mt-2">این فرآیند ممکن است چند دقیقه طول بکشد</span>
                     </div>
                   ) : aiAnalysis.last_analyse_result?.result ? (
-                    <p className="text-sm leading-relaxed">
-                      {aiAnalysis.last_analyse_result.result}
-                    </p>
+                    <div className="bg-white dark:bg-gray-700 rounded-xl p-6 border border-purple-200 dark:border-gray-600 shadow-sm">
+                      <div className="flex items-center gap-2 mb-4 justify-end">
+                        <span className="text-sm font-medium text-green-700">تحلیل کامل شده</span>
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="prose prose-lg max-w-none text-right">
+                        <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                          {aiAnalysis.last_analyse_result.result}
+                        </p>
+                      </div>
+                    </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      هنوز تحلیل هوش مصنوعی آماده نیست، لطفا دقایقی بعد مجدداً
-                      وارد این صفحه شوید.
-                    </p>
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Brain className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-700 mb-2">تحلیل در انتظار</h4>
+                      <p className="text-gray-500 max-w-md mx-auto">
+                        هنوز تحلیل هوش مصنوعی آماده نیست. لطفا دقایقی بعد مجدداً وارد این صفحه شوید.
+                      </p>
+                    </div>
                   )}
 
                   {(aiAnalysisError || aiCreateError) && (
-                    <Alert variant="destructive" className="mt-4">
+                    <Alert variant="destructive" className="mt-6">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        خطا در بارگذاری تحلیل هوش مصنوعی:{" "}
-                        {aiAnalysisError || aiCreateError}
+                        خطا در بارگذاری تحلیل هوش مصنوعی: {aiAnalysisError || aiCreateError}
                       </AlertDescription>
                     </Alert>
+                  )}
+
+                  {/* Analysis Stats */}
+                  {aiAnalysis.request_count !== undefined && aiAnalysis.max_requests !== undefined && (
+                    <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-blue-900 font-bold">
+                          {aiAnalysis.request_count} از {aiAnalysis.max_requests}
+                        </span>
+                        <span className="text-blue-700 font-medium">تعداد درخواست‌های تحلیل:</span>
+                      </div>
+                    </div>
                   )}
                 </CardContent>
               </Card>

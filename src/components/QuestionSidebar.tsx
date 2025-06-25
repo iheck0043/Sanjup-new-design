@@ -139,37 +139,56 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
 
   const [items, setItems] = React.useState<QuestionTypeItem[]>(questionTypes);
 
-  const QuestionTypeCard: React.FC<{ item: QuestionTypeItem }> = ({ item }) => (
-    <div
-      className={`flex items-center p-2.5 rounded-lg border cursor-move hover:shadow-sm hover:scale-[1.02] transition-all ${
-        item.color
-      } ${item.chosen ? "opacity-50" : ""}`}
-      onClick={() => !item.chosen && onAddQuestion(item.type)}
-    >
-      <div className="flex items-center gap-2 w-full">
-        <div className="flex-shrink-0 cursor-grab active:cursor-grabbing">
-          <GripVertical className="w-3 h-3 text-gray-400" />
+  const QuestionTypeCard: React.FC<{ item: QuestionTypeItem }> = ({ item }) => {
+    // Create dark mode versions of colors
+    const getDarkModeColors = (lightColors: string) => {
+      if (lightColors.includes('purple')) return 'dark:bg-purple-900/20 dark:border-purple-700 dark:hover:bg-purple-800/30 dark:hover:border-purple-600';
+      if (lightColors.includes('blue')) return 'dark:bg-blue-900/20 dark:border-blue-700 dark:hover:bg-blue-800/30 dark:hover:border-blue-600';
+      if (lightColors.includes('indigo')) return 'dark:bg-indigo-900/20 dark:border-indigo-700 dark:hover:bg-indigo-800/30 dark:hover:border-indigo-600';
+      if (lightColors.includes('green')) return 'dark:bg-green-900/20 dark:border-green-700 dark:hover:bg-green-800/30 dark:hover:border-green-600';
+      if (lightColors.includes('gray')) return 'dark:bg-gray-800/50 dark:border-gray-600 dark:hover:bg-gray-700/70 dark:hover:border-gray-500';
+      if (lightColors.includes('orange')) return 'dark:bg-orange-900/20 dark:border-orange-700 dark:hover:bg-orange-800/30 dark:hover:border-orange-600';
+      if (lightColors.includes('cyan')) return 'dark:bg-cyan-900/20 dark:border-cyan-700 dark:hover:bg-cyan-800/30 dark:hover:border-cyan-600';
+      if (lightColors.includes('pink')) return 'dark:bg-pink-900/20 dark:border-pink-700 dark:hover:bg-pink-800/30 dark:hover:border-pink-600';
+      if (lightColors.includes('yellow')) return 'dark:bg-yellow-900/20 dark:border-yellow-700 dark:hover:bg-yellow-800/30 dark:hover:border-yellow-600';
+      if (lightColors.includes('teal')) return 'dark:bg-teal-900/20 dark:border-teal-700 dark:hover:bg-teal-800/30 dark:hover:border-teal-600';
+      if (lightColors.includes('amber')) return 'dark:bg-amber-900/20 dark:border-amber-700 dark:hover:bg-amber-800/30 dark:hover:border-amber-600';
+      if (lightColors.includes('red')) return 'dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-800/30 dark:hover:border-red-600';
+      return 'dark:bg-gray-800/50 dark:border-gray-600 dark:hover:bg-gray-700/70 dark:hover:border-gray-500';
+    };
+
+    return (
+      <div
+        className={`flex items-center p-2.5 rounded-lg border cursor-move hover:shadow-sm hover:scale-[1.02] transition-all ${item.color} ${getDarkModeColors(item.color)} ${
+          item.chosen ? "opacity-50" : ""
+        }`}
+        onClick={() => !item.chosen && onAddQuestion(item.type)}
+      >
+        <div className="flex items-center gap-2 w-full">
+          <div className="flex-shrink-0 cursor-grab active:cursor-grabbing">
+            <GripVertical className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+          </div>
+          <div className="flex-shrink-0">{item.icon}</div>
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+            {item.label}
+          </span>
         </div>
-        <div className="flex-shrink-0">{item.icon}</div>
-        <span className="text-xs font-medium text-gray-700 truncate">
-          {item.label}
-        </span>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200/70 h-[calc(100vh-80px)] fixed top-20 right-0 flex flex-col">
-      <div className="p-4 border-b border-gray-200/50 flex-shrink-0">
+    <div className="w-96 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l border-gray-200/70 dark:border-gray-600/70 h-[calc(100vh-80px)] fixed top-20 right-0 flex flex-col">
+      <div className="p-4 border-b border-gray-200/50 dark:border-gray-600/50 flex-shrink-0">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
             <Sparkles className="w-3 h-3 text-white" />
           </div>
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
             انواع سوالات
           </h2>
         </div>
-        <p className="text-xs text-gray-500">سوال مورد نظر را بکشید به فرم</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">سوال مورد نظر را بکشید به فرم</p>
       </div>
 
       <div className="flex-1 p-4">

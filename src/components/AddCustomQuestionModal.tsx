@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
@@ -258,244 +258,309 @@ const AddCustomQuestionModal: React.FC<AddCustomQuestionModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-5xl max-h-[90vh] overflow-hidden"
+        className="max-w-6xl max-h-[95vh] overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col"
         dir="rtl"
       >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-right">
-            افزودن سوال سفارشی
-          </DialogTitle>
+        <DialogHeader className="pb-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <div className="text-left">
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center justify-start gap-3">
+              افزودن سوال سفارشی
+              <div className="w-10 h-10 bg-slate-700 dark:bg-slate-600 rounded-lg flex items-center justify-center">
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+            </DialogTitle>
+            <p className="text-gray-600 dark:text-gray-400 text-right mt-2">
+              سوال سفارشی خود را طراحی کنید و به مجموعه سوالات اضافه کنید
+            </p>
+          </div>
         </DialogHeader>
 
-        <div className="border-t pt-4">
-          <div className="flex flex-col lg:flex-row gap-6 max-h-[70vh] overflow-y-auto">
+        <div className="flex-1 flex flex-col min-h-0 pt-6">
+          <div className="flex flex-col xl:flex-row gap-8 flex-1 min-h-0">
             {/* Left Panel - Settings */}
-            <div className="lg:w-1/3 space-y-6 lg:border-l lg:pl-6">
-              <div>
-                <Label className="text-sm text-gray-600 mb-3 block">
-                  نوع سوال را انتخاب کنید
-                </Label>
-                <Select
-                  value={questionForm.type}
-                  onValueChange={(value) =>
-                    setQuestionForm((prev) => ({ ...prev, type: value }))
-                  }
-                  dir="rtl"
-                >
-                  <SelectTrigger className="text-right" dir="rtl">
-                    <SelectValue placeholder="نوع سوال" />
-                  </SelectTrigger>
-                  <SelectContent dir="rtl">
-                    {questionTypes.map((type) => (
-                      <SelectItem
-                        key={type.value}
-                        value={type.value}
-                        className="text-right"
-                      >
-                        {type.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator />
-
-              <div>
-                <Label className="text-sm text-gray-600 mb-4 block">
-                  تنظیمات
-                </Label>
-
-                <div className="flex items-center gap-3 mb-4">
-                  <Switch
-                    checked={questionForm.is_required}
-                    onCheckedChange={(checked) =>
-                      setQuestionForm((prev) => ({
-                        ...prev,
-                        is_required: checked,
-                      }))
-                    }
-                  />
-                  <Label className="text-sm">سوال اجباری</Label>
-                </div>
-
-                {questionForm.type === "multi" && (
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={questionForm.isMultiSelectQuestion}
-                      onCheckedChange={(checked) =>
-                        setQuestionForm((prev) => ({
-                          ...prev,
-                          isMultiSelectQuestion: checked,
-                        }))
+            <div className="xl:w-1/3 flex-shrink-0">
+              <Card className="border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800 h-fit">
+                <CardContent className="p-6 space-y-6">
+                  <div>
+                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 block flex items-center gap-2">
+                      <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                      نوع سوال را انتخاب کنید
+                    </Label>
+                    <Select
+                      value={questionForm.type}
+                      onValueChange={(value) =>
+                        setQuestionForm((prev) => ({ ...prev, type: value }))
                       }
-                    />
-                    <Label className="text-sm">سوال چند انتخابی</Label>
+                      dir="rtl"
+                    >
+                      <SelectTrigger className="text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg" dir="rtl">
+                        <SelectValue placeholder="نوع سوال" />
+                      </SelectTrigger>
+                      <SelectContent dir="rtl" className="rounded-lg">
+                        {questionTypes.map((type) => (
+                          <SelectItem
+                            key={type.value}
+                            value={type.value}
+                            className="text-right hover:bg-gray-100 dark:hover:bg-gray-700"
+                          >
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
-              </div>
+
+                  <Separator className="bg-gray-200 dark:bg-gray-700" />
+
+                  <div>
+                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-6 block flex items-center gap-2">
+                      <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                      تنظیمات سوال
+                    </Label>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-750 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center gap-3">
+                          <Switch
+                            checked={questionForm.is_required}
+                            onCheckedChange={(checked) =>
+                              setQuestionForm((prev) => ({
+                                ...prev,
+                                is_required: checked,
+                              }))
+                            }
+                            className="data-[state=checked]:bg-slate-700"
+                          />
+                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">سوال اجباری</Label>
+                        </div>
+                        <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                          <span className="text-red-600 dark:text-red-400 text-xs font-bold">!</span>
+                        </div>
+                      </div>
+
+                      {questionForm.type === "multi" && (
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-750 rounded-lg border border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center gap-3">
+                            <Switch
+                              checked={questionForm.isMultiSelectQuestion}
+                              onCheckedChange={(checked) =>
+                                setQuestionForm((prev) => ({
+                                  ...prev,
+                                  isMultiSelectQuestion: checked,
+                                }))
+                              }
+                              className="data-[state=checked]:bg-slate-700"
+                            />
+                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">سوال چند انتخابی</Label>
+                          </div>
+                          <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                            <span className="text-slate-600 dark:text-slate-400 text-xs font-bold">+</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Right Panel - Form */}
-            <div className="lg:w-2/3 space-y-6">
-              <div>
-                <Label className="text-sm text-gray-600 mb-3 block">
-                  {getQuestionTypeDescription()}
-                </Label>
-                <Input
-                  value={questionForm.title}
-                  onChange={(e) =>
-                    setQuestionForm((prev) => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
-                  placeholder="متن سوال"
-                  className="text-right"
-                  dir="rtl"
-                />
-              </div>
-
-              {/* Options for multi and prioritize */}
-              {(questionForm.type === "multi" ||
-                questionForm.type === "prioritize") && (
-                <div className="space-y-3">
-                  {questionForm.options.map((option, index) => (
-                    <div key={index} className="flex items-center gap-2">
+            <div className="xl:w-2/3 flex-1 min-h-0">
+              <div className="overflow-y-auto h-full max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                <Card className="border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">
+                  <CardContent className="p-6 space-y-6">
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 block flex items-center gap-2">
+                        <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                        {getQuestionTypeDescription()}
+                      </Label>
                       <Input
-                        value={option.value}
-                        onChange={(e) => updateOption(index, e.target.value)}
-                        placeholder="متن گزینه را وارد کنید"
-                        className="flex-1 text-right"
-                        dir="rtl"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addOption(index)}
-                        className="flex-shrink-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                      {index > 0 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeOption(index)}
-                          className="flex-shrink-0"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Range Slider Configuration */}
-              {questionForm.type === "range_slider" && (
-                <div className="space-y-6">
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block">
-                      گام های طیف (1 تا {questionForm.range_count})
-                    </Label>
-                    <div className="space-y-4">
-                      <input
-                        type="range"
-                        min="3"
-                        max="11"
-                        step="1"
-                        value={questionForm.range_count}
+                        value={questionForm.title}
                         onChange={(e) =>
                           setQuestionForm((prev) => ({
                             ...prev,
-                            range_count: parseInt(e.target.value),
+                            title: e.target.value,
                           }))
                         }
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                        dir="ltr"
+                        placeholder="متن سوال را اینجا وارد کنید"
+                        className="text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg"
+                        dir="rtl"
                       />
-                      <div className="flex justify-between text-xs text-blue-700">
-                        <span>راست</span>
-                        <span>وسط</span>
-                        <span>چپ</span>
-                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <Label className="text-sm font-medium mb-4 block">
-                      برچسب های طیف
-                    </Label>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Label className="w-12 text-sm">راست</Label>
-                        <Input
-                          value={questionForm.right_label}
-                          onChange={(e) =>
-                            setQuestionForm((prev) => ({
-                              ...prev,
-                              right_label: e.target.value,
-                            }))
-                          }
-                          placeholder="برچسب راست"
-                          maxLength={25}
-                          className="flex-1 text-right"
-                          dir="rtl"
-                        />
+                    {/* Options for multi and prioritize */}
+                    {(questionForm.type === "multi" || questionForm.type === "prioritize") && (
+                      <div className="space-y-4">
+                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                          گزینه‌های سوال
+                        </Label>
+                        <div className="space-y-3">
+                          {questionForm.options.map((option, index) => (
+                            <div key={index} className="flex items-center gap-3">
+                              <div className="relative flex-1">
+                                <Input
+                                  value={option.value}
+                                  onChange={(e) => updateOption(index, e.target.value)}
+                                  placeholder="متن گزینه را وارد کنید"
+                                  className="text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg pr-12"
+                                  dir="rtl"
+                                />
+                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                  {index + 1}
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addOption(index)}
+                                className="flex-shrink-0 h-12 w-12 rounded-lg border-gray-300 dark:border-gray-600 text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-slate-400 dark:hover:border-slate-500"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                              {index > 0 && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeOption(index)}
+                                  className="flex-shrink-0 h-12 w-12 rounded-lg border-gray-300 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Label className="w-12 text-sm">وسط</Label>
-                        <Input
-                          value={questionForm.middle_label}
-                          onChange={(e) =>
-                            setQuestionForm((prev) => ({
-                              ...prev,
-                              middle_label: e.target.value,
-                            }))
-                          }
-                          placeholder="برچسب وسط"
-                          maxLength={25}
-                          className="flex-1 text-right"
-                          dir="rtl"
-                        />
+                    )}
+
+                    {/* Range Slider Configuration */}
+                    {questionForm.type === "range_slider" && (
+                      <div className="space-y-8">
+                        <div className="bg-gray-50 dark:bg-gray-750 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 block flex items-center gap-2">
+                            <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                            تعداد گام‌های طیف (1 تا {questionForm.range_count})
+                          </Label>
+                          <div className="space-y-4">
+                            <input
+                              type="range"
+                              min="3"
+                              max="11"
+                              step="1"
+                              value={questionForm.range_count}
+                              onChange={(e) =>
+                                setQuestionForm((prev) => ({
+                                  ...prev,
+                                  range_count: parseInt(e.target.value),
+                                }))
+                              }
+                              className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                              dir="ltr"
+                            />
+                            <div className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+                              <span className="bg-white dark:bg-gray-800 px-3 py-1 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">راست</span>
+                              <span className="bg-white dark:bg-gray-800 px-3 py-1 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">وسط</span>
+                              <span className="bg-white dark:bg-gray-800 px-3 py-1 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">چپ</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50 dark:bg-gray-750 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-6 block flex items-center gap-2">
+                            <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                            برچسب‌های طیف
+                          </Label>
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                                <span className="text-slate-600 dark:text-slate-400 text-sm font-bold">راست</span>
+                              </div>
+                              <Input
+                                value={questionForm.right_label}
+                                onChange={(e) =>
+                                  setQuestionForm((prev) => ({
+                                    ...prev,
+                                    right_label: e.target.value,
+                                  }))
+                                }
+                                placeholder="برچسب راست (مثال: بسیار خوب)"
+                                maxLength={25}
+                                className="flex-1 text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg"
+                                dir="rtl"
+                              />
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                <span className="text-gray-600 dark:text-gray-400 text-sm font-bold">وسط</span>
+                              </div>
+                              <Input
+                                value={questionForm.middle_label}
+                                onChange={(e) =>
+                                  setQuestionForm((prev) => ({
+                                    ...prev,
+                                    middle_label: e.target.value,
+                                  }))
+                                }
+                                placeholder="برچسب وسط (مثال: متوسط)"
+                                maxLength={25}
+                                className="flex-1 text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg"
+                                dir="rtl"
+                              />
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                <span className="text-gray-600 dark:text-gray-400 text-sm font-bold">چپ</span>
+                              </div>
+                              <Input
+                                value={questionForm.left_label}
+                                onChange={(e) =>
+                                  setQuestionForm((prev) => ({
+                                    ...prev,
+                                    left_label: e.target.value,
+                                  }))
+                                }
+                                placeholder="برچسب چپ (مثال: بسیار بد)"
+                                maxLength={25}
+                                className="flex-1 text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg"
+                                dir="rtl"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Label className="w-12 text-sm">چپ</Label>
-                        <Input
-                          value={questionForm.left_label}
-                          onChange={(e) =>
-                            setQuestionForm((prev) => ({
-                              ...prev,
-                              left_label: e.target.value,
-                            }))
-                          }
-                          placeholder="برچسب چپ"
-                          maxLength={25}
-                          className="flex-1 text-right"
-                          dir="rtl"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t" dir="rtl">
+        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800" dir="rtl">
           <Button
             onClick={createQuestionData}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white px-8 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 h-12"
           >
-            {loading ? "در حال ذخیره..." : "ذخیره"}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                در حال ذخیره...
+              </div>
+            ) : (
+              "ذخیره سوال"
+            )}
           </Button>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            بازگشت
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            disabled={loading}
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-8 py-3 rounded-lg font-medium h-12"
+          >
+            انصراف
           </Button>
         </div>
       </DialogContent>

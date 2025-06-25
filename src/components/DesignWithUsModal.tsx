@@ -139,50 +139,56 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
-        <form onSubmit={handleSubmit} className="flex flex-col h-[80vh]">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b bg-white">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onOpenChange(false)}
-              className="h-8 w-8"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <h2 className="text-xl font-bold">درخواست طراحی نظرسنجی</h2>
-            <div className="w-8" /> {/* Spacer */}
+      <DialogContent className="max-w-3xl max-h-[95vh] p-0 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
+        <form onSubmit={handleSubmit} className="flex flex-col h-[85vh]">
+          {/* Luxury Header */}
+          <div className="flex items-center justify-between p-8 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-indigo-50/50 to-indigo-100/30 dark:from-indigo-900/20 dark:to-indigo-800/10">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">درخواست طراحی نظرسنجی</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">همکاری با تیم متخصص سنجاپ</p>
+              </div>
+            </div>
+            <div className="w-12" /> {/* Spacer */}
           </div>
 
-          {/* Alert */}
-          <div className="p-6 bg-blue-50 border-b">
-            <div className="flex items-center gap-3 text-blue-800">
-              <Users className="h-5 w-5" />
-              <p className="text-sm">
-                برای طراحی نظرسنجی شما، لطفا به چند سوال زیر پاسخ بدهید
-              </p>
+          {/* Luxury Alert */}
+          <div className="p-8 bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/20 dark:to-blue-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center gap-4 text-indigo-800 dark:text-indigo-200">
+              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
+                <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <p className="text-base font-medium">
+                  برای طراحی نظرسنجی شما، لطفا به چند سوال زیر پاسخ بدهید
+                </p>
+                <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">
+                  تمام فیلدها اجباری هستند
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Form Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Luxury Form Content */}
+          <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-br from-slate-50/30 to-white dark:from-slate-900/30 dark:to-slate-800/30">
             {/* Category */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">
-                دسته بندی نظرسنجی شما <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-slate-900 dark:text-white block">
+                دسته بندی نظرسنجی شما <span className="text-indigo-500">*</span>
               </Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => handleInputChange("category", value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="دسته بندی" />
+                <SelectTrigger className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500">
+                  <SelectValue placeholder="دسته بندی را انتخاب کنید" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl">
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
+                    <SelectItem key={category} value={category} className="text-base">
                       {category}
                     </SelectItem>
                   ))}
@@ -191,30 +197,26 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
             </div>
 
             {/* Goals */}
-            <div>
-              <Label htmlFor="goals" className="text-sm font-medium mb-2 block">
-                اهداف اصلی خود را بنویسید{" "}
-                <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <Label htmlFor="goals" className="text-base font-semibold text-slate-900 dark:text-white block">
+                اهداف اصلی خود را بنویسید <span className="text-indigo-500">*</span>
               </Label>
               <Textarea
                 id="goals"
                 value={formData.goals}
                 onChange={(e) => handleInputChange("goals", e.target.value)}
                 placeholder="اهداف اصلی خود را به طور مفصل شرح دهید"
-                rows={4}
+                rows={5}
                 maxLength={100}
                 required
+                className="text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500 resize-none"
               />
             </div>
 
             {/* Audience */}
-            <div>
-              <Label
-                htmlFor="audience"
-                className="text-sm font-medium mb-2 block"
-              >
-                مخاطب محصول/خدمات شما چه کسانی هستند؟{" "}
-                <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <Label htmlFor="audience" className="text-base font-semibold text-slate-900 dark:text-white block">
+                مخاطب محصول/خدمات شما چه کسانی هستند؟ <span className="text-indigo-500">*</span>
               </Label>
               <Input
                 id="audience"
@@ -223,14 +225,14 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
                 placeholder="گروه هدف و مخاطبان خود را معرفی کنید"
                 maxLength={100}
                 required
+                className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500"
               />
             </div>
 
             {/* Brand */}
-            <div>
-              <Label htmlFor="brand" className="text-sm font-medium mb-2 block">
-                نام سازمان یا برند شما چیست؟{" "}
-                <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <Label htmlFor="brand" className="text-base font-semibold text-slate-900 dark:text-white block">
+                نام سازمان یا برند شما چیست؟ <span className="text-indigo-500">*</span>
               </Label>
               <Input
                 id="brand"
@@ -239,29 +241,31 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
                 placeholder="نام شرکت، سازمان یا برند خود را وارد کنید"
                 maxLength={100}
                 required
+                className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500"
               />
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="border-t p-6 bg-gray-50">
-            <div className="flex justify-end gap-3">
+          {/* Luxury Footer */}
+          <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-8 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-900/50 dark:to-slate-800/50 backdrop-blur-sm">
+            <div className="flex justify-end gap-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
+                className="h-12 px-8 text-lg font-medium bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200"
               >
                 بستن
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2"
+                className="h-12 px-8 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center gap-3"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     در حال ارسال...
                   </>
                 ) : (

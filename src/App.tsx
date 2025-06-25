@@ -100,7 +100,7 @@ function App() {
             }
           />
         </Routes>
-        <Toaster position="top-center" />
+        <Toaster position="top-center" theme="system" />
       </AuthProvider>
     </Router>
   );

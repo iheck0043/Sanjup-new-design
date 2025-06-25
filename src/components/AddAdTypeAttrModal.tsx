@@ -25,7 +25,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Monitor, MessageSquare, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
@@ -365,229 +365,286 @@ const AddAdTypeAttrModal: React.FC<AddAdTypeAttrModalProps> = ({
   }, [isOpen, adTypeAttributes]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog  open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-4xl max-h-[90vh] overflow-hidden"
+        className="max-w-5xl max-h-[95vh] overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col"
         dir="rtl"
       >
-        <DialogHeader className="text-right">
-          <DialogTitle className="text-xl font-bold text-right">
-            افزودن ویژگی
-          </DialogTitle>
+        <DialogHeader  className="text-right pb-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <div className="text-left">
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center justify-start gap-3">
+              افزودن ویژگی تبلیغ
+              <div className="w-10 h-10 bg-slate-700 dark:bg-slate-600 rounded-lg flex items-center justify-center">
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+            </DialogTitle>
+            <p className="text-gray-600 dark:text-gray-400 text-right mt-2">
+              ویژگی‌های مورد نظر خود را از نمونه‌های آماده انتخاب کنید یا ویژگی جدید بسازید
+            </p>
+          </div>
         </DialogHeader>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-          dir="rtl"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="templates" className="text-right">
-              نمونه آماده
-            </TabsTrigger>
-            <TabsTrigger value="new" className="text-right">
-              ساخت جدید
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex-1 flex flex-col min-h-0">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full mt-6 flex-1 flex flex-col"
+            dir="rtl"
+          >
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg h-12 flex-shrink-0">
+              <TabsTrigger 
+                value="templates" 
+                className="text-right rounded-md font-medium text-gray-600 dark:text-gray-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-slate-800 dark:data-[state=active]:text-white data-[state=active]:shadow-sm transition-all duration-200"
+              >
+                <Monitor className="w-4 h-4 ml-2" />
+                نمونه‌های آماده
+              </TabsTrigger>
+              <TabsTrigger 
+                value="new" 
+                className="text-right rounded-md font-medium text-gray-600 dark:text-gray-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-slate-800 dark:data-[state=active]:text-white data-[state=active]:shadow-sm transition-all duration-200"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                ساخت جدید
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="overflow-y-auto max-h-[60vh] mt-4">
-            <TabsContent value="templates" className="mt-0">
-              <div className="space-y-4">
-                {adTypeAttributes.length > 0 ? (
-                  adTypeAttributes.map((attr) => (
-                    <Collapsible
-                      key={attr.id}
-                      open={expandedItems.includes(attr.id)}
-                      onOpenChange={() => toggleExpanded(attr.id)}
-                    >
-                      <Card className="border border-gray-200">
-                        <CollapsibleTrigger asChild>
-                          <CardHeader className="cursor-pointer hover:bg-gray-50 py-4">
-                            <div
-                              className="flex items-center justify-between"
-                              dir="rtl"
-                            >
-                              <div className="flex items-center gap-3">
-                                <Checkbox
-                                  checked={selectedAttributes.includes(attr.id)}
-                                  onCheckedChange={() =>
-                                    toggleAttributeSelection(attr.id)
-                                  }
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                                <Badge className="bg-blue-50 text-blue-800 border-blue-200">
-                                  {attr.name}
-                                </Badge>
-                              </div>
-                              <div className="flex-1 ml-4 text-right">
-                                {attr.question.map((q, qIndex) => (
-                                  <div key={qIndex} className="mb-2 text-right">
-                                    {renderDynamicTitle(q.question, q.id)}
+            <div className="flex-1 mt-6 min-h-0">
+              <TabsContent value="templates" className="mt-0 h-full">
+                <div className="overflow-y-auto h-full max-h-[50vh] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                  <div className="space-y-4 pr-2">
+                    {adTypeAttributes.length > 0 ? (
+                      adTypeAttributes.map((attr) => (
+                        <Collapsible
+                          key={attr.id}
+                          open={expandedItems.includes(attr.id)}
+                          onOpenChange={() => toggleExpanded(attr.id)}
+                        >
+                          <Card className="border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 bg-white dark:bg-gray-800">
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 py-5 border-r-4 border-transparent hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200">
+                                <div className="flex items-center justify-between" dir="rtl">
+                                  <div className="flex items-center gap-4">
+                                    <Checkbox
+                                      checked={selectedAttributes.includes(attr.id)}
+                                      onCheckedChange={() => toggleAttributeSelection(attr.id)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="data-[state=checked]:bg-slate-700 data-[state=checked]:border-slate-700 w-5 h-5"
+                                    />
+                                    <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-3 py-1 font-medium text-sm">
+                                      {attr.name}
+                                    </Badge>
                                   </div>
-                                ))}
-                              </div>
-                              {expandedItems.includes(attr.id) ? (
-                                <ChevronUp className="w-4 h-4" />
-                              ) : (
-                                <ChevronDown className="w-4 h-4" />
-                              )}
-                            </div>
-                          </CardHeader>
-                        </CollapsibleTrigger>
-
-                        <CollapsibleContent>
-                          <CardContent className="pt-0" dir="rtl">
-                            {attr.question[0]?.question_type ===
-                              "single_select" && attr.question[0]?.options ? (
-                              <div className="text-right">
-                                <div className="mb-2 text-sm font-medium text-right">
-                                  گزینه های سوال:
-                                </div>
-                                <div className="flex flex-wrap gap-2 justify-end">
-                                  {attr.question[0].options.map(
-                                    (option, oIndex) => (
-                                      <div
-                                        key={oIndex}
-                                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-700 text-right"
-                                      >
-                                        {option.value}
+                                  <div className="flex-1 mr-6 text-right">
+                                    {attr.question.map((q, qIndex) => (
+                                      <div key={qIndex} className="mb-2 text-right">
+                                        <div className="text-gray-800 dark:text-gray-200 font-medium">
+                                          {renderDynamicTitle(q.question, q.id)}
+                                        </div>
                                       </div>
-                                    )
-                                  )}
+                                    ))}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                      {expandedItems.includes(attr.id) ? (
+                                        <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                      ) : (
+                                        <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            ) : (
-                              <div className="pl-5 text-sm text-gray-600 text-right">
-                                سوال متنی است
-                              </div>
-                            )}
-                          </CardContent>
-                        </CollapsibleContent>
-                      </Card>
-                    </Collapsible>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    هنوز ویژگی‌ای برای این نوع تست تعریف نشده است
-                  </div>
-                )}
-              </div>
-            </TabsContent>
+                              </CardHeader>
+                            </CollapsibleTrigger>
 
-            <TabsContent value="new" className="mt-0">
-              <Card>
-                <CardContent className="p-6 space-y-6" dir="rtl">
-                  <div className="text-right">
-                    <Label className="text-sm text-gray-600 mb-2 block text-right">
-                      نام ویژگی را وارد کنید
-                    </Label>
-                    <Input
-                      value={newAttrForm.attribute}
-                      onChange={(e) =>
-                        setNewAttrForm((prev) => ({
-                          ...prev,
-                          attribute: e.target.value,
-                        }))
-                      }
-                      placeholder="نام ویژگی"
-                      className="max-w-md text-right"
-                      dir="rtl"
-                    />
+                            <CollapsibleContent>
+                              <CardContent className="pt-0 pb-6 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700" dir="rtl">
+                                {attr.question[0]?.question_type === "single_select" && attr.question[0]?.options ? (
+                                  <div className="text-right">
+                                    <div className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
+                                      گزینه‌های سوال:
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      {attr.question[0].options.map((option, oIndex) => (
+                                        <div
+                                          key={oIndex}
+                                          className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-3 text-sm text-gray-700 dark:text-gray-300 text-right hover:border-slate-300 dark:hover:border-slate-500 transition-colors duration-200"
+                                        >
+                                          • {option.value}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-right">
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                      <div className="w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                                        <MessageSquare className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+                                      </div>
+                                      این سوال از نوع متنی است
+                                    </div>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
+                      ))
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mx-auto mb-4">
+                          <Monitor className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          هنوز ویژگی‌ای تعریف نشده
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          برای این نوع تست هنوز ویژگی‌ای تعریف نشده است
+                        </p>
+                      </div>
+                    )}
                   </div>
+                </div>
+              </TabsContent>
 
-                  <div className="text-right">
-                    <Label className="text-sm text-gray-600 mb-2 block text-right">
-                      نوع سوال را انتخاب کنید
-                    </Label>
-                    <Select
-                      value={newAttrForm.questionType}
-                      onValueChange={(value) =>
-                        setNewAttrForm((prev) => ({
-                          ...prev,
-                          questionType: value,
-                        }))
-                      }
-                      dir="rtl"
-                    >
-                      <SelectTrigger className="max-w-md text-right" dir="rtl">
-                        <SelectValue placeholder="نوع سوال" />
-                      </SelectTrigger>
-                      <SelectContent dir="rtl">
-                        {questionTypes.map((type) => (
-                          <SelectItem
-                            key={type.value}
-                            value={type.value}
-                            className="text-right"
-                          >
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="text-right">
-                    <Label className="text-sm text-gray-600 mb-2 block text-right">
-                      {getQuestionTypeText()}
-                    </Label>
-                    <Input
-                      value={newAttrForm.title}
-                      onChange={(e) =>
-                        setNewAttrForm((prev) => ({
-                          ...prev,
-                          title: e.target.value,
-                        }))
-                      }
-                      placeholder="متن سوال را وارد کنید"
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-
-                  {newAttrForm.questionType === "attribute" && (
-                    <div className="space-y-3 text-right">
-                      <Label className="text-sm text-gray-600 text-right">
-                        گزینه‌های سوال:
-                      </Label>
-                      {newAttrForm.options.map((option, index) => (
+              <TabsContent value="new" className="mt-0 h-full">
+                <div className="overflow-y-auto h-full max-h-[50vh] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                  <Card className="border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">
+                    <CardContent className="p-8 space-y-8" dir="rtl">
+                      <div className="text-right">
+                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block text-right flex items-center gap-2">
+                          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                          نام ویژگی را وارد کنید
+                        </Label>
                         <Input
-                          key={index}
-                          value={option.value}
-                          onChange={(e) => {
-                            const newOptions = [...newAttrForm.options];
-                            newOptions[index].value = e.target.value;
+                          value={newAttrForm.attribute}
+                          onChange={(e) =>
                             setNewAttrForm((prev) => ({
                               ...prev,
-                              options: newOptions,
-                            }));
-                          }}
-                          placeholder={`گزینه ${
-                            ["اول", "دوم", "سوم", "چهارم", "پنجم"][index] ||
-                            index + 1
-                          }`}
-                          className="max-w-md text-right"
+                              attribute: e.target.value,
+                            }))
+                          }
+                          placeholder="مثال: کیفیت تصویر، جذابیت رنگ"
+                          className="max-w-md text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg"
                           dir="rtl"
                         />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </div>
-        </Tabs>
+                      </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t" dir="rtl">
+                      <div className="text-right">
+                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block text-right flex items-center gap-2">
+                          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                          نوع سوال را انتخاب کنید
+                        </Label>
+                        <Select
+                          value={newAttrForm.questionType}
+                          onValueChange={(value) =>
+                            setNewAttrForm((prev) => ({
+                              ...prev,
+                              questionType: value,
+                            }))
+                          }
+                          dir="rtl"
+                        >
+                          <SelectTrigger className="max-w-md text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg" dir="rtl">
+                            <SelectValue placeholder="نوع سوال را انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent dir="rtl" className="rounded-lg">
+                            {questionTypes.map((type) => (
+                              <SelectItem
+                                key={type.value}
+                                value={type.value}
+                                className="text-right hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="text-right">
+                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block text-right flex items-center gap-2">
+                          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                          {getQuestionTypeText()}
+                        </Label>
+                        <Input
+                          value={newAttrForm.title}
+                          onChange={(e) =>
+                            setNewAttrForm((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
+                          placeholder="متن سوال را وارد کنید"
+                          className="text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg"
+                          dir="rtl"
+                        />
+                      </div>
+
+                      {newAttrForm.questionType === "attribute" && (
+                        <div className="space-y-4 text-right">
+                          <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 text-right flex items-center gap-2">
+                            <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                            گزینه‌های سوال:
+                          </Label>
+                          <div className="space-y-3">
+                            {newAttrForm.options.map((option, index) => (
+                              <div key={index} className="relative">
+                                <Input
+                                  value={option.value}
+                                  onChange={(e) => {
+                                    const newOptions = [...newAttrForm.options];
+                                    newOptions[index].value = e.target.value;
+                                    setNewAttrForm((prev) => ({
+                                      ...prev,
+                                      options: newOptions,
+                                    }));
+                                  }}
+                                  placeholder={`گزینه ${
+                                    ["اول", "دوم", "سوم", "چهارم", "پنجم"][index] ||
+                                    index + 1
+                                  }`}
+                                  className="max-w-md text-right h-12 border-gray-300 dark:border-gray-600 focus:border-slate-500 dark:focus:border-slate-400 rounded-lg pr-12"
+                                  dir="rtl"
+                                />
+                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                  {index + 1}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
+
+        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800" dir="rtl">
           <Button
             onClick={handleSave}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white px-8 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 h-12"
           >
-            {loading ? "در حال ذخیره..." : "ذخیره"}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                در حال ذخیره...
+              </div>
+            ) : (
+              "ذخیره ویژگی"
+            )}
           </Button>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            بازگشت
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            disabled={loading}
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-8 py-3 rounded-lg font-medium h-12"
+          >
+            انصراف
           </Button>
         </div>
       </DialogContent>

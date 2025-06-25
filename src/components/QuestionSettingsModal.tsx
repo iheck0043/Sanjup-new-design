@@ -292,14 +292,6 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         dir="rtl"
       >
         <div className="flex h-full">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            className="absolute left-4 top-4 z-10 w-8 h-8 p-0 rounded-full bg-white shadow-md hover:bg-gray-50"
-          >
-            <X className="w-4 h-4" />
-          </Button>
 
           <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
             <QuestionHeader
