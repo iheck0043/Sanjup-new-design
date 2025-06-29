@@ -288,26 +288,33 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-none max-h-none w-screen h-screen p-0 m-0 rounded-none"
+        className="xl:max-w-[97%] xl:max-h-[97%] max-h-full max-w-full w-full h-full  "
         dir="rtl"
       >
-        <div className="flex h-full">
-
-          <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col h-full">
-            <QuestionHeader
-              question={localQuestion}
-              isNewQuestion={isNewQuestion}
-              inputRef={inputRef}
-              onUpdateField={handleUpdateField}
-            />
-
-            <ScrollArea className="flex-1">
-              <QuestionSettingsSidebar
+        <div className="flex h-full w-full overflow-hidden">
+          {/* Left Sidebar with Settings */}
+          <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col">
+            {/* Header section - fixed */}
+            <div className="flex-shrink-0">
+              <QuestionHeader
                 question={localQuestion}
+                isNewQuestion={isNewQuestion}
+                inputRef={inputRef}
                 onUpdateField={handleUpdateField}
               />
-            </ScrollArea>
+            </div>
 
+            {/* Scrollable content section */}
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <QuestionSettingsSidebar
+                  question={localQuestion}
+                  onUpdateField={handleUpdateField}
+                />
+              </ScrollArea>
+            </div>
+
+            {/* Fixed footer with Save and Cancel buttons */}
             <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="flex gap-2">
                 <Button
@@ -328,7 +335,10 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
             </div>
           </div>
 
-          <QuestionPreview question={localQuestion} />
+          {/* Right side Preview */}
+          <div className="flex-1 overflow-hidden">
+            <QuestionPreview question={localQuestion} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -832,7 +832,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   // console.log("Nested items count:", nestedItems.length);
 
   return (
-    <div className="p-6">
+    <div className="p-6 2xl:pl-48">
       {questions.length === 0 ? (
         <ReactSortable
           list={[]}

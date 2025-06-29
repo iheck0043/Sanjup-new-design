@@ -18,22 +18,34 @@ export default function UserMenu() {
   const initials =
     user.first_name && user.last_name
       ? `${user.first_name[0]}${user.last_name[0]}`
-      : "کاربر";
+      : user.first_name
+      ? user.first_name[0]
+      : "ک";
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="cursor-pointer">
-          <AvatarFallback>{initials}</AvatarFallback>
+        <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-gray-300 transition-all">
+          <AvatarFallback className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium">
+            {initials}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate("/profile")}>
-          <User className="mr-2 h-4 w-4" />
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+          <User className="h-4 w-4" />
           پروفایل
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={logout}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-red-600 cursor-pointer"
+        >
+          <LogOut className="h-4 w-4" />
           خروج
         </DropdownMenuItem>
       </DropdownMenuContent>

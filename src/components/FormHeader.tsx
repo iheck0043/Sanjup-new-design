@@ -3,6 +3,7 @@ import { ArrowLeft, Eye, Edit3, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./ui/theme-toggle";
+import UserMenu from "./UserMenu";
 
 interface Step {
   id: number;
@@ -90,7 +91,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
         ))}
       </div>
 
-      {/* Theme Toggle and Preview Button */}
+      {/* Theme Toggle, Preview Button and User Menu */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
         <Button
@@ -101,6 +102,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
           <Eye className="w-3.5 h-3.5" />
           <span className="text-sm">پیش‌نمایش</span>
         </Button>
+        <UserMenu />
       </div>
     </div>
   );

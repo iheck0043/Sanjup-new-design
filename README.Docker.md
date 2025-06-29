@@ -213,3 +213,118 @@ docker run -d --name form-farsi-builder -p 80:80 form-farsi-builder:latest
 1. بررسی logs: `make logs`
 2. بررسی health: `make health`  
 3. پاک کردن و شروع مجدد: `make clean && make setup-prod` 
+
+# راهنمای استفاده از Docker
+
+این پروژه شامل پیکربندی کامل Docker برای اجرای اپلیکیشن React/TypeScript است.
+
+## فایل‌های Docker
+
+- `Dockerfile`: فایل اصلی Docker با سه مرحله (builder, development, production)
+- `docker-compose.yml`: پیکربندی کامپوز برای اجرای آسان
+- `nginx.conf`: پیکربندی nginx برای سرو کردن اپلیکیشن
+- `.dockerignore`: فایل‌هایی که باید از build context حذف شوند
+
+## مراحل Build
+
+### 1. Builder Stage
+- استفاده از Node.js 18 Alpine
+- نصب dependencies و build اپلیکیشن
+
+### 2. Development Stage  
+- محیط توسعه با hot reload
+- پورت 8080
+
+### 3. Production Stage
+- استفاده از nginx برای سرو کردن فایل‌های static
+- پورت 80
+- بهینه‌سازی برای production
+
+## دستورات
+
+### Build کردن image
+
+```bash
+# Build production image
+docker build -t form-builder:production .
+
+# Build development image
+docker build --target development -t form-builder:dev .
+```
+
+### اجرای Container
+
+```bash
+# Production
+docker run -p 80:80 form-builder:production
+
+# Development
+docker run -p 8080:8080 form-builder:dev
+```
+
+### استفاده از Docker Compose
+
+```bash
+# اجرای production
+docker-compose up -d
+
+# اجرای development
+docker-compose -f docker-compose.dev.yml up -d
+
+# نمایش logs
+docker-compose logs -f
+
+# توقف containers
+docker-compose down
+```
+
+## ویژگی‌های nginx
+
+- **Client-side routing**: پشتیبانی از React Router
+- **Gzip compression**: فشرده‌سازی فایل‌ها
+- **Static caching**: کش طولانی‌مدت برای assets
+- **Security headers**: هدرهای امنیتی
+- **Health check**: بررسی سلامت container
+
+## متغیرهای محیطی
+
+می‌توانید متغیرهای محیطی را در docker-compose.yml تنظیم کنید:
+
+```yaml
+environment:
+  - NODE_ENV=production
+  - REACT_APP_API_URL=https://api.example.com
+```
+
+## پورت‌ها
+
+- **Development**: 8080
+- **Production**: 80
+- **Health check**: `/` endpoint
+
+## بهینه‌سازی
+
+- استفاده از multi-stage build برای کاهش حجم image
+- Alpine images برای کاهش حجم
+- .dockerignore برای سرعت بیشتر build
+- nginx برای سرعت بالا در production
+
+## عیب‌یابی
+
+```bash
+# وارد شدن به container
+docker exec -it form-farsi-builder sh
+
+# نمایش logs
+docker logs form-farsi-builder
+
+# بررسی nginx configuration
+docker exec form-farsi-builder nginx -t
+```
+
+## یادداشت‌ها
+
+- پروژه از Vite به عنوان bundler استفاده می‌کند
+- پشتیبانی از RTL و زبان فارسی
+- آماده برای deploy در production
+- قابلیت scale کردن با docker-compose 

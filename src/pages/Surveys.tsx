@@ -68,6 +68,7 @@ import AISurveyModal from "@/components/AISurveyModal";
 import DesignWithUsModal from "@/components/DesignWithUsModal";
 import UploadSurveyModal from "@/components/UploadSurveyModal";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import UserMenu from "@/components/UserMenu";
 
 // Helper function to convert English numbers to Persian
 const toPersianNumbers = (str: string | number) => {
@@ -100,7 +101,7 @@ const Surveys = () => {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [apiLoading, setApiLoading] = useState(false);
   const [adTestLoading, setAdTestLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
   // Add style to prevent body scroll issues and add shimmer animation
   useEffect(() => {
@@ -416,9 +417,17 @@ const Surveys = () => {
         <div className="text-center">
           <div className="relative inline-block mb-8">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 dark:border-slate-700 border-t-slate-600 dark:border-t-slate-400 mx-auto"></div>
-            <div className="absolute inset-4 animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-slate-600 border-b-slate-500 dark:border-b-slate-400" style={{animationDirection: 'reverse', animationDuration: '1.5s'}}></div>
+            <div
+              className="absolute inset-4 animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-slate-600 border-b-slate-500 dark:border-b-slate-400"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
           </div>
-          <p className="text-slate-700 dark:text-slate-300 text-xl font-medium">در حال ایجاد تست تبلیغات...</p>
+          <p className="text-slate-700 dark:text-slate-300 text-xl font-medium">
+            در حال ایجاد تست تبلیغات...
+          </p>
         </div>
       </div>
     );
@@ -431,9 +440,9 @@ const Surveys = () => {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           {/* Logo */}
           <div className="flex items-center">
-            <img 
-              src="/Logo-Sanjup-blue.png" 
-              alt="سنجاپ" 
+            <img
+              src="/Logo-Sanjup-blue.png"
+              alt="سنجاپ"
               className="h-10 w-auto"
             />
           </div>
@@ -441,28 +450,7 @@ const Surveys = () => {
           {/* Theme Toggle and User Menu */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1.5 px-2 py-1.5"
-                >
-                  <User className="w-4 h-4" />
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem className="flex items-center gap-2">
-                  <Settings className="w-3.5 h-3.5" />
-                  <span className="text-sm">پروفایل</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2 text-red-600">
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span className="text-sm">خروج</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <UserMenu />
           </div>
         </div>
       </div>
@@ -490,23 +478,25 @@ const Surveys = () => {
                 {/* View Mode Toggle */}
                 <div className="flex items-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg p-0.5 border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
                   <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className={`px-3 py-2 rounded-md transition-all duration-200 ${viewMode === 'grid' 
-                      ? 'bg-slate-700 dark:bg-slate-600 shadow-md text-white hover:bg-slate-800 dark:hover:bg-slate-700' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                    onClick={() => setViewMode("grid")}
+                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                      viewMode === "grid"
+                        ? "bg-slate-700 dark:bg-slate-600 shadow-md text-white hover:bg-slate-800 dark:hover:bg-slate-700"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                     }`}
                   >
                     <Grid3X3 className="w-3.5 h-3.5" />
                   </Button>
                   <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    variant={viewMode === "list" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={`px-3 py-2 rounded-md transition-all duration-200 ${viewMode === 'list' 
-                      ? 'bg-slate-700 dark:bg-slate-600 shadow-md text-white hover:bg-slate-800 dark:hover:bg-slate-700' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                    onClick={() => setViewMode("list")}
+                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                      viewMode === "list"
+                        ? "bg-slate-700 dark:bg-slate-600 shadow-md text-white hover:bg-slate-800 dark:hover:bg-slate-700"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                     }`}
                   >
                     <List className="w-3.5 h-3.5" />
@@ -524,8 +514,8 @@ const Surveys = () => {
                     onCloseAutoFocus={(e) => e.preventDefault()}
                   >
                     {questionnaireStatuses.map((status) => (
-                      <SelectItem 
-                        key={status.value} 
+                      <SelectItem
+                        key={status.value}
                         value={status.value}
                         className="hover:bg-slate-100 dark:hover:bg-slate-700/50 focus:bg-slate-100 dark:focus:bg-slate-700/50 rounded-md text-sm"
                       >
@@ -546,15 +536,15 @@ const Surveys = () => {
             >
               {/* Subtle background animation */}
               <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 via-slate-500/10 to-slate-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
+
               {/* Professional icon */}
               <div className="w-8 h-8 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/20">
                 <Plus className="w-5 h-5" />
               </div>
-              
+
               {/* Text */}
               <span className="text-xl font-semibold">ایجاد نظرسنجی جدید</span>
-              
+
               {/* Subtle accent */}
               <div className="absolute top-4 right-4 w-1 h-1 bg-white/30 rounded-full"></div>
               <div className="absolute bottom-4 left-4 w-0.5 h-0.5 bg-white/20 rounded-full"></div>
@@ -562,8 +552,8 @@ const Surveys = () => {
           </div>
 
           {/* Grid View Component */}
-          {viewMode === 'grid' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          {viewMode === "grid" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
               {questionnaires.map((questionnaire, index) => {
                 const statusConfig = getStatusConfig(questionnaire.status);
                 const typeConfig = getQuestionnaireTypeConfig(questionnaire);
@@ -573,152 +563,155 @@ const Surveys = () => {
                   <Card
                     key={questionnaire.id}
                     ref={isLast ? lastQuestionnaireRef : null}
-                    className="group relative border border-slate-200/50 dark:border-slate-700/50 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm overflow-hidden rounded-3xl transform hover:-translate-y-2 hover:scale-[1.02]"
+                    className="group relative border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-200 bg-white dark:bg-slate-900 rounded-lg cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 hover:-translate-y-1"
+                    onClick={() => handleQuestionnaireClick(questionnaire)}
                   >
-                    {/* Subtle background accent */}
-                    <div className={`absolute inset-0 opacity-2 ${
-                      questionnaire.default_questionnaire ? 'bg-gradient-to-br from-amber-200 to-amber-300' :
-                      questionnaire.questionnaire_type === 'billboard' ? 'bg-gradient-to-br from-slate-200 to-slate-300' :
-                      questionnaire.questionnaire_type === 'video' ? 'bg-gradient-to-br from-slate-200 to-slate-300' :
-                      questionnaire.questionnaire_type === 'logo' ? 'bg-gradient-to-br from-slate-200 to-slate-300' :
-                      questionnaire.questionnaire_type === 'brand' ? 'bg-gradient-to-br from-slate-200 to-slate-300' :
-                      questionnaire.questionnaire_type === 'slogan' ? 'bg-gradient-to-br from-slate-200 to-slate-300' :
-                      'bg-gradient-to-br from-slate-200 to-slate-300'
-                    }`}></div>
-
-                    <CardContent className="p-0 relative">
-                      {/* Header with luxury design */}
-                      <div 
-                        className="p-8 cursor-pointer relative"
-                        onClick={() => handleQuestionnaireClick(questionnaire)}
-                      >
+                    <CardContent
+                      className={`p-4 relative ${
+                        questionnaire.default_questionnaire
+                          ? "bg-amber-50/20 dark:bg-amber-950/10"
+                          : questionnaire.questionnaire_type !== "usual"
+                          ? "bg-blue-50/20 dark:bg-blue-950/10"
+                          : ""
+                      }`}
+                    >
+                      {/* Header with compact design */}
+                      <div className="space-y-3">
                         {/* Top badges row */}
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-3">
-                            {/* Type Badge - only for demo and ad tests */}
-                            {(questionnaire.default_questionnaire || questionnaire.questionnaire_type !== 'usual') && (
-                              <div className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold ${
-                                questionnaire.default_questionnaire 
-                                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800' 
-                                  : 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-                              } shadow-sm backdrop-blur-sm`}>
-                                <div className="w-5 h-5 flex items-center justify-center">
-                                  {questionnaire.default_questionnaire ? <Crown className="w-4 h-4" /> : typeConfig.icon}
-                                </div>
-                                {questionnaire.default_questionnaire ? 'نمونه' : typeConfig.label}
+                        <div className="flex items-center justify-between">
+                          {/* Type Badge - only for demo and ad tests */}
+                          {(questionnaire.default_questionnaire ||
+                            questionnaire.questionnaire_type !== "usual") && (
+                            <div
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                                questionnaire.default_questionnaire
+                                  ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                                  : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                              }`}
+                            >
+                              <div className="w-2.5 h-2.5 flex items-center justify-center">
+                                {questionnaire.default_questionnaire ? (
+                                  <Crown className="w-2.5 h-2.5" />
+                                ) : (
+                                  typeConfig.icon
+                                )}
                               </div>
-                            )}
-                          </div>
-                          
+                              {questionnaire.default_questionnaire
+                                ? "نمونه"
+                                : typeConfig.label}
+                            </div>
+                          )}
+
                           {/* Status with refined styling */}
-                          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-medium ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border} shadow-sm backdrop-blur-sm`}>
-                            <div className={`w-2.5 h-2.5 rounded-full ${statusConfig.dot} ${questionnaire.status === 'published' ? 'animate-pulse' : ''}`}></div>
+                          <div
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}
+                          >
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                statusConfig.dot
+                              } ${
+                                questionnaire.status === "published"
+                                  ? "animate-pulse"
+                                  : ""
+                              }`}
+                            ></div>
                             {statusConfig.label}
                           </div>
                         </div>
 
                         {/* Title with luxury typography */}
-                        <h3 className="font-bold text-slate-900 dark:text-white text-xl mb-6 line-clamp-3 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors duration-300 leading-tight min-h-[4.5rem]">
+                        <h3
+                          className="font-semibold text-slate-900 dark:text-white text-lg mb-3 line-clamp-2 leading-tight"
+                          title={questionnaire.title}
+                        >
                           {questionnaire.title}
                         </h3>
 
-                        {/* Refined Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div className="bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl p-4 text-center border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                            <div className="flex items-center justify-center mb-2">
-                              <div className="w-8 h-8 bg-slate-600 dark:bg-slate-500 rounded-xl flex items-center justify-center shadow-sm">
-                                <Eye className="w-4 h-4 text-white" />
-                              </div>
-                            </div>
-                            <div className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              {toPersianNumbers(questionnaire.questionnaire_completed.answer_count)}
-                            </div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">پاسخ دریافتی</div>
-                          </div>
-                          <div className="bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl p-4 text-center border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                            <div className="flex items-center justify-center mb-2">
-                              <div className="w-8 h-8 bg-slate-600 dark:bg-slate-500 rounded-xl flex items-center justify-center shadow-sm">
-                                <TrendingUp className="w-4 h-4 text-white" />
-                              </div>
-                            </div>
-                            <div className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              {toPersianNumbers(questionnaire.questionnaire_completed.percent)}%
-                            </div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">پیشرفت</div>
-                          </div>
+                        {/* Simple Stats Row */}
+                        <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-3">
+                          <span>
+                            {toPersianNumbers(
+                              questionnaire.questionnaire_completed.answer_count
+                            )}{" "}
+                            از{" "}
+                            {toPersianNumbers(
+                              questionnaire.questionnaire_completed.user_limit
+                            )}{" "}
+                            نفر
+                          </span>
+                          <span className="font-medium">
+                            {toPersianNumbers(
+                              questionnaire.questionnaire_completed.percent
+                            )}
+                            % تکمیل
+                          </span>
                         </div>
 
-                        {/* Refined Progress Bar */}
-                        <div className="mb-6">
-                          <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">
-                            <span>
-                              {toPersianNumbers(questionnaire.questionnaire_completed.answer_count)} از {toPersianNumbers(questionnaire.questionnaire_completed.user_limit)} نفر
-                            </span>
-                            <span className="text-slate-700 dark:text-slate-300 font-bold">
-                              {toPersianNumbers(questionnaire.questionnaire_completed.percent)}%
-                            </span>
-                          </div>
+                        {/* Progress Bar */}
+                        <div className="mb-4">
                           <div className="relative">
-                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 shadow-inner">
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                               <div
-                                className="bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm relative overflow-hidden"
+                                className="bg-blue-500 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
                                 style={{
                                   width: `${questionnaire.questionnaire_completed.percent}%`,
                                 }}
-                              >
-                                {/* Subtle shimmer effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer"></div>
-                              </div>
+                              ></div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Date with refined design */}
-                        <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-                          <div className="w-7 h-7 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                            <Calendar className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                          </div>
-                          <span className="font-medium">ایجاد شده در {new Date(questionnaire.created * 1000).toLocaleDateString("fa-IR")}</span>
+                        {/* Date with compact design */}
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <Calendar className="w-3 h-3" />
+                          <span>
+                            {new Date(
+                              questionnaire.created * 1000
+                            ).toLocaleDateString("fa-IR")}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Refined Action Buttons - Show only on hover */}
-                      <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-6 bg-slate-50/50 dark:bg-slate-800/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      {/* Action Buttons - Show only on hover */}
+                      <div className="border-t border-slate-200 dark:border-slate-700 pt-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="flex items-center justify-between">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/questionnaire/${questionnaire.id}/results`)}
-                            className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(
+                                `/questionnaire/${questionnaire.id}/results`
+                              );
+                            }}
+                            className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-all duration-200"
                           >
-                            <BarChart3 className="w-4 h-4" />
-                            مشاهده نتایج
+                            <BarChart3 className="w-3.5 h-3.5" />
+                            نتایج
                           </Button>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-10 h-10 rounded-xl transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-8 h-8 rounded-lg transition-all duration-200"
                               title="کپی نظرسنجی"
                             >
-                              <Copy className="w-4 h-4" />
+                              <Copy className="w-3.5 h-3.5" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteSurvey(questionnaire.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-10 h-10 rounded-xl transition-all duration-200 hover:shadow-md border border-red-200/50 dark:border-red-800/50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSurvey(questionnaire.id);
+                              }}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-8 h-8 rounded-lg transition-all duration-200"
                               title="حذف نظرسنجی"
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-10 h-10 rounded-xl transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
-                              title="گزینه‌های بیشتر"
-                            >
-                              <MoreVertical className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </div>
                         </div>
@@ -744,16 +737,16 @@ const Surveys = () => {
                 <div className="absolute -top-3 -right-3 w-4 h-4 bg-slate-400 dark:bg-slate-500 rounded-full shadow-lg opacity-60"></div>
                 <div className="absolute -bottom-3 -left-3 w-3 h-3 bg-slate-500 dark:bg-slate-400 rounded-full shadow-lg opacity-60"></div>
               </div>
-              
+
               <h3 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
                 شروع کار با نظرسنجی‌ها
               </h3>
               <p className="text-slate-600 dark:text-slate-400 mb-12 text-center max-w-2xl text-lg leading-relaxed">
-                هنوز نظرسنجی‌ای ندارید. با ایجاد اولین نظرسنجی خود، 
+                هنوز نظرسنجی‌ای ندارید. با ایجاد اولین نظرسنجی خود،
                 <br />
                 شروع به جمع‌آوری بازخوردهای ارزشمند کاربران کنید.
               </p>
-              
+
               {/* Professional CTA Button */}
               <Button
                 onClick={() => setIsMainModalOpen(true)}
@@ -764,7 +757,7 @@ const Surveys = () => {
                 </div>
                 ایجاد اولین نظرسنجی
               </Button>
-              
+
               {/* Minimal decorative elements */}
               <div className="absolute inset-0 pointer-events-none opacity-30">
                 <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
@@ -774,190 +767,205 @@ const Surveys = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* List View */}
-              {viewMode === 'list' && questionnaires.map((questionnaire, index) => {
-                const statusConfig = getStatusConfig(questionnaire.status);
-                const typeConfig = getQuestionnaireTypeConfig(questionnaire);
-                const isLast = index === questionnaires.length - 1;
+              {viewMode === "list" &&
+                questionnaires.map((questionnaire, index) => {
+                  const statusConfig = getStatusConfig(questionnaire.status);
+                  const typeConfig = getQuestionnaireTypeConfig(questionnaire);
+                  const isLast = index === questionnaires.length - 1;
 
-                return (
-                  <Card
-                    key={questionnaire.id}
-                    ref={isLast ? lastQuestionnaireRef : null}
-                    className="group relative border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl overflow-hidden transform hover:-translate-y-1"
-                  >
-                    {/* Refined subtle background */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-50/30 to-slate-100/30 dark:from-slate-800/30 dark:to-slate-700/30 opacity-50"></div>
+                  return (
+                    <Card
+                      key={questionnaire.id}
+                      ref={isLast ? lastQuestionnaireRef : null}
+                      className="group relative border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl overflow-hidden transform hover:-translate-y-1"
+                    >
+                      {/* Refined subtle background */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-50/30 to-slate-100/30 dark:from-slate-800/30 dark:to-slate-700/30 opacity-50"></div>
 
-                    {/* Professional left border indicator */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                      questionnaire.default_questionnaire ? 'bg-amber-500' :
-                      'bg-slate-600 dark:bg-slate-500'
-                    }`}></div>
+                      {/* Professional left border indicator */}
+                      <div
+                        className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                          questionnaire.default_questionnaire
+                            ? "bg-amber-500"
+                            : "bg-slate-600 dark:bg-slate-500"
+                        }`}
+                      ></div>
 
-                    <CardContent className="p-6 relative">
-                      <div className="flex items-center justify-between gap-6">
-                        {/* Title and Type - Left side */}
-                        <div className="flex items-center min-w-0 flex-1 gap-5">
-                          {/* Professional Type Icon */}
-                          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0">
-                            <div className={`w-7 h-7 ${
-                              questionnaire.default_questionnaire ? 'text-amber-600 dark:text-amber-500' :
-                              'text-slate-600 dark:text-slate-400'
-                            }`}>
-                              {questionnaire.default_questionnaire ? <Crown className="w-7 h-7" /> : typeConfig.icon}
-                            </div>
-                          </div>
-
-                          <div 
-                            className="cursor-pointer flex-1 min-w-0"
-                            onClick={() => handleQuestionnaireClick(questionnaire)}
-                          >
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors truncate mb-3">
-                              {questionnaire.title}
-                            </h3>
-                            <div className="flex items-center gap-3 flex-wrap">
-                              {/* Type badge - only for demo and ad tests */}
-                              {(questionnaire.default_questionnaire || questionnaire.questionnaire_type !== 'usual') && (
-                                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium ${
-                                  questionnaire.default_questionnaire 
-                                    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800' 
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-                                } shadow-sm`}>
-                                  {questionnaire.default_questionnaire ? 'نمونه' : typeConfig.label}
-                                </div>
-                              )}
-                              {/* Status with refined styling */}
-                              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border shadow-sm`}>
-                                <div className={`w-2 h-2 rounded-full ${statusConfig.dot} ${questionnaire.status === 'published' ? 'animate-pulse' : ''}`}></div>
-                                {statusConfig.label}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Stats and Status - Right side */}
-                        <div className="flex items-center gap-8 text-sm flex-shrink-0">
-                          {/* Stats Cards - Professional and refined */}
-                          <div className="flex items-center gap-6">
-                            {/* Answers */}
-                            <div className="bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="w-8 h-8 bg-slate-600 dark:bg-slate-500 rounded-xl flex items-center justify-center shadow-sm">
-                                  <Eye className="w-4 h-4 text-white" />
-                                </div>
-                                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                                  پاسخ
-                                </span>
-                              </div>
-                              <div className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                                {toPersianNumbers(
-                                  questionnaire.questionnaire_completed
-                                    .answer_count
-                                )}{" "}
-                                از{" "}
-                                {toPersianNumbers(
-                                  questionnaire.questionnaire_completed
-                                    .user_limit
+                      <CardContent
+                        className={`p-4 relative ${
+                          questionnaire.default_questionnaire
+                            ? "bg-amber-50/20 dark:bg-amber-950/10"
+                            : questionnaire.questionnaire_type !== "usual"
+                            ? "bg-blue-50/20 dark:bg-blue-950/10"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          {/* Title and Type - Left side */}
+                          <div className="flex items-center min-w-0 flex-1 gap-3">
+                            {/* Compact Type Icon */}
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex-shrink-0">
+                              <div
+                                className={`w-5 h-5 ${
+                                  questionnaire.default_questionnaire
+                                    ? "text-amber-600 dark:text-amber-500"
+                                    : "text-slate-600 dark:text-slate-400"
+                                }`}
+                              >
+                                {questionnaire.default_questionnaire ? (
+                                  <Crown className="w-5 h-5" />
+                                ) : (
+                                  typeConfig.icon
                                 )}
                               </div>
                             </div>
 
-                            {/* Progress */}
-                            <div className="bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="w-8 h-8 bg-slate-600 dark:bg-slate-500 rounded-xl flex items-center justify-center shadow-sm">
-                                  <TrendingUp className="w-4 h-4 text-white" />
-                                </div>
-                                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                                  پیشرفت
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                                  {toPersianNumbers(
-                                    questionnaire.questionnaire_completed.percent
-                                  )}
-                                  %
-                                </span>
-                                <div className="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
+                            <div
+                              className="cursor-pointer flex-1 min-w-0"
+                              onClick={() =>
+                                handleQuestionnaireClick(questionnaire)
+                              }
+                            >
+                              <h3 className="text-lg font-bold text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors truncate mb-2">
+                                {questionnaire.title}
+                              </h3>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {/* Type badge - only for demo and ad tests */}
+                                {(questionnaire.default_questionnaire ||
+                                  questionnaire.questionnaire_type !==
+                                    "usual") && (
                                   <div
-                                    className="bg-slate-600 dark:bg-slate-500 h-2.5 rounded-full transition-all duration-500"
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                                      questionnaire.default_questionnaire
+                                        ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                                    }`}
+                                  >
+                                    {questionnaire.default_questionnaire
+                                      ? "نمونه"
+                                      : typeConfig.label}
+                                  </div>
+                                )}
+                                {/* Status with refined styling */}
+                                <div
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border`}
+                                >
+                                  <div
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      statusConfig.dot
+                                    } ${
+                                      questionnaire.status === "published"
+                                        ? "animate-pulse"
+                                        : ""
+                                    }`}
+                                  ></div>
+                                  {statusConfig.label}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Stats - Right side */}
+                          <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                            {/* Compact Stats */}
+                            <div className="flex items-center gap-4">
+                              {/* Answers */}
+                              <div className="text-center">
+                                <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                  {toPersianNumbers(
+                                    questionnaire.questionnaire_completed
+                                      .answer_count
+                                  )}{" "}
+                                  از{" "}
+                                  {toPersianNumbers(
+                                    questionnaire.questionnaire_completed
+                                      .user_limit
+                                  )}{" "}
+                                  نفر
+                                </div>
+                              </div>
+
+                              {/* Progress */}
+                              <div className="text-center">
+                                <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                  {toPersianNumbers(
+                                    questionnaire.questionnaire_completed
+                                      .percent
+                                  )}
+                                  % تکمیل
+                                </div>
+                                <div className="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                  <div
+                                    className="bg-blue-500 dark:bg-blue-400 h-1.5 rounded-full transition-all duration-300"
                                     style={{
                                       width: `${questionnaire.questionnaire_completed.percent}%`,
                                     }}
                                   ></div>
                                 </div>
                               </div>
-                            </div>
 
-                            {/* Date */}
-                            <div className="bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="w-8 h-8 bg-slate-600 dark:bg-slate-500 rounded-xl flex items-center justify-center shadow-sm">
-                                  <Calendar className="w-4 h-4 text-white" />
+                              {/* Date */}
+                              <div className="text-center">
+                                <div className="text-sm text-slate-600 dark:text-slate-400">
+                                  {new Date(
+                                    questionnaire.created * 1000
+                                  ).toLocaleDateString("fa-IR")}
                                 </div>
-                                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                                  تاریخ ایجاد
-                                </span>
-                              </div>
-                              <div className="text-lg font-semibold text-slate-700 dark:text-slate-300">
-                                {new Date(
-                                  questionnaire.created * 1000
-                                ).toLocaleDateString("fa-IR")}
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Action Buttons - Show only on hover */}
-                        <div className="flex items-center gap-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-3 group-hover:translate-x-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              navigate(
-                                `/questionnaire/${questionnaire.id}/results`
-                              )
-                            }
-                            className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 hover:shadow-md flex items-center gap-2 border border-slate-200/50 dark:border-slate-600/50"
-                            title="مشاهده نتایج"
-                          >
-                            <BarChart3 className="w-4 h-4" />
-                            نتایج
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-11 h-11 rounded-xl transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
-                            title="کپی نظرسنجی"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteSurvey(questionnaire.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-11 h-11 rounded-xl transition-all duration-200 hover:shadow-md border border-red-200/50 dark:border-red-800/50"
-                            title="حذف نظرسنجی"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-11 h-11 rounded-xl transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
-                            title="گزینه‌های بیشتر"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
+                          {/* Action Buttons - Show only on hover */}
+                          <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                navigate(
+                                  `/questionnaire/${questionnaire.id}/results`
+                                )
+                              }
+                              className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-center gap-1"
+                              title="مشاهده نتایج"
+                            >
+                              <BarChart3 className="w-3.5 h-3.5" />
+                              نتایج
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-8 h-8 rounded-lg transition-all duration-200"
+                              title="کپی نظرسنجی"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleDeleteSurvey(questionnaire.id)
+                              }
+                              className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-8 h-8 rounded-lg transition-all duration-200"
+                              title="حذف نظرسنجی"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-11 h-11 rounded-xl transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
+                              title="گزینه‌های بیشتر"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
             </div>
           )}
 
@@ -968,10 +976,18 @@ const Surveys = () => {
                 {/* Main spinner */}
                 <div className="animate-spin rounded-full h-14 w-14 border-4 border-slate-200 dark:border-slate-700 border-t-slate-600 dark:border-t-slate-400 mx-auto mb-6"></div>
                 {/* Inner spinner */}
-                <div className="absolute inset-3 animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-slate-600 border-b-slate-500 dark:border-b-slate-400" style={{animationDirection: 'reverse', animationDuration: '1.5s'}}></div>
+                <div
+                  className="absolute inset-3 animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-slate-600 border-b-slate-500 dark:border-b-slate-400"
+                  style={{
+                    animationDirection: "reverse",
+                    animationDuration: "1.5s",
+                  }}
+                ></div>
               </div>
               <div className="space-y-3">
-                <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">در حال بارگذاری نظرسنجی‌های بیشتر...</p>
+                <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">
+                  در حال بارگذاری نظرسنجی‌های بیشتر...
+                </p>
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-2 h-2 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce delay-100"></div>
@@ -987,8 +1003,12 @@ const Surveys = () => {
       <Dialog open={isMainModalOpen} onOpenChange={setIsMainModalOpen}>
         <DialogContent className="sm:max-w-5xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
           <DialogHeader className="pb-6 border-b border-slate-200/50 dark:border-slate-700/50">
-            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white text-right">انتخاب نوع نظرسنجی</DialogTitle>
-            <p className="text-slate-600 dark:text-slate-400 text-right mt-2">نوع نظرسنجی مورد نظر خود را انتخاب کنید</p>
+            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white text-right">
+              انتخاب نوع نظرسنجی
+            </DialogTitle>
+            <p className="text-slate-600 dark:text-slate-400 text-right mt-2">
+              نوع نظرسنجی مورد نظر خود را انتخاب کنید
+            </p>
           </DialogHeader>
           <div className="grid gap-6 py-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1006,12 +1026,19 @@ const Surveys = () => {
                     <FileText className="w-8 h-8 text-blue-700 dark:text-blue-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">نظرسنجی خام</div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                      نظرسنجی خام
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
                       ساخت نظرسنجی توسط شما
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={apiLoading} className="w-10 h-10 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={apiLoading}
+                    className="w-10 h-10 rounded-xl"
+                  >
                     {apiLoading ? (
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-600"></div>
                     ) : (
@@ -1034,12 +1061,19 @@ const Surveys = () => {
                     <Target className="w-8 h-8 text-emerald-700 dark:text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">نظرسنجی آماده</div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                      نظرسنجی آماده
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
                       استفاده از نظرسنجی های تخصصی آماده
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={apiLoading} className="w-10 h-10 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={apiLoading}
+                    className="w-10 h-10 rounded-xl"
+                  >
                     <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </CardContent>
@@ -1057,12 +1091,19 @@ const Surveys = () => {
                     <Monitor className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">تست تبلیغات</div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                      تست تبلیغات
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
                       نظرسنجی آماده جهت تست تبلیغات قبل از اکران تبلیغ
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={adTestLoading} className="w-10 h-10 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={adTestLoading}
+                    className="w-10 h-10 rounded-xl"
+                  >
                     {adTestLoading ? (
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-600"></div>
                     ) : (
@@ -1092,7 +1133,12 @@ const Surveys = () => {
                       طراحی نظرسنجی با کمک هوش مصنوعی
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={apiLoading} className="w-10 h-10 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={apiLoading}
+                    className="w-10 h-10 rounded-xl"
+                  >
                     <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </CardContent>
@@ -1111,12 +1157,19 @@ const Surveys = () => {
                     <Building className="w-8 h-8 text-indigo-700 dark:text-indigo-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">طراحی نظرسنجی با ما</div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                      طراحی نظرسنجی با ما
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
                       طراحی نظرسنجی توسط کارشناسان سنجاپ
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={apiLoading} className="w-10 h-10 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={apiLoading}
+                    className="w-10 h-10 rounded-xl"
+                  >
                     <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </CardContent>
@@ -1135,12 +1188,19 @@ const Surveys = () => {
                     <Upload className="w-8 h-8 text-orange-700 dark:text-orange-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">بارگذاری نظرسنجی</div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                      بارگذاری نظرسنجی
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
                       وارد کردن نظرسنجی از طریق لینک پرسلاین یا فایل ورد
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={apiLoading} className="w-10 h-10 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={apiLoading}
+                    className="w-10 h-10 rounded-xl"
+                  >
                     <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </CardContent>
@@ -1154,8 +1214,12 @@ const Surveys = () => {
       <Dialog open={isNameModalOpen} onOpenChange={setIsNameModalOpen}>
         <DialogContent className="sm:max-w-[500px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
           <DialogHeader className="pb-6 border-b border-slate-200/50 dark:border-slate-700/50">
-            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white text-right">نام نظرسنجی خام</DialogTitle>
-            <p className="text-slate-600 dark:text-slate-400 text-right mt-2">عنوان نظرسنجی خود را وارد کنید</p>
+            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white text-right">
+              نام نظرسنجی خام
+            </DialogTitle>
+            <p className="text-slate-600 dark:text-slate-400 text-right mt-2">
+              عنوان نظرسنجی خود را وارد کنید
+            </p>
           </DialogHeader>
           <div className="grid gap-6 py-6">
             <div className="grid gap-4">

@@ -2426,8 +2426,6 @@ const Index = () => {
     }
   };
 
-
-
   const openConditionModal = useCallback((question: Question | ApiQuestion) => {
     console.log("🔄 openConditionModal called with:", question);
     console.log("🔍 Question id:", question.id);
@@ -2464,7 +2462,9 @@ const Index = () => {
 
     return (
       <div className="flex items-center gap-2">
-        <span className="text-gray-900 dark:text-white font-medium">{question.title}</span>
+        <span className="text-gray-900 dark:text-white font-medium">
+          {question.title}
+        </span>
         {question.is_required && (
           <span className="text-red-500 text-sm">*</span>
         )}
