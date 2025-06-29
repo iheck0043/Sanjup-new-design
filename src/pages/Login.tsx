@@ -20,6 +20,7 @@ import {
   BarChart3,
   Target,
 } from "lucide-react";
+import LogoSanjup from "@/assets/Logo-Sanjup.png";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -139,13 +140,9 @@ export default function Login() {
         {/* Logo */}
         <div className="relative z-10">
           <img
-            src="/Logo-Sanjup.png"
+            src={LogoSanjup}
             alt="سنجاپ"
             className="h-12 w-auto brightness-0 invert"
-            onError={(e) => {
-              console.error("Logo loading failed:", e);
-              e.currentTarget.style.display = "none";
-            }}
           />
         </div>
 
@@ -205,13 +202,9 @@ export default function Login() {
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <img
-              src="/Logo-Sanjup.png"
+              src={LogoSanjup}
               alt="سنجاپ"
               className="h-10 w-auto mx-auto mb-4"
-              onError={(e) => {
-                console.error("Mobile logo loading failed:", e);
-                e.currentTarget.style.display = "none";
-              }}
             />
             <h1 className="text-2xl font-bold text-slate-900">
               پلتفرم طراحی و انتشار نظرسنجی

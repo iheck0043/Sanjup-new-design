@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check-static": "node scripts/check-static-files.js"
+    "check-static": "node scripts/check-static-files.cjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

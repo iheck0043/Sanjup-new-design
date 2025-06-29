@@ -69,6 +69,7 @@ import DesignWithUsModal from "@/components/DesignWithUsModal";
 import UploadSurveyModal from "@/components/UploadSurveyModal";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import UserMenu from "@/components/UserMenu";
+import LogoSanjupBlue from "@/assets/Logo-Sanjup-blue.png";
 
 // Helper function to convert English numbers to Persian
 const toPersianNumbers = (str: string | number) => {
@@ -440,15 +441,7 @@ const Surveys = () => {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           {/* Logo */}
           <div className="flex items-center">
-            <img
-              src="/Logo-Sanjup-blue.png"
-              alt="سنجاپ"
-              className="h-10 w-auto"
-              onError={(e) => {
-                console.error("Header logo loading failed:", e);
-                e.currentTarget.style.display = "none";
-              }}
-            />
+            <img src={LogoSanjupBlue} alt="سنجاپ" className="h-10 w-auto" />
           </div>
 
           {/* Theme Toggle and User Menu */}
