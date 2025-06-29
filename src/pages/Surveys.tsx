@@ -69,17 +69,7 @@ import DesignWithUsModal from "@/components/DesignWithUsModal";
 import UploadSurveyModal from "@/components/UploadSurveyModal";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import UserMenu from "@/components/UserMenu";
-import LogoSanjupBlue from "@/assets/Logo-Sanjup-blue.png";
-
-// Helper function to convert English numbers to Persian
-const toPersianNumbers = (str: string | number) => {
-  const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
-  const englishDigits = "0123456789";
-
-  return str.toString().replace(/[0-9]/g, (digit) => {
-    return persianDigits[englishDigits.indexOf(digit)];
-  });
-};
+import { toPersianNumbers } from "@/hooks/use-persian-input";
 
 const Surveys = () => {
   const navigate = useNavigate();
@@ -104,7 +94,7 @@ const Surveys = () => {
   const [adTestLoading, setAdTestLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
-  // Add style to prevent body scroll issues and add shimmer animation
+  // Add style to prevent body scroll issues
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
@@ -113,13 +103,6 @@ const Surveys = () => {
       }
       body[data-scroll-locked] {
         padding-right: 0 !important;
-      }
-      @keyframes shimmer {
-        0% { transform: translateX(-100%) skewX(-12deg); }
-        100% { transform: translateX(200%) skewX(-12deg); }
-      }
-      .animate-shimmer {
-        animation: shimmer 2s infinite;
       }
     `;
     document.head.appendChild(style);
@@ -414,19 +397,12 @@ const Surveys = () => {
   // Show loading spinner when creating billboard test
   if (adTestLoading && !isMainModalOpen) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-900">
         <div className="text-center">
           <div className="relative inline-block mb-8">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 dark:border-slate-700 border-t-slate-600 dark:border-t-slate-400 mx-auto"></div>
-            <div
-              className="absolute inset-4 animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-slate-600 border-b-slate-500 dark:border-b-slate-400"
-              style={{
-                animationDirection: "reverse",
-                animationDuration: "1.5s",
-              }}
-            ></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 dark:border-slate-700 border-t-[#0466C8] mx-auto"></div>
           </div>
-          <p className="text-slate-700 dark:text-slate-300 text-xl font-medium">
+          <p className="text-gray-700 dark:text-slate-300 text-xl font-medium">
             در حال ایجاد تست تبلیغات...
           </p>
         </div>
@@ -435,17 +411,21 @@ const Surveys = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Fixed Top Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 px-4 sm:px-6 py-3 shadow-sm">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-white/20 dark:border-slate-700/50 px-4 sm:px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           {/* Logo */}
           <div className="flex items-center">
-            <img src={LogoSanjupBlue} alt="سنجاپ" className="h-10 w-auto" />
+            <img
+              src="/Logo-Sanjup-blue.png"
+              alt="سنجاپ"
+              className="h-8 w-auto"
+            />
           </div>
 
           {/* Theme Toggle and User Menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
             <UserMenu />
           </div>
@@ -453,60 +433,60 @@ const Surveys = () => {
       </div>
 
       {/* Main Content with top padding for fixed header */}
-      <div className="pt-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="mb-6 mt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 dark:from-slate-500 dark:to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <BarChart3 className="w-5 h-5 text-white" />
+          <div className="mb-8 mt-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#0466C8] to-[#0456B8] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                  <BarChart3 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     نظرسنجی‌های من
-                  </h2>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">
+                  </h1>
+                  <p className="text-gray-600 dark:text-slate-300">
                     مدیریت و تحلیل نظرسنجی‌های شما
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {/* View Mode Toggle */}
-                <div className="flex items-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg p-0.5 border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
+                <div className="flex items-center bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl p-1 border border-white/50 dark:border-slate-700/50 shadow-sm">
                   <Button
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
-                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       viewMode === "grid"
-                        ? "bg-slate-700 dark:bg-slate-600 shadow-md text-white hover:bg-slate-800 dark:hover:bg-slate-700"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                        ? "bg-[#0466C8] text-white shadow-sm"
+                        : "text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50"
                     }`}
                   >
-                    <Grid3X3 className="w-3.5 h-3.5" />
+                    <Grid3X3 className="w-4 h-4" />
                   </Button>
                   <Button
                     variant={viewMode === "list" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("list")}
-                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       viewMode === "list"
-                        ? "bg-slate-700 dark:bg-slate-600 shadow-md text-white hover:bg-slate-800 dark:hover:bg-slate-700"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                        ? "bg-[#0466C8] text-white shadow-sm"
+                        : "text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50"
                     }`}
                   >
-                    <List className="w-3.5 h-3.5" />
+                    <List className="w-4 h-4" />
                   </Button>
                 </div>
 
                 {/* Status Filter */}
                 <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="w-[180px] h-9 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-lg rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-400 dark:focus:border-slate-500 transition-all duration-200">
+                  <SelectTrigger className="w-[200px] h-11 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#0466C8]/20 focus:border-[#0466C8] shadow-sm">
                     <SelectValue placeholder="وضعیت" />
                   </SelectTrigger>
                   <SelectContent
-                    className="z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl rounded-lg"
+                    className="z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-white/50 dark:border-slate-700/50 rounded-xl shadow-xl"
                     sideOffset={5}
                     onCloseAutoFocus={(e) => e.preventDefault()}
                   >
@@ -514,7 +494,7 @@ const Surveys = () => {
                       <SelectItem
                         key={status.value}
                         value={status.value}
-                        className="hover:bg-slate-100 dark:hover:bg-slate-700/50 focus:bg-slate-100 dark:focus:bg-slate-700/50 rounded-md text-sm"
+                        className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 focus:bg-gray-50/50 dark:focus:bg-gray-700/50 text-sm py-2 rounded-lg"
                       >
                         {status.label}
                       </SelectItem>
@@ -525,32 +505,30 @@ const Surveys = () => {
             </div>
           </div>
 
-          {/* New Survey Button */}
-          <div className="relative mb-6">
-            <Button
-              onClick={() => setIsMainModalOpen(true)}
-              className="relative bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-900 hover:to-black text-white px-6 py-6 rounded-xl font-bold flex items-center justify-center gap-3 shadow-2xl hover:shadow-3xl transition-all duration-300 w-full h-20 transform hover:-translate-y-1 overflow-hidden group border border-slate-600/20"
-            >
-              {/* Subtle background animation */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 via-slate-500/10 to-slate-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              {/* Professional icon */}
-              <div className="w-8 h-8 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/20">
-                <Plus className="w-5 h-5" />
-              </div>
-
-              {/* Text */}
-              <span className="text-xl font-semibold">ایجاد نظرسنجی جدید</span>
-
-              {/* Subtle accent */}
-              <div className="absolute top-4 right-4 w-1 h-1 bg-white/30 rounded-full"></div>
-              <div className="absolute bottom-4 left-4 w-0.5 h-0.5 bg-white/20 rounded-full"></div>
-            </Button>
-          </div>
-
           {/* Grid View Component */}
           {viewMode === "grid" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              {/* New Survey Button for Grid View */}
+              <Card
+                className="cursor-pointer border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105"
+                onClick={() => setIsMainModalOpen(true)}
+              >
+                <CardContent className="p-5 flex flex-col items-center justify-center h-[260px]">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#0466C8] to-[#0456B8] rounded-lg flex items-center justify-center mb-3">
+                    <Plus className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
+                    ایجاد نظرسنجی جدید
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-slate-300 text-center mb-3">
+                    شروع نظرسنجی جدید
+                  </p>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-[#0466C8]/10 to-[#0456B8]/10 text-[#0466C8] border border-[#0466C8]/20 backdrop-blur-sm">
+                    <Sparkles className="w-3 h-3" />
+                    کلیک کنید
+                  </div>
+                </CardContent>
+              </Card>
               {questionnaires.map((questionnaire, index) => {
                 const statusConfig = getStatusConfig(questionnaire.status);
                 const typeConfig = getQuestionnaireTypeConfig(questionnaire);
@@ -560,19 +538,10 @@ const Surveys = () => {
                   <Card
                     key={questionnaire.id}
                     ref={isLast ? lastQuestionnaireRef : null}
-                    className="group relative border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-200 bg-white dark:bg-slate-900 rounded-lg cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 hover:-translate-y-1"
+                    className="group border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all hover:scale-105"
                     onClick={() => handleQuestionnaireClick(questionnaire)}
                   >
-                    <CardContent
-                      className={`p-4 relative ${
-                        questionnaire.default_questionnaire
-                          ? "bg-amber-50/20 dark:bg-amber-950/10"
-                          : questionnaire.questionnaire_type !== "usual"
-                          ? "bg-blue-50/20 dark:bg-blue-950/10"
-                          : ""
-                      }`}
-                    >
-                      {/* Header with compact design */}
+                    <CardContent className="p-5">
                       <div className="space-y-3">
                         {/* Top badges row */}
                         <div className="flex items-center justify-between">
@@ -580,10 +549,10 @@ const Surveys = () => {
                           {(questionnaire.default_questionnaire ||
                             questionnaire.questionnaire_type !== "usual") && (
                             <div
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-normal backdrop-blur-sm ${
                                 questionnaire.default_questionnaire
-                                  ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
-                                  : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                                  ? "bg-amber-50/80 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50"
+                                  : "bg-gray-50/80 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300 border border-gray-200/50 dark:border-slate-700/50"
                               }`}
                             >
                               <div className="w-2.5 h-2.5 flex items-center justify-center">
@@ -599,69 +568,62 @@ const Surveys = () => {
                             </div>
                           )}
 
-                          {/* Status with refined styling */}
+                          {/* Status */}
                           <div
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-normal backdrop-blur-sm ${statusConfig.bg}/80 ${statusConfig.text} border ${statusConfig.border}/50`}
                           >
                             <div
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                statusConfig.dot
-                              } ${
-                                questionnaire.status === "published"
-                                  ? "animate-pulse"
-                                  : ""
-                              }`}
+                              className={`w-1 h-1 rounded-full ${statusConfig.dot}`}
                             ></div>
                             {statusConfig.label}
                           </div>
                         </div>
 
-                        {/* Title with luxury typography */}
+                        {/* Title */}
                         <h3
-                          className="font-semibold text-slate-900 dark:text-white text-lg mb-3 line-clamp-2 leading-tight"
+                          className="font-semibold text-gray-900 dark:text-white text-lg leading-tight min-h-[2rem] line-clamp-2"
                           title={questionnaire.title}
                         >
                           {questionnaire.title}
                         </h3>
 
-                        {/* Simple Stats Row */}
-                        <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-3">
-                          <span>
-                            {toPersianNumbers(
-                              questionnaire.questionnaire_completed.answer_count
-                            )}{" "}
-                            از{" "}
-                            {toPersianNumbers(
-                              questionnaire.questionnaire_completed.user_limit
-                            )}{" "}
-                            نفر
-                          </span>
-                          <span className="font-medium">
-                            {toPersianNumbers(
-                              questionnaire.questionnaire_completed.percent
-                            )}
-                            % تکمیل
-                          </span>
-                        </div>
+                        {/* Stats */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-slate-400">
+                            <span className="persian-numbers">
+                              {toPersianNumbers(
+                                questionnaire.questionnaire_completed
+                                  .answer_count
+                              )}{" "}
+                              از{" "}
+                              {toPersianNumbers(
+                                questionnaire.questionnaire_completed.user_limit
+                              )}{" "}
+                              نفر پاسخ داده
+                            </span>
+                            <span className="font-semibold text-[#0466C8] text-xs persian-numbers">
+                              {toPersianNumbers(
+                                questionnaire.questionnaire_completed.percent
+                              )}
+                              %
+                            </span>
+                          </div>
 
-                        {/* Progress Bar */}
-                        <div className="mb-4">
-                          <div className="relative">
-                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                              <div
-                                className="bg-blue-500 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${questionnaire.questionnaire_completed.percent}%`,
-                                }}
-                              ></div>
-                            </div>
+                          {/* Progress Bar */}
+                          <div className="w-full bg-gray-100/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-full h-2 shadow-inner">
+                            <div
+                              className="bg-gradient-to-r from-[#0466C8] to-[#0456B8] h-2 rounded-full transition-all duration-700 shadow-sm"
+                              style={{
+                                width: `${questionnaire.questionnaire_completed.percent}%`,
+                              }}
+                            ></div>
                           </div>
                         </div>
 
-                        {/* Date with compact design */}
-                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        {/* Date */}
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 pt-2 border-t border-gray-200/50 dark:border-slate-700/50">
                           <Calendar className="w-3 h-3" />
-                          <span>
+                          <span className="persian-numbers">
                             {new Date(
                               questionnaire.created * 1000
                             ).toLocaleDateString("fa-IR")}
@@ -669,8 +631,8 @@ const Surveys = () => {
                         </div>
                       </div>
 
-                      {/* Action Buttons - Show only on hover */}
-                      <div className="border-t border-slate-200 dark:border-slate-700 pt-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {/* Action Buttons */}
+                      <div className="pt-3 mt-3 border-t border-gray-200/50 dark:border-slate-700/50 opacity-0 group-hover:opacity-100 transition-all">
                         <div className="flex items-center justify-between">
                           <Button
                             variant="ghost"
@@ -681,22 +643,22 @@ const Surveys = () => {
                                 `/questionnaire/${questionnaire.id}/results`
                               );
                             }}
-                            className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+                            className="text-gray-700 hover:text-[#0466C8] hover:bg-white/50 dark:text-slate-300 dark:hover:text-[#0466C8] dark:hover:bg-slate-800/50 flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-medium backdrop-blur-sm"
                           >
-                            <BarChart3 className="w-3.5 h-3.5" />
+                            <BarChart3 className="w-3 h-3" />
                             نتایج
                           </Button>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                               }}
-                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-8 h-8 rounded-lg transition-all duration-200"
+                              className="text-gray-600 hover:text-gray-800 hover:bg-white/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50 w-7 h-7 rounded backdrop-blur-sm"
                               title="کپی نظرسنجی"
                             >
-                              <Copy className="w-3.5 h-3.5" />
+                              <Copy className="w-3 h-3" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -705,10 +667,10 @@ const Surveys = () => {
                                 e.stopPropagation();
                                 handleDeleteSurvey(questionnaire.id);
                               }}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-8 h-8 rounded-lg transition-all duration-200"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50/50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-7 h-7 rounded backdrop-blur-sm"
                               title="حذف نظرسنجی"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
                         </div>
@@ -722,49 +684,66 @@ const Surveys = () => {
 
           {/* Surveys List */}
           {questionnaires.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 relative">
-              {/* Luxury Empty State Icon */}
-              <div className="relative mb-12">
-                <div className="w-40 h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-3xl flex items-center justify-center shadow-2xl border border-slate-200/50 dark:border-slate-600/50">
-                  <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 dark:from-slate-500 dark:to-slate-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <BarChart3 className="w-10 h-10 text-white" />
+            <div className="flex flex-col items-center justify-center py-20">
+              {/* Empty State Icon */}
+              <div className="mb-6">
+                <div className="w-24 h-24 bg-gray-50 dark:bg-slate-800 backdrop-blur-sm rounded-lg flex items-center justify-center border border-gray-200/50 dark:border-slate-700/50">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#0466C8] to-[#0456B8] rounded-lg flex items-center justify-center">
+                    <BarChart3 className="w-6 h-6 text-white" />
                   </div>
                 </div>
-                {/* Subtle floating elements */}
-                <div className="absolute -top-3 -right-3 w-4 h-4 bg-slate-400 dark:bg-slate-500 rounded-full shadow-lg opacity-60"></div>
-                <div className="absolute -bottom-3 -left-3 w-3 h-3 bg-slate-500 dark:bg-slate-400 rounded-full shadow-lg opacity-60"></div>
               </div>
 
-              <h3 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
-                شروع کار با نظرسنجی‌ها
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-12 text-center max-w-2xl text-lg leading-relaxed">
-                هنوز نظرسنجی‌ای ندارید. با ایجاد اولین نظرسنجی خود،
-                <br />
-                شروع به جمع‌آوری بازخوردهای ارزشمند کاربران کنید.
-              </p>
-
-              {/* Professional CTA Button */}
-              <Button
-                onClick={() => setIsMainModalOpen(true)}
-                className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-900 hover:to-black text-white px-12 py-6 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 flex items-center gap-4 border border-slate-600/20"
-              >
-                <div className="w-8 h-8 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-                  <Plus className="w-5 h-5" />
-                </div>
-                ایجاد اولین نظرسنجی
-              </Button>
-
-              {/* Minimal decorative elements */}
-              <div className="absolute inset-0 pointer-events-none opacity-30">
-                <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
-                <div className="absolute top-48 right-32 w-1 h-1 bg-slate-500 rounded-full"></div>
-                <div className="absolute bottom-48 left-32 w-2 h-2 bg-slate-400 rounded-full"></div>
-                <div className="absolute bottom-32 right-20 w-1.5 h-1.5 bg-slate-500 rounded-full"></div>
+              <div className="text-center max-w-sm">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  هنوز نظرسنجی‌ای ندارید
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
+                  با ایجاد اولین نظرسنجی خود شروع کنید
+                </p>
+                <Button
+                  onClick={() => setIsMainModalOpen(true)}
+                  className="bg-gradient-to-r from-[#0466C8] to-[#0456B8] hover:from-[#0456B8] hover:to-[#0446A8] text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+                >
+                  <Plus className="w-4 h-4 ml-2" />
+                  ایجاد اولین نظرسنجی
+                </Button>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-5">
+              {/* New Survey Button for List View */}
+              {viewMode === "list" && (
+                <Card
+                  className="cursor-pointer border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all"
+                  onClick={() => setIsMainModalOpen(true)}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-4">
+                      {/* Title and Type - Left side */}
+                      <div className="flex items-center min-w-0 flex-1 gap-3">
+                        {/* Type Icon */}
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-[#0466C8] to-[#0456B8] flex-shrink-0">
+                          <Plus className="w-5 h-5 text-white" />
+                        </div>
+
+                        <div className="cursor-pointer flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-[#0466C8] dark:hover:text-[#0466C8] truncate mb-2">
+                            ایجاد نظرسنجی جدید
+                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-[#0466C8]/10 to-[#0456B8]/10 text-[#0466C8] border border-[#0466C8]/20 backdrop-blur-sm">
+                              <Sparkles className="w-3 h-3" />
+                              شروع نظرسنجی جدید
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* List View */}
               {viewMode === "list" &&
                 questionnaires.map((questionnaire, index) => {
@@ -776,47 +755,34 @@ const Surveys = () => {
                     <Card
                       key={questionnaire.id}
                       ref={isLast ? lastQuestionnaireRef : null}
-                      className="group relative border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl overflow-hidden transform hover:-translate-y-1"
+                      className="group border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-[1.02]"
                     >
-                      {/* Refined subtle background */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-slate-50/30 to-slate-100/30 dark:from-slate-800/30 dark:to-slate-700/30 opacity-50"></div>
-
-                      {/* Professional left border indicator */}
+                      {/* Left border indicator */}
                       <div
-                        className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                        className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg ${
                           questionnaire.default_questionnaire
-                            ? "bg-amber-500"
-                            : "bg-slate-600 dark:bg-slate-500"
+                            ? "bg-gradient-to-b from-amber-400 to-amber-600"
+                            : "bg-gradient-to-b from-[#0466C8] to-[#0456B8]"
                         }`}
                       ></div>
 
-                      <CardContent
-                        className={`p-4 relative ${
-                          questionnaire.default_questionnaire
-                            ? "bg-amber-50/20 dark:bg-amber-950/10"
-                            : questionnaire.questionnaire_type !== "usual"
-                            ? "bg-blue-50/20 dark:bg-blue-950/10"
-                            : ""
-                        }`}
-                      >
+                      <CardContent className="p-5 pl-6">
                         <div className="flex items-center justify-between gap-4">
                           {/* Title and Type - Left side */}
                           <div className="flex items-center min-w-0 flex-1 gap-3">
-                            {/* Compact Type Icon */}
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex-shrink-0">
-                              <div
-                                className={`w-5 h-5 ${
-                                  questionnaire.default_questionnaire
-                                    ? "text-amber-600 dark:text-amber-500"
-                                    : "text-slate-600 dark:text-slate-400"
-                                }`}
-                              >
-                                {questionnaire.default_questionnaire ? (
-                                  <Crown className="w-5 h-5" />
-                                ) : (
-                                  typeConfig.icon
-                                )}
-                              </div>
+                            {/* Type Icon */}
+                            <div
+                              className={`w-5 h-5 flex-shrink-0 ${
+                                questionnaire.default_questionnaire
+                                  ? "text-amber-600 dark:text-amber-400"
+                                  : "text-[#0466C8] dark:text-[#0466C8]"
+                              }`}
+                            >
+                              {questionnaire.default_questionnaire ? (
+                                <Crown className="w-5 h-5" />
+                              ) : (
+                                typeConfig.icon
+                              )}
                             </div>
 
                             <div
@@ -825,38 +791,39 @@ const Surveys = () => {
                                 handleQuestionnaireClick(questionnaire)
                               }
                             >
-                              <h3 className="text-lg font-bold text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors truncate mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-[#0466C8] dark:hover:text-[#0466C8] truncate mb-2 transition-colors">
                                 {questionnaire.title}
                               </h3>
-                              <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 {/* Type badge - only for demo and ad tests */}
                                 {(questionnaire.default_questionnaire ||
                                   questionnaire.questionnaire_type !==
                                     "usual") && (
                                   <div
-                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                                    className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-normal backdrop-blur-sm ${
                                       questionnaire.default_questionnaire
-                                        ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
-                                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                                        ? "bg-amber-50/80 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50"
+                                        : "bg-gray-50/80 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300 border border-gray-200/50 dark:border-slate-700/50"
                                     }`}
                                   >
+                                    <div className="w-2.5 h-2.5 flex items-center justify-center">
+                                      {questionnaire.default_questionnaire ? (
+                                        <Crown className="w-2.5 h-2.5" />
+                                      ) : (
+                                        typeConfig.icon
+                                      )}
+                                    </div>
                                     {questionnaire.default_questionnaire
                                       ? "نمونه"
                                       : typeConfig.label}
                                   </div>
                                 )}
-                                {/* Status with refined styling */}
+                                {/* Status */}
                                 <div
-                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border`}
+                                  className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-normal backdrop-blur-sm ${statusConfig.bg}/80 ${statusConfig.text} ${statusConfig.border}/50 border`}
                                 >
                                   <div
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                      statusConfig.dot
-                                    } ${
-                                      questionnaire.status === "published"
-                                        ? "animate-pulse"
-                                        : ""
-                                    }`}
+                                    className={`w-1 h-1 rounded-full ${statusConfig.dot}`}
                                   ></div>
                                   {statusConfig.label}
                                 </div>
@@ -865,12 +832,14 @@ const Surveys = () => {
                           </div>
 
                           {/* Stats - Right side */}
-                          <div className="flex items-center gap-4 text-sm flex-shrink-0">
-                            {/* Compact Stats */}
-                            <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-6 flex-shrink-0">
+                            <div className="flex items-center gap-6">
                               {/* Answers */}
                               <div className="text-center">
-                                <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                <div className="text-xs text-gray-600 dark:text-slate-400 mb-1">
+                                  پاسخ‌ها
+                                </div>
+                                <div className="text-xs font-semibold text-gray-900 dark:text-white persian-numbers">
                                   {toPersianNumbers(
                                     questionnaire.questionnaire_completed
                                       .answer_count
@@ -886,16 +855,19 @@ const Surveys = () => {
 
                               {/* Progress */}
                               <div className="text-center">
-                                <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                <div className="text-xs text-gray-600 dark:text-slate-400 mb-1">
+                                  درصد تکمیل
+                                </div>
+                                <div className="text-xs font-semibold text-[#0466C8] mb-1 persian-numbers">
                                   {toPersianNumbers(
                                     questionnaire.questionnaire_completed
                                       .percent
                                   )}
-                                  % تکمیل
+                                  %
                                 </div>
-                                <div className="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                <div className="w-16 bg-gray-100/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-full h-2 shadow-inner">
                                   <div
-                                    className="bg-blue-500 dark:bg-blue-400 h-1.5 rounded-full transition-all duration-300"
+                                    className="bg-gradient-to-r from-[#0466C8] to-[#0456B8] h-2 rounded-full transition-all duration-700 shadow-sm"
                                     style={{
                                       width: `${questionnaire.questionnaire_completed.percent}%`,
                                     }}
@@ -905,7 +877,10 @@ const Surveys = () => {
 
                               {/* Date */}
                               <div className="text-center">
-                                <div className="text-sm text-slate-600 dark:text-slate-400">
+                                <div className="text-xs text-gray-600 dark:text-slate-400 mb-1">
+                                  تاریخ ایجاد
+                                </div>
+                                <div className="text-xs text-gray-900 dark:text-white font-medium persian-numbers">
                                   {new Date(
                                     questionnaire.created * 1000
                                   ).toLocaleDateString("fa-IR")}
@@ -914,8 +889,8 @@ const Surveys = () => {
                             </div>
                           </div>
 
-                          {/* Action Buttons - Show only on hover */}
-                          <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -924,19 +899,19 @@ const Surveys = () => {
                                   `/questionnaire/${questionnaire.id}/results`
                                 )
                               }
-                              className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-center gap-1"
+                              className="text-gray-700 hover:text-[#0466C8] hover:bg-white/50 dark:text-slate-300 dark:hover:text-[#0466C8] dark:hover:bg-slate-800/50 px-2 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 backdrop-blur-sm"
                               title="مشاهده نتایج"
                             >
-                              <BarChart3 className="w-3.5 h-3.5" />
+                              <BarChart3 className="w-3 h-3" />
                               نتایج
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-8 h-8 rounded-lg transition-all duration-200"
+                              className="text-gray-600 hover:text-gray-800 hover:bg-white/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50 w-7 h-7 rounded backdrop-blur-sm"
                               title="کپی نظرسنجی"
                             >
-                              <Copy className="w-3.5 h-3.5" />
+                              <Copy className="w-3 h-3" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -944,18 +919,18 @@ const Surveys = () => {
                               onClick={() =>
                                 handleDeleteSurvey(questionnaire.id)
                               }
-                              className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-8 h-8 rounded-lg transition-all duration-200"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50/50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 w-7 h-7 rounded backdrop-blur-sm"
                               title="حذف نظرسنجی"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3 h-3" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 w-11 h-11 rounded-xl transition-all duration-200 hover:shadow-md border border-slate-200/50 dark:border-slate-600/50"
+                              className="text-gray-600 hover:text-gray-800 hover:bg-white/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50 w-7 h-7 rounded border border-gray-200/50 dark:border-slate-700/50 backdrop-blur-sm"
                               title="گزینه‌های بیشتر"
                             >
-                              <MoreVertical className="w-4 h-4" />
+                              <MoreVertical className="w-3 h-3" />
                             </Button>
                           </div>
                         </div>
@@ -966,31 +941,13 @@ const Surveys = () => {
             </div>
           )}
 
-          {/* Refined Loading State */}
+          {/* Loading State */}
           {loading && questionnaires.length > 0 && (
-            <div className="text-center py-16">
-              <div className="relative inline-block">
-                {/* Main spinner */}
-                <div className="animate-spin rounded-full h-14 w-14 border-4 border-slate-200 dark:border-slate-700 border-t-slate-600 dark:border-t-slate-400 mx-auto mb-6"></div>
-                {/* Inner spinner */}
-                <div
-                  className="absolute inset-3 animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-slate-600 border-b-slate-500 dark:border-b-slate-400"
-                  style={{
-                    animationDirection: "reverse",
-                    animationDuration: "1.5s",
-                  }}
-                ></div>
-              </div>
-              <div className="space-y-3">
-                <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">
-                  در حال بارگذاری نظرسنجی‌های بیشتر...
-                </p>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce delay-200"></div>
-                </div>
-              </div>
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 dark:border-slate-700 border-t-[#0466C8] mx-auto mb-3"></div>
+              <p className="text-sm text-gray-600 dark:text-slate-300">
+                در حال بارگذاری...
+              </p>
             </div>
           )}
         </div>
@@ -998,35 +955,35 @@ const Surveys = () => {
 
       {/* Main Modal */}
       <Dialog open={isMainModalOpen} onOpenChange={setIsMainModalOpen}>
-        <DialogContent className="sm:max-w-5xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
-          <DialogHeader className="pb-6 border-b border-slate-200/50 dark:border-slate-700/50">
-            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white text-right">
+        <DialogContent className="sm:max-w-4xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg">
+          <DialogHeader className="pb-6 border-b border-gray-200 dark:border-slate-700">
+            <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white text-right mb-1">
               انتخاب نوع نظرسنجی
             </DialogTitle>
-            <p className="text-slate-600 dark:text-slate-400 text-right mt-2">
+            <p className="text-sm text-gray-600 dark:text-slate-300 text-right">
               نوع نظرسنجی مورد نظر خود را انتخاب کنید
             </p>
           </DialogHeader>
-          <div className="grid gap-6 py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* نظرسنجی خام */}
               <Card
-                className={`cursor-pointer border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl rounded-2xl overflow-hidden group ${
+                className={`cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-md shadow-sm hover:shadow transition-all ${
                   apiLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 onClick={
                   apiLoading ? undefined : () => setIsNameModalOpen(true)
                 }
               >
-                <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-900/30 ml-5 group-hover:scale-110 transition-transform duration-300 border border-blue-200/50 dark:border-blue-800/50">
-                    <FileText className="w-8 h-8 text-blue-700 dark:text-blue-400" />
+                <CardContent className="flex items-center p-4">
+                  <div className="flex justify-center items-center p-3 rounded-md bg-blue-50 dark:bg-blue-900/30 ml-4 border border-blue-200 dark:border-blue-800">
+                    <FileText className="w-6 h-6 text-[#0466C8]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                       نظرسنجی خام
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-gray-600 dark:text-slate-300">
                       ساخت نظرسنجی توسط شما
                     </div>
                   </div>
@@ -1034,12 +991,12 @@ const Surveys = () => {
                     variant="ghost"
                     size="icon"
                     disabled={apiLoading}
-                    className="w-10 h-10 rounded-xl"
+                    className="w-10 h-10 rounded-md"
                   >
                     {apiLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-600"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-[#0466C8]"></div>
                     ) : (
-                      <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
+                      <ChevronLeft className="w-5 h-5 text-gray-600" />
                     )}
                   </Button>
                 </CardContent>
@@ -1047,21 +1004,21 @@ const Surveys = () => {
 
               {/* نظرسنجی آماده */}
               <Card
-                className="cursor-pointer border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl rounded-2xl overflow-hidden group"
+                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-md shadow-sm hover:shadow transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsReadySurveyModalOpen(true);
                 }}
               >
-                <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-900/30 ml-5 group-hover:scale-110 transition-transform duration-300 border border-emerald-200/50 dark:border-emerald-800/50">
-                    <Target className="w-8 h-8 text-emerald-700 dark:text-emerald-400" />
+                <CardContent className="flex items-center p-4">
+                  <div className="flex justify-center items-center p-3 rounded-md bg-emerald-50 dark:bg-emerald-900/30 ml-4 border border-emerald-200 dark:border-emerald-800">
+                    <Target className="w-6 h-6 text-emerald-700 dark:text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                       نظرسنجی آماده
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-gray-600 dark:text-slate-300">
                       استفاده از نظرسنجی های تخصصی آماده
                     </div>
                   </div>
@@ -1069,29 +1026,29 @@ const Surveys = () => {
                     variant="ghost"
                     size="icon"
                     disabled={apiLoading}
-                    className="w-10 h-10 rounded-xl"
+                    className="w-10 h-10 rounded-md"
                   >
-                    <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
                   </Button>
                 </CardContent>
               </Card>
 
               {/* تست تبلیغات */}
               <Card
-                className={`cursor-pointer border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl rounded-2xl overflow-hidden group ${
+                className={`cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all ${
                   adTestLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 onClick={adTestLoading ? undefined : handleBillboardTestCreate}
               >
                 <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-2xl bg-cyan-50/80 dark:bg-cyan-900/30 ml-5 group-hover:scale-110 transition-transform duration-300 border border-cyan-200/50 dark:border-cyan-800/50">
+                  <div className="flex justify-center items-center p-4 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 ml-6 border border-cyan-200 dark:border-cyan-800">
                     <Monitor className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       تست تبلیغات
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-gray-600 dark:text-slate-300">
                       نظرسنجی آماده جهت تست تبلیغات قبل از اکران تبلیغ
                     </div>
                   </div>
@@ -1099,12 +1056,12 @@ const Surveys = () => {
                     variant="ghost"
                     size="icon"
                     disabled={adTestLoading}
-                    className="w-10 h-10 rounded-xl"
+                    className="w-12 h-12 rounded-lg"
                   >
                     {adTestLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-600"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-[#0466C8]"></div>
                     ) : (
-                      <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
+                      <ChevronLeft className="w-6 h-6 text-gray-600" />
                     )}
                   </Button>
                 </CardContent>
@@ -1112,21 +1069,21 @@ const Surveys = () => {
 
               {/* طراحی نظرسنجی با هوش مصنوعی */}
               <Card
-                className="cursor-pointer border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl rounded-2xl overflow-hidden group"
+                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsAISurveyModalOpen(true);
                 }}
               >
                 <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-2xl bg-violet-50/80 dark:bg-violet-900/30 ml-5 group-hover:scale-110 transition-transform duration-300 border border-violet-200/50 dark:border-violet-800/50">
+                  <div className="flex justify-center items-center p-4 rounded-xl bg-violet-50 dark:bg-violet-900/30 ml-6 border border-violet-200 dark:border-violet-800">
                     <Sparkles className="w-8 h-8 text-violet-700 dark:text-violet-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       طراحی نظرسنجی با هوش مصنوعی
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-gray-600 dark:text-slate-300">
                       طراحی نظرسنجی با کمک هوش مصنوعی
                     </div>
                   </div>
@@ -1134,30 +1091,30 @@ const Surveys = () => {
                     variant="ghost"
                     size="icon"
                     disabled={apiLoading}
-                    className="w-10 h-10 rounded-xl"
+                    className="w-12 h-12 rounded-lg"
                   >
-                    <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ChevronLeft className="w-6 h-6 text-gray-600" />
                   </Button>
                 </CardContent>
               </Card>
 
               {/* طراحی نظرسنجی با ما */}
               <Card
-                className="cursor-pointer border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl rounded-2xl overflow-hidden group"
+                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsDesignWithUsModalOpen(true);
                 }}
               >
                 <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-900/30 ml-5 group-hover:scale-110 transition-transform duration-300 border border-indigo-200/50 dark:border-indigo-800/50">
+                  <div className="flex justify-center items-center p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 ml-6 border border-indigo-200 dark:border-indigo-800">
                     <Building className="w-8 h-8 text-indigo-700 dark:text-indigo-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       طراحی نظرسنجی با ما
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-gray-600 dark:text-slate-300">
                       طراحی نظرسنجی توسط کارشناسان سنجاپ
                     </div>
                   </div>
@@ -1165,30 +1122,30 @@ const Surveys = () => {
                     variant="ghost"
                     size="icon"
                     disabled={apiLoading}
-                    className="w-10 h-10 rounded-xl"
+                    className="w-12 h-12 rounded-lg"
                   >
-                    <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ChevronLeft className="w-6 h-6 text-gray-600" />
                   </Button>
                 </CardContent>
               </Card>
 
               {/* بارگذاری نظرسنجی */}
               <Card
-                className="cursor-pointer border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl rounded-2xl overflow-hidden group"
+                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsUploadSurveyModalOpen(true);
                 }}
               >
                 <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-2xl bg-orange-50/80 dark:bg-orange-900/30 ml-5 group-hover:scale-110 transition-transform duration-300 border border-orange-200/50 dark:border-orange-800/50">
+                  <div className="flex justify-center items-center p-4 rounded-xl bg-orange-50 dark:bg-orange-900/30 ml-6 border border-orange-200 dark:border-orange-800">
                     <Upload className="w-8 h-8 text-orange-700 dark:text-orange-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       بارگذاری نظرسنجی
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-gray-600 dark:text-slate-300">
                       وارد کردن نظرسنجی از طریق لینک پرسلاین یا فایل ورد
                     </div>
                   </div>
@@ -1196,9 +1153,9 @@ const Surveys = () => {
                     variant="ghost"
                     size="icon"
                     disabled={apiLoading}
-                    className="w-10 h-10 rounded-xl"
+                    className="w-12 h-12 rounded-lg"
                   >
-                    <ChevronLeft className="w-6 h-6 text-slate-600 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ChevronLeft className="w-6 h-6 text-gray-600" />
                   </Button>
                 </CardContent>
               </Card>
@@ -1209,44 +1166,60 @@ const Surveys = () => {
 
       {/* Name Modal */}
       <Dialog open={isNameModalOpen} onOpenChange={setIsNameModalOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
-          <DialogHeader className="pb-6 border-b border-slate-200/50 dark:border-slate-700/50">
-            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white text-right">
+        <DialogContent className="sm:max-w-[600px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl">
+          <DialogHeader className="pb-8 border-b border-gray-100 dark:border-slate-800">
+            <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white text-right mb-2">
               نام نظرسنجی خام
             </DialogTitle>
-            <p className="text-slate-600 dark:text-slate-400 text-right mt-2">
+            <p className="text-gray-600 dark:text-slate-300 text-right">
               عنوان نظرسنجی خود را وارد کنید
             </p>
           </DialogHeader>
-          <div className="grid gap-6 py-6">
-            <div className="grid gap-4">
-              <Input
-                id="title"
-                value={surveyTitle}
-                onChange={(e) => setSurveyTitle(e.target.value)}
-                placeholder="عنوان نظرسنجی را وارد کنید"
-                className="h-12 text-lg bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-slate-500/20 focus:border-slate-400 dark:focus:border-slate-500"
-              />
+          <div className="py-8">
+            <div className="space-y-6">
+              <div>
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-3 text-right"
+                >
+                  عنوان نظرسنجی
+                </label>
+                <Input
+                  id="title"
+                  value={surveyTitle}
+                  onChange={(e) => setSurveyTitle(e.target.value)}
+                  placeholder="مثال: نظرسنجی رضایتمندی مشتریان"
+                  className="h-14 text-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#0466C8]/20 focus:border-[#0466C8] transition-all"
+                  dir="rtl"
+                />
+              </div>
             </div>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsNameModalOpen(false);
-                  setSurveyTitle("");
-                }}
-                className="px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                انصراف
-              </Button>
-              <Button
-                onClick={handleRawSurveyCreate}
-                disabled={apiLoading || !surveyTitle.trim()}
-                className="px-8 py-3 rounded-xl bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {apiLoading ? "در حال ایجاد..." : "ذخیره"}
-              </Button>
-            </div>
+          </div>
+          <div className="flex justify-end gap-4 pt-6 border-t border-gray-100 dark:border-slate-800">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsNameModalOpen(false);
+                setSurveyTitle("");
+              }}
+              className="px-8 py-3 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium"
+            >
+              انصراف
+            </Button>
+            <Button
+              onClick={handleRawSurveyCreate}
+              disabled={apiLoading || !surveyTitle.trim()}
+              className="px-10 py-3 rounded-lg bg-[#0466C8] hover:bg-[#0456B8] text-white font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {apiLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                  در حال ایجاد...
+                </div>
+              ) : (
+                "ایجاد نظرسنجی"
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

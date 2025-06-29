@@ -100,10 +100,12 @@ const BillboardTest = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
     null
   );
-  const [selectedBillboard, setSelectedBillboard] = useState<string | null>(null);
+  const [selectedBillboard, setSelectedBillboard] = useState<string | null>(
+    null
+  );
   const [editingBillboard, setEditingBillboard] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>("");
-  
+
   // Video states
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [editingVideo, setEditingVideo] = useState<string | null>(null);
@@ -128,15 +130,23 @@ const BillboardTest = () => {
   const billboardImages = questions.filter(
     (q) => q.type === "statement" && q.order !== 1 && q.attachment
   );
-  
+
   // Filter video questions
   const videoFiles = questions.filter(
-    (q) => q.type === "statement" && q.order !== 1 && q.attachment && q.attachment_type === "video"
+    (q) =>
+      q.type === "statement" &&
+      q.order !== 1 &&
+      q.attachment &&
+      q.attachment_type === "video"
   );
 
   // Filter logo questions
   const logoImages = questions.filter(
-    (q) => q.type === "statement" && q.order !== 1 && q.attachment && q.attachment_type === "image"
+    (q) =>
+      q.type === "statement" &&
+      q.order !== 1 &&
+      q.attachment &&
+      q.attachment_type === "image"
   );
 
   // Filter brand questions (text-based)
@@ -151,35 +161,55 @@ const BillboardTest = () => {
 
   // Set selected billboard to first one if not already set
   useEffect(() => {
-    if (selectedAdTestType === "billboard" && billboardImages.length > 0 && !selectedBillboard) {
+    if (
+      selectedAdTestType === "billboard" &&
+      billboardImages.length > 0 &&
+      !selectedBillboard
+    ) {
       setSelectedBillboard(billboardImages[0].id);
     }
   }, [selectedAdTestType, billboardImages, selectedBillboard]);
 
   // Set selected video to first one if not already set
   useEffect(() => {
-    if (selectedAdTestType === "video" && videoFiles.length > 0 && !selectedVideo) {
+    if (
+      selectedAdTestType === "video" &&
+      videoFiles.length > 0 &&
+      !selectedVideo
+    ) {
       setSelectedVideo(videoFiles[0].id);
     }
   }, [selectedAdTestType, videoFiles, selectedVideo]);
 
   // Set selected logo to first one if not already set
   useEffect(() => {
-    if (selectedAdTestType === "logo" && logoImages.length > 0 && !selectedLogo) {
+    if (
+      selectedAdTestType === "logo" &&
+      logoImages.length > 0 &&
+      !selectedLogo
+    ) {
       setSelectedLogo(logoImages[0].id);
     }
   }, [selectedAdTestType, logoImages, selectedLogo]);
 
   // Set selected brand to first one if not already set
   useEffect(() => {
-    if (selectedAdTestType === "brand" && brandTexts.length > 0 && !selectedBrand) {
+    if (
+      selectedAdTestType === "brand" &&
+      brandTexts.length > 0 &&
+      !selectedBrand
+    ) {
       setSelectedBrand(brandTexts[0].id);
     }
   }, [selectedAdTestType, brandTexts, selectedBrand]);
 
   // Set selected slogan to first one if not already set
   useEffect(() => {
-    if (selectedAdTestType === "slogan" && sloganTexts.length > 0 && !selectedSlogan) {
+    if (
+      selectedAdTestType === "slogan" &&
+      sloganTexts.length > 0 &&
+      !selectedSlogan
+    ) {
       setSelectedSlogan(sloganTexts[0].id);
     }
   }, [selectedAdTestType, sloganTexts, selectedSlogan]);
@@ -192,7 +222,7 @@ const BillboardTest = () => {
 
   // Billboard management functions
   const handleEditBillboard = (billboardId: string) => {
-    const billboard = billboardImages.find(b => b.id === billboardId);
+    const billboard = billboardImages.find((b) => b.id === billboardId);
     if (billboard) {
       setEditingBillboard(billboardId);
       setEditingTitle(getDisplayTitle(billboard.title) || "");
@@ -203,7 +233,7 @@ const BillboardTest = () => {
     if (editingBillboard && editingTitle.trim()) {
       const prefix = "[5] ";
       const newTitle = prefix + editingTitle.trim();
-      
+
       try {
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/${editingBillboard}/questions/update/`,
@@ -263,7 +293,7 @@ const BillboardTest = () => {
 
   // Video management functions
   const handleEditVideo = (videoId: string) => {
-    const video = videoFiles.find(v => v.id === videoId);
+    const video = videoFiles.find((v) => v.id === videoId);
     if (video) {
       setEditingVideo(videoId);
       setEditingVideoTitle(getDisplayTitle(video.title) || "");
@@ -274,7 +304,7 @@ const BillboardTest = () => {
     if (editingVideo && editingVideoTitle.trim()) {
       const prefix = "[5] ";
       const newTitle = prefix + editingVideoTitle.trim();
-      
+
       try {
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/${editingVideo}/questions/update/`,
@@ -334,7 +364,7 @@ const BillboardTest = () => {
 
   // Logo management functions
   const handleEditLogo = (logoId: string) => {
-    const logo = logoImages.find(l => l.id === logoId);
+    const logo = logoImages.find((l) => l.id === logoId);
     if (logo) {
       setEditingLogo(logoId);
       setEditingLogoTitle(getDisplayTitle(logo.title) || "");
@@ -345,7 +375,7 @@ const BillboardTest = () => {
     if (editingLogo && editingLogoTitle.trim()) {
       const prefix = "[5] ";
       const newTitle = prefix + editingLogoTitle.trim();
-      
+
       try {
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/${editingLogo}/questions/update/`,
@@ -405,7 +435,7 @@ const BillboardTest = () => {
 
   // Brand management functions
   const handleEditBrand = (brandId: string) => {
-    const brand = brandTexts.find(b => b.id === brandId);
+    const brand = brandTexts.find((b) => b.id === brandId);
     if (brand) {
       setEditingBrand(brandId);
       setEditingBrandTitle(getDisplayTitle(brand.title) || "");
@@ -416,7 +446,7 @@ const BillboardTest = () => {
     if (editingBrand && editingBrandTitle.trim()) {
       const prefix = "[brand] ";
       const newTitle = prefix + editingBrandTitle.trim();
-      
+
       try {
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/${editingBrand}/questions/update/`,
@@ -476,7 +506,7 @@ const BillboardTest = () => {
 
   // Slogan management functions
   const handleEditSlogan = (sloganId: string) => {
-    const slogan = sloganTexts.find(s => s.id === sloganId);
+    const slogan = sloganTexts.find((s) => s.id === sloganId);
     if (slogan) {
       setEditingSlogan(sloganId);
       setEditingSloganTitle(getDisplayTitle(slogan.title) || "");
@@ -487,7 +517,7 @@ const BillboardTest = () => {
     if (editingSlogan && editingSloganTitle.trim()) {
       const prefix = "[slogan] ";
       const newTitle = prefix + editingSloganTitle.trim();
-      
+
       try {
         const response = await fetch(
           `${BASE_URL}/api/v1/questionnaire/${editingSlogan}/questions/update/`,
@@ -774,13 +804,9 @@ const BillboardTest = () => {
     }
   };
 
-
-
   const handleQuestionsUpdate = () => {
     fetchQuestions();
   };
-
-
 
   const nextStep = () => {
     if (!selectedAdTestType) {
@@ -793,12 +819,12 @@ const BillboardTest = () => {
   const renderAdTestContent = () => {
     if (!selectedAdTestType) {
       return (
-                      <div className="flex items-center justify-center h-96 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+        <div className="flex items-center justify-center h-96 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
           <div className="text-center">
-                          <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                              <ArrowLeft className="w-8 h-8 text-gray-400 dark:text-gray-300 transform rotate-180" />
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ArrowLeft className="w-8 h-8 text-gray-400 dark:text-gray-300 transform rotate-180" />
             </div>
-                          <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">
+            <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">
               نوع تست تبلیغ را انتخاب کنید
             </h3>
             <p className="text-sm text-gray-500">
@@ -811,212 +837,230 @@ const BillboardTest = () => {
 
     // Billboard Test - شبیه بیلبورد واقعی
     if (selectedAdTestType === "billboard") {
-
       return (
-        
-          <div className="flex gap-6">
-            {/* Right Side - Upload and Management */}
-            <div className="w-[500px]">
-              {/* Billboard Management Section */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                      <Monitor className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">بیلبوردهای آپلود شده</h3>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">مدیریت محتوای بیلبورد</p>
-                    </div>
+        <div className="flex gap-6">
+          {/* Right Side - Upload and Management */}
+          <div className="w-[500px]">
+            {/* Billboard Management Section */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Monitor className="w-5 h-5 text-white" />
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {billboardImages.length} بیلبورد
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      بیلبوردهای آپلود شده
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                      مدیریت محتوای بیلبورد
+                    </p>
                   </div>
                 </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {billboardImages.length} بیلبورد
+                </div>
+              </div>
 
-                {/* Upload Area */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm border border-blue-100 dark:border-blue-800">
-            <AdTestUploader
-                    key={selectedAdTestType}
-              adTestType={selectedAdTestType as "billboard" | "video" | "logo"}
-              questions={questions}
-                    onQuestionsUpdate={handleQuestionsUpdate}
-            />
-          </div>
+              {/* Upload Area */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm border border-blue-100 dark:border-blue-800">
+                <AdTestUploader
+                  key={selectedAdTestType}
+                  adTestType={
+                    selectedAdTestType as "billboard" | "video" | "logo"
+                  }
+                  questions={questions}
+                  onQuestionsUpdate={handleQuestionsUpdate}
+                />
+              </div>
 
-                {/* Billboard List */}
-                <div>
-                  {billboardImages.length > 0 ? (
-                    <div className="space-y-3">
-                      {billboardImages.map((billboard, index) => (
-                        <div
-                          key={billboard.id}
-                          className={`
+              {/* Billboard List */}
+              <div>
+                {billboardImages.length > 0 ? (
+                  <div className="space-y-3">
+                    {billboardImages.map((billboard, index) => (
+                      <div
+                        key={billboard.id}
+                        className={`
                             bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all duration-200
-                            ${selectedBillboard === billboard.id 
-                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                            ${
+                              selectedBillboard === billboard.id
+                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                             }
                           `}
-                        >
-                          <div className="flex items-center space-x-4 space-x-reverse">
-                            {/* Billboard Thumbnail */}
-                            <div 
-                              onClick={() => setSelectedBillboard(billboard.id)}
-                              className="relative w-20 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
-                            >
-                              <img 
-                                src={billboard.attachment || ""}
-                                alt={getDisplayTitle(billboard.title)}
-                                className="w-full h-full object-cover"
-                              />
-                              {selectedBillboard === billboard.id && (
-                                <div className="absolute -top-1 -right-1">
-                                  <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Billboard Info */}
-                            <div className="flex-1 min-w-0">
-                              {editingBillboard === billboard.id ? (
-                                <div className="flex items-center space-x-2 space-x-reverse">
-                                  <Input
-                                    value={editingTitle}
-                                    onChange={(e) => setEditingTitle(e.target.value)}
-                                    className="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                                    placeholder="عنوان بیلبورد"
-                                    dir="rtl"
-                                  />
-                                  <Button
-                                    onClick={handleSaveBillboardEdit}
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white"
-                                  >
-                                    <Check className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    onClick={handleCancelBillboardEdit}
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div>
-                                  <h4 className="text-gray-900 dark:text-white font-medium truncate">
-                                    {getDisplayTitle(billboard.title) || "بیلبورد بدون نام"}
-                                  </h4>
-                                  <p className="text-gray-500 text-sm">
-                                    تصویر بیلبورد • {billboard.attachment_type || 'image'}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Action Buttons */}
-                            {editingBillboard !== billboard.id && (
-                              <div className="flex items-center space-x-2 space-x-reverse">
-                                <Button
-                                  onClick={() => handleEditBillboard(billboard.id)}
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-gray-400 text-gray-600 hover:bg-gray-100"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  onClick={() => handleDeleteBillboard(billboard.id)}
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-red-500 text-red-600 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                      >
+                        <div className="flex items-center space-x-4 space-x-reverse">
+                          {/* Billboard Thumbnail */}
+                          <div
+                            onClick={() => setSelectedBillboard(billboard.id)}
+                            className="relative w-20 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
+                          >
+                            <img
+                              src={billboard.attachment || ""}
+                              alt={getDisplayTitle(billboard.title)}
+                              className="w-full h-full object-cover"
+                            />
+                            {selectedBillboard === billboard.id && (
+                              <div className="absolute -top-1 -right-1">
+                                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
                               </div>
                             )}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Monitor className="w-6 h-6 text-blue-500" />
-                      </div>
-                      <h4 className="text-gray-600 font-medium mb-1">هنوز بیلبوردی آپلود نشده</h4>
-                      <p className="text-gray-500 text-sm">تصویر بیلبورد خود را از بالا آپلود کنید</p>
-                    </div>
-                  )}
-                </div>
-                
-              
-              </div>
-            </div>
 
-                          {/* Left Side - Billboard Display */}
-              <div className="flex-1">
-                <div className="sticky top-6  bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 rounded-3xl p-8 shadow-2xl h-[600px]">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-transparent to-purple-400/20 rounded-3xl"></div>
-                  <div className="relative h-full">
-                  {/* Billboard Support Posts */}
-                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-                    <div className="w-3 h-16 bg-gray-600 rounded-full shadow-lg"></div>
-                    <div className="w-8 h-4 bg-gray-700 rounded-full -mt-2 -ml-2.5"></div>
-                  </div>
-                  
-                  {/* Billboard Content Area */}
-                  <div className="bg-white rounded-2xl p-4 h-full shadow-inner flex flex-col">
-                    {(() => {
-                      const selectedBillboardData = billboardImages.find(b => b.id === selectedBillboard);
-                      return selectedBillboardData ? (
-                        // نمایش بیلبورد انتخاب شده
-                        <div className="h-full flex flex-col">
-                          <div className="flex-1 relative rounded-xl overflow-hidden">
-                            <img 
-                              src={selectedBillboardData.attachment || ""}
-                              alt={getDisplayTitle(selectedBillboardData.title)}
-                              className="w-full h-full object-contain"
-                            />
-                            {/* Billboard Title Overlay */}
-                            <div className="absolute top-4 left-4 right-4">
-                              <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
-                                <h3 className="text-white font-bold text-lg">
-                                  تبلیغات محیطی (بیلبورد)
-                                </h3>
-                                <p className="text-gray-300 text-sm">
-                                  {getDisplayTitle(selectedBillboardData.title)}
+                          {/* Billboard Info */}
+                          <div className="flex-1 min-w-0">
+                            {editingBillboard === billboard.id ? (
+                              <div className="flex items-center space-x-2 space-x-reverse">
+                                <Input
+                                  value={editingTitle}
+                                  onChange={(e) =>
+                                    setEditingTitle(e.target.value)
+                                  }
+                                  className="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                  placeholder="عنوان بیلبورد"
+                                  dir="rtl"
+                                />
+                                <Button
+                                  onClick={handleSaveBillboardEdit}
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  onClick={handleCancelBillboardEdit}
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div>
+                                <h4 className="text-gray-900 dark:text-white font-medium truncate">
+                                  {getDisplayTitle(billboard.title) ||
+                                    "بیلبورد بدون نام"}
+                                </h4>
+                                <p className="text-gray-500 text-sm">
+                                  تصویر بیلبورد •{" "}
+                                  {billboard.attachment_type || "image"}
                                 </p>
                               </div>
+                            )}
+                          </div>
+
+                          {/* Action Buttons */}
+                          {editingBillboard !== billboard.id && (
+                            <div className="flex items-center space-x-2 space-x-reverse">
+                              <Button
+                                onClick={() =>
+                                  handleEditBillboard(billboard.id)
+                                }
+                                size="sm"
+                                variant="outline"
+                                className="border-gray-400 text-gray-600 hover:bg-gray-100"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  handleDeleteBillboard(billboard.id)
+                                }
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500 text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Monitor className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <h4 className="text-gray-600 font-medium mb-1">
+                      هنوز بیلبوردی آپلود نشده
+                    </h4>
+                    <p className="text-gray-500 text-sm">
+                      تصویر بیلبورد خود را از بالا آپلود کنید
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Left Side - Billboard Display */}
+          <div className="flex-1">
+            <div className="sticky top-6  bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 rounded-3xl p-8 shadow-2xl h-[600px]">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-transparent to-purple-400/20 rounded-3xl"></div>
+              <div className="relative h-full">
+                {/* Billboard Support Posts */}
+                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                  <div className="w-3 h-16 bg-gray-600 rounded-full shadow-lg"></div>
+                  <div className="w-8 h-4 bg-gray-700 rounded-full -mt-2 -ml-2.5"></div>
+                </div>
+
+                {/* Billboard Content Area */}
+                <div className="bg-white rounded-2xl p-4 h-full shadow-inner flex flex-col">
+                  {(() => {
+                    const selectedBillboardData = billboardImages.find(
+                      (b) => b.id === selectedBillboard
+                    );
+                    return selectedBillboardData ? (
+                      // نمایش بیلبورد انتخاب شده
+                      <div className="h-full flex flex-col">
+                        <div className="flex-1 relative rounded-xl overflow-hidden">
+                          <img
+                            src={selectedBillboardData.attachment || ""}
+                            alt={getDisplayTitle(selectedBillboardData.title)}
+                            className="w-full h-full object-contain"
+                          />
+                          {/* Billboard Title Overlay */}
+                          <div className="absolute top-4 left-4 right-4">
+                            <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
+                              <h3 className="text-white font-bold text-lg">
+                                تبلیغات محیطی (بیلبورد)
+                              </h3>
+                              <p className="text-gray-300 text-sm">
+                                {getDisplayTitle(selectedBillboardData.title)}
+                              </p>
                             </div>
                           </div>
                         </div>
-                      ) : (
-                        // حالت پیش‌فرض
-                        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 h-full flex flex-col items-center justify-center">
-                          <Monitor className="w-16 h-16 text-blue-600 mb-4" />
-                          <h3 className="text-xl font-bold text-gray-800 mb-2">
-                            تبلیغات محیطی (بیلبورد)
-                          </h3>
-                          <p className="text-gray-600 text-center">
-                            تصویر بیلبورد خود را از سمت راست بارگذاری کنید
-                          </p>
-        </div>
-                      );
-                    })()}
-                  </div>
-                  
-                  {/* Billboard Brand Strip */}
-                  <div className="absolute -bottom-3 left-4 right-4 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">OUTDOOR ADVERTISING</span>
-                  </div>
+                      </div>
+                    ) : (
+                      // حالت پیش‌فرض
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 h-full flex flex-col items-center justify-center">
+                        <Monitor className="w-16 h-16 text-blue-600 mb-4" />
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          تبلیغات محیطی (بیلبورد)
+                        </h3>
+                        <p className="text-gray-600 text-center">
+                          تصویر بیلبورد خود را از سمت راست بارگذاری کنید
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Billboard Brand Strip */}
+                <div className="absolute -bottom-3 left-4 right-4 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg flex items-center justify-center">
+                  <span className="text-xs font-bold text-white">
+                    OUTDOOR ADVERTISING
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-      
+        </div>
       );
     }
 
@@ -1034,8 +1078,12 @@ const BillboardTest = () => {
                     <Play className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">ویدئوهای آپلود شده</h3>
-                    <p className="text-gray-600 text-sm">مدیریت محتوای ویدئویی</p>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      ویدئوهای آپلود شده
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      مدیریت محتوای ویدئویی
+                    </p>
                   </div>
                 </div>
                 <div className="text-sm text-gray-500">
@@ -1047,8 +1095,10 @@ const BillboardTest = () => {
               <div className=" mb-6 shadow-sm ">
                 <AdTestUploader
                   key={selectedAdTestType}
-                  adTestType={selectedAdTestType as "billboard" | "video" | "logo"}
-              questions={questions}
+                  adTestType={
+                    selectedAdTestType as "billboard" | "video" | "logo"
+                  }
+                  questions={questions}
                   onQuestionsUpdate={handleQuestionsUpdate}
                 />
               </div>
@@ -1062,15 +1112,16 @@ const BillboardTest = () => {
                         key={video.id}
                         className={`
                           bg-white rounded-xl p-4 border-2 transition-all duration-200
-                          ${selectedVideo === video.id 
-                            ? 'border-red-500 bg-red-50' 
-                            : 'border-gray-200 hover:border-gray-300'
+                          ${
+                            selectedVideo === video.id
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-200 hover:border-gray-300"
                           }
                         `}
                       >
                         <div className="flex items-center space-x-4 space-x-reverse">
                           {/* Video Thumbnail */}
-                          <div 
+                          <div
                             onClick={() => setSelectedVideo(video.id)}
                             className="relative w-20 h-12 bg-gray-900 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center"
                           >
@@ -1088,7 +1139,9 @@ const BillboardTest = () => {
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <Input
                                   value={editingVideoTitle}
-                                  onChange={(e) => setEditingVideoTitle(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingVideoTitle(e.target.value)
+                                  }
                                   className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500"
                                   placeholder="عنوان ویدئو"
                                   dir="rtl"
@@ -1112,10 +1165,12 @@ const BillboardTest = () => {
                             ) : (
                               <div>
                                 <h4 className="text-gray-900 font-medium truncate">
-                                  {getDisplayTitle(video.title) || "ویدئو بدون نام"}
+                                  {getDisplayTitle(video.title) ||
+                                    "ویدئو بدون نام"}
                                 </h4>
                                 <p className="text-gray-500 text-sm">
-                                  فایل ویدئویی • {video.attachment_type || 'video'}
+                                  فایل ویدئویی •{" "}
+                                  {video.attachment_type || "video"}
                                 </p>
                               </div>
                             )}
@@ -1151,8 +1206,12 @@ const BillboardTest = () => {
                     <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Play className="w-6 h-6 text-red-500" />
                     </div>
-                    <h4 className="text-gray-600 font-medium mb-1">هنوز ویدئویی آپلود نشده</h4>
-                    <p className="text-gray-500 text-sm">فایل ویدئو خود را از بالا آپلود کنید</p>
+                    <h4 className="text-gray-600 font-medium mb-1">
+                      هنوز ویدئویی آپلود نشده
+                    </h4>
+                    <p className="text-gray-500 text-sm">
+                      فایل ویدئو خود را از بالا آپلود کنید
+                    </p>
                   </div>
                 )}
               </div>
@@ -1166,11 +1225,13 @@ const BillboardTest = () => {
                 {/* Video Player Area */}
                 <div className="bg-black rounded-2xl h-full shadow-inner flex flex-col relative overflow-hidden">
                   {(() => {
-                    const selectedVideoData = videoFiles.find(v => v.id === selectedVideo);
+                    const selectedVideoData = videoFiles.find(
+                      (v) => v.id === selectedVideo
+                    );
                     return selectedVideoData ? (
                       // نمایش ویدئو انتخاب شده
                       <div className="h-full flex flex-col relative">
-                        <video 
+                        <video
                           src={selectedVideoData.attachment || ""}
                           controls
                           className="w-full h-full object-contain rounded-2xl"
@@ -1204,10 +1265,12 @@ const BillboardTest = () => {
                     );
                   })()}
                 </div>
-                
+
                 {/* Video Player Controls Strip */}
                 <div className="absolute -bottom-3 left-4 right-4 h-6 bg-gradient-to-r from-red-500 to-pink-500 rounded-full shadow-lg flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">VIDEO ADVERTISING</span>
+                  <span className="text-xs font-bold text-white">
+                    VIDEO ADVERTISING
+                  </span>
                 </div>
               </div>
             </div>
@@ -1218,7 +1281,7 @@ const BillboardTest = () => {
 
     // Logo Test - شبیه showcase لوگو
     if (selectedAdTestType === "logo") {
-    return (
+      return (
         <div className="flex gap-6">
           {/* Right Side - Upload and Management */}
           <div className="w-[500px]">
@@ -1230,7 +1293,9 @@ const BillboardTest = () => {
                     <Palette className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">لوگوهای آپلود شده</h3>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      لوگوهای آپلود شده
+                    </h3>
                     <p className="text-gray-600 text-sm">مدیریت محتوای لوگو</p>
                   </div>
                 </div>
@@ -1243,7 +1308,9 @@ const BillboardTest = () => {
               <div className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-purple-100">
                 <AdTestUploader
                   key={selectedAdTestType}
-                  adTestType={selectedAdTestType as "billboard" | "video" | "logo"}
+                  adTestType={
+                    selectedAdTestType as "billboard" | "video" | "logo"
+                  }
                   questions={questions}
                   onQuestionsUpdate={handleQuestionsUpdate}
                 />
@@ -1258,19 +1325,20 @@ const BillboardTest = () => {
                         key={logo.id}
                         className={`
                           bg-white rounded-xl p-4 border-2 transition-all duration-200
-                          ${selectedLogo === logo.id 
-                            ? 'border-purple-500 bg-purple-50' 
-                            : 'border-gray-200 hover:border-gray-300'
+                          ${
+                            selectedLogo === logo.id
+                              ? "border-purple-500 bg-purple-50"
+                              : "border-gray-200 hover:border-gray-300"
                           }
                         `}
                       >
                         <div className="flex items-center space-x-4 space-x-reverse">
                           {/* Logo Thumbnail */}
-                          <div 
+                          <div
                             onClick={() => setSelectedLogo(logo.id)}
                             className="relative w-20 h-12 bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
                           >
-                            <img 
+                            <img
                               src={logo.attachment || ""}
                               alt={getDisplayTitle(logo.title)}
                               className="w-full h-full object-contain"
@@ -1288,7 +1356,9 @@ const BillboardTest = () => {
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <Input
                                   value={editingLogoTitle}
-                                  onChange={(e) => setEditingLogoTitle(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingLogoTitle(e.target.value)
+                                  }
                                   className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500"
                                   placeholder="عنوان لوگو"
                                   dir="rtl"
@@ -1312,10 +1382,11 @@ const BillboardTest = () => {
                             ) : (
                               <div>
                                 <h4 className="text-gray-900 font-medium truncate">
-                                  {getDisplayTitle(logo.title) || "لوگو بدون نام"}
+                                  {getDisplayTitle(logo.title) ||
+                                    "لوگو بدون نام"}
                                 </h4>
                                 <p className="text-gray-500 text-sm">
-                                  تصویر لوگو • {logo.attachment_type || 'image'}
+                                  تصویر لوگو • {logo.attachment_type || "image"}
                                 </p>
                               </div>
                             )}
@@ -1351,8 +1422,12 @@ const BillboardTest = () => {
                     <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Palette className="w-6 h-6 text-purple-500" />
                     </div>
-                    <h4 className="text-gray-600 font-medium mb-1">هنوز لوگویی آپلود نشده</h4>
-                    <p className="text-gray-500 text-sm">تصویر لوگو خود را از بالا آپلود کنید</p>
+                    <h4 className="text-gray-600 font-medium mb-1">
+                      هنوز لوگویی آپلود نشده
+                    </h4>
+                    <p className="text-gray-500 text-sm">
+                      تصویر لوگو خود را از بالا آپلود کنید
+                    </p>
                   </div>
                 )}
               </div>
@@ -1367,7 +1442,9 @@ const BillboardTest = () => {
                 {/* Logo Showcase Area */}
                 <div className="h-full flex flex-col">
                   {(() => {
-                    const selectedLogoData = logoImages.find(l => l.id === selectedLogo);
+                    const selectedLogoData = logoImages.find(
+                      (l) => l.id === selectedLogo
+                    );
                     return selectedLogoData ? (
                       // نمایش لوگو انتخاب شده
                       <div className="h-full flex flex-col">
@@ -1376,7 +1453,7 @@ const BillboardTest = () => {
                           <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
                             <h3 className="text-white font-bold text-lg">
                               تبلیغات لوگو برند
-            </h3>
+                            </h3>
                             <p className="text-gray-300 text-sm">
                               {getDisplayTitle(selectedLogoData.title)}
                             </p>
@@ -1392,7 +1469,7 @@ const BillboardTest = () => {
                               </span>
                             </div>
                             <div className="flex items-center justify-center min-h-[200px]">
-                              <img 
+                              <img
                                 src={selectedLogoData.attachment || ""}
                                 alt={getDisplayTitle(selectedLogoData.title)}
                                 className="max-w-full max-h-full object-contain"
@@ -1417,10 +1494,12 @@ const BillboardTest = () => {
                     );
                   })()}
                 </div>
-                
+
                 {/* Logo Brand Strip */}
                 <div className="absolute -bottom-3 left-4 right-4 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">BRAND LOGO SHOWCASE</span>
+                  <span className="text-xs font-bold text-white">
+                    BRAND LOGO SHOWCASE
+                  </span>
                 </div>
               </div>
             </div>
@@ -1441,9 +1520,11 @@ const BillboardTest = () => {
                 <div className="flex items-center space-x-3 space-x-reverse">
                   <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
                     <Building className="w-5 h-5 text-white" />
-              </div>
+                  </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">نام‌های برند</h3>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      نام‌های برند
+                    </h3>
                     <p className="text-gray-600 text-sm">مدیریت نام‌های برند</p>
                   </div>
                 </div>
@@ -1471,15 +1552,16 @@ const BillboardTest = () => {
                         key={brand.id}
                         className={`
                           bg-white rounded-xl p-4 border-2 transition-all duration-200
-                          ${selectedBrand === brand.id 
-                            ? 'border-green-500 bg-green-50' 
-                            : 'border-gray-200 hover:border-gray-300'
+                          ${
+                            selectedBrand === brand.id
+                              ? "border-green-500 bg-green-50"
+                              : "border-gray-200 hover:border-gray-300"
                           }
                         `}
                       >
                         <div className="flex items-center space-x-4 space-x-reverse">
                           {/* Brand Preview */}
-                          <div 
+                          <div
                             onClick={() => setSelectedBrand(brand.id)}
                             className="relative w-20 h-12 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center"
                           >
@@ -1499,7 +1581,9 @@ const BillboardTest = () => {
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <Input
                                   value={editingBrandTitle}
-                                  onChange={(e) => setEditingBrandTitle(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingBrandTitle(e.target.value)
+                                  }
                                   className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500"
                                   placeholder="نام برند"
                                   dir="rtl"
@@ -1562,8 +1646,12 @@ const BillboardTest = () => {
                     <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Building className="w-6 h-6 text-green-500" />
                     </div>
-                    <h4 className="text-gray-600 font-medium mb-1">هنوز نام برندی اضافه نشده</h4>
-                    <p className="text-gray-500 text-sm">نام برند خود را از بالا اضافه کنید</p>
+                    <h4 className="text-gray-600 font-medium mb-1">
+                      هنوز نام برندی اضافه نشده
+                    </h4>
+                    <p className="text-gray-500 text-sm">
+                      نام برند خود را از بالا اضافه کنید
+                    </p>
                   </div>
                 )}
               </div>
@@ -1578,7 +1666,9 @@ const BillboardTest = () => {
                 {/* Brand Display Area */}
                 <div className="h-full flex flex-col">
                   {(() => {
-                    const selectedBrandData = brandTexts.find(b => b.id === selectedBrand);
+                    const selectedBrandData = brandTexts.find(
+                      (b) => b.id === selectedBrand
+                    );
                     return selectedBrandData ? (
                       // نمایش نام برند انتخاب شده
                       <div className="h-full flex flex-col">
@@ -1590,17 +1680,18 @@ const BillboardTest = () => {
                             </h3>
                             <p className="text-gray-300 text-sm">
                               نمایش هویت برند
-              </p>
-            </div>
-          </div>
+                            </p>
+                          </div>
+                        </div>
 
                         {/* Brand Name Display */}
                         <div className="flex-1 flex items-center justify-center">
                           <div className="bg-white rounded-xl p-12 shadow-lg border border-green-200 max-w-md w-full">
                             <div className="text-center">
                               <div className="text-4xl font-bold text-gray-800 mb-4 tracking-wide">
-                                {getDisplayTitle(selectedBrandData.title) || "نام برند"}
-        </div>
+                                {getDisplayTitle(selectedBrandData.title) ||
+                                  "نام برند"}
+                              </div>
                               <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto mb-4 rounded-full"></div>
                               <div className="text-sm text-gray-600 uppercase tracking-widest">
                                 هویت برند شما
@@ -1621,8 +1712,8 @@ const BillboardTest = () => {
                         <p className="text-gray-300 text-center">
                           نام برند خود را از سمت راست اضافه کنید
                         </p>
-      </div>
-    );
+                      </div>
+                    );
                   })()}
                 </div>
               </div>
@@ -1646,7 +1737,9 @@ const BillboardTest = () => {
                     <MessageSquare className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">شعارهای برند</h3>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      شعارهای برند
+                    </h3>
                     <p className="text-gray-600 text-sm">مدیریت شعارهای برند</p>
                   </div>
                 </div>
@@ -1674,15 +1767,16 @@ const BillboardTest = () => {
                         key={slogan.id}
                         className={`
                           bg-white rounded-xl p-4 border-2 transition-all duration-200
-                          ${selectedSlogan === slogan.id 
-                            ? 'border-orange-500 bg-orange-50' 
-                            : 'border-gray-200 hover:border-gray-300'
+                          ${
+                            selectedSlogan === slogan.id
+                              ? "border-orange-500 bg-orange-50"
+                              : "border-gray-200 hover:border-gray-300"
                           }
                         `}
                       >
                         <div className="flex items-center space-x-4 space-x-reverse">
                           {/* Slogan Preview */}
-                          <div 
+                          <div
                             onClick={() => setSelectedSlogan(slogan.id)}
                             className="relative w-20 h-12 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center"
                           >
@@ -1702,7 +1796,9 @@ const BillboardTest = () => {
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <Input
                                   value={editingSloganTitle}
-                                  onChange={(e) => setEditingSloganTitle(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingSloganTitle(e.target.value)
+                                  }
                                   className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500"
                                   placeholder="شعار برند"
                                   dir="rtl"
@@ -1765,8 +1861,12 @@ const BillboardTest = () => {
                     <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <MessageSquare className="w-6 h-6 text-orange-500" />
                     </div>
-                    <h4 className="text-gray-600 font-medium mb-1">هنوز شعاری اضافه نشده</h4>
-                    <p className="text-gray-500 text-sm">شعار برند خود را از بالا اضافه کنید</p>
+                    <h4 className="text-gray-600 font-medium mb-1">
+                      هنوز شعاری اضافه نشده
+                    </h4>
+                    <p className="text-gray-500 text-sm">
+                      شعار برند خود را از بالا اضافه کنید
+                    </p>
                   </div>
                 )}
               </div>
@@ -1781,7 +1881,9 @@ const BillboardTest = () => {
                 {/* Slogan Display Area */}
                 <div className="h-full flex flex-col">
                   {(() => {
-                    const selectedSloganData = sloganTexts.find(s => s.id === selectedSlogan);
+                    const selectedSloganData = sloganTexts.find(
+                      (s) => s.id === selectedSlogan
+                    );
                     return selectedSloganData ? (
                       // نمایش شعار انتخاب شده
                       <div className="h-full flex flex-col">
@@ -1802,7 +1904,10 @@ const BillboardTest = () => {
                           <div className="bg-white rounded-xl p-12 shadow-lg border border-orange-200 max-w-lg w-full">
                             <div className="text-center">
                               <div className="text-2xl font-semibold text-gray-800 mb-4 italic leading-relaxed">
-                                "{getDisplayTitle(selectedSloganData.title) || "شعار برند شما"}"
+                                "
+                                {getDisplayTitle(selectedSloganData.title) ||
+                                  "شعار برند شما"}
+                                "
                               </div>
                               <div className="w-32 h-0.5 bg-gradient-to-r from-orange-400 to-yellow-400 mx-auto mb-4 rounded-full"></div>
                               <div className="text-sm text-gray-600 uppercase tracking-widest">
@@ -1864,46 +1969,49 @@ const BillboardTest = () => {
         <div className="w-96 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l border-gray-200/70 dark:border-gray-700/70 h-[calc(100vh-80px)] fixed top-20 right-0 flex flex-col z-10">
           <div className="p-4 border-b border-gray-200/50 flex-shrink-0">
             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-400 dark:to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-400 dark:to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
                 <Building className="w-3 h-3 text-white" />
               </div>
               <h2 className="text-base font-semibold text-gray-900">
-              نوع تست تبلیغ خود را انتخاب کنید
-            </h2>
+                نوع تست تبلیغ خود را انتخاب کنید
+              </h2>
             </div>
-            <p className="text-xs text-gray-500">نوع تست مورد نظر را انتخاب کنید</p>
+            <p className="text-xs text-gray-500">
+              نوع تست مورد نظر را انتخاب کنید
+            </p>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-3">
-            {adTestItems.map((item) => (
+              {adTestItems.map((item) => (
                 <div
-                key={item.id}
+                  key={item.id}
                   className={`flex items-center p-2.5 rounded-lg border cursor-pointer hover:shadow-sm hover:scale-[1.02] transition-all ${
-                  selectedAdTestType === item.value
-                    ? "border-blue-500 bg-blue-50 shadow-md"
+                    selectedAdTestType === item.value
+                      ? "border-blue-500 bg-blue-50 shadow-md"
                       : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-                onClick={() => toggleType(item.value)}
-              >
+                  }`}
+                  onClick={() => toggleType(item.value)}
+                >
                   <div className="flex items-center gap-2 w-full">
                     <div className="flex-shrink-0">
                       {React.cloneElement(item.icon as React.ReactElement, {
-                        className: selectedAdTestType === item.value 
-                          ? "w-4 h-4 text-blue-600" 
-                          : "w-4 h-4 text-gray-600"
+                        className:
+                          selectedAdTestType === item.value
+                            ? "w-4 h-4 text-blue-600"
+                            : "w-4 h-4 text-gray-600",
                       })}
                     </div>
                     <span className="text-xs font-medium text-gray-700 truncate flex-1">
-                    {item.name}
+                      {item.name}
                     </span>
-                  {selectedAdTestType === item.value && (
+                    {selectedAdTestType === item.value && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  )}
+                    )}
                   </div>
                 </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -1918,10 +2026,10 @@ const BillboardTest = () => {
               <p className="text-gray-600">
                 محتوای تست تبلیغاتی خود را تنظیم کنید
               </p>
-          </div>
+            </div>
 
-          {/* Content Based on Selection */}
-          {renderAdTestContent()}
+            {/* Content Based on Selection */}
+            {renderAdTestContent()}
           </div>
         </div>
       </div>

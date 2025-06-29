@@ -55,10 +55,26 @@ function App() {
             }
           />
           <Route
+            path="/adtest/:id/audience"
+            element={
+              <PrivateRoute>
+                <Audience />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/adtest/:id/questions"
             element={
               <PrivateRoute>
                 <AdTestQuestions />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/adtest/:id/results"
+            element={
+              <PrivateRoute>
+                <ReportResults />
               </PrivateRoute>
             }
           />

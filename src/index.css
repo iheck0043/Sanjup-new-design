@@ -97,7 +97,48 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Vazirmatn", sans-serif;
+    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif;
+    font-feature-settings: "ss01" on, "cv01" on;
+    font-variant-numeric: oldstyle-nums;
+  }
+
+  /* Persian Numbers Support - برای نمایش اعداد فارسی */
+  .persian-numbers,
+  .font-persian-numbers {
+    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif;
+    font-feature-settings: "ss01" on, "cv01" on, "pnum" on;
+    font-variant-numeric: proportional-nums;
+  }
+
+  /* Force Persian Digits - اجبار نمایش ارقام فارسی */
+  input[type="number"],
+  input[type="tel"],
+  input[type="text"],
+  .number-display,
+  .persian-digits {
+    font-family: "Vazir", "IRANSans", sans-serif !important;
+    font-feature-settings: "pnum" on, "tnum" off;
+    font-variant-numeric: proportional-nums;
+    unicode-bidi: bidi-override;
+    direction: inherit;
+  }
+
+  /* اجبار استفاده از ارقام فارسی */
+  .force-persian-digits,
+  .persian-numbers {
+    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif !important;
+    font-feature-settings: "ss01" on, "cv01" on, "pnum" on, "tnum" off !important;
+    font-variant-numeric: proportional-nums !important;
+    unicode-bidi: bidi-override !important;
+  }
+
+  /* Specific styles for input elements with Persian numbers */
+  input.persian-numbers {
+    font-family: "Vazir", "IRANSans", sans-serif !important;
+    font-feature-settings: "ss01" on, "cv01" on, "pnum" on !important;
+    font-variant-numeric: proportional-nums !important;
+    unicode-bidi: bidi-override !important;
+    direction: ltr !important;
   }
 }
 /* * {

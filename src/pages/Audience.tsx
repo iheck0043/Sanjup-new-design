@@ -16,6 +16,8 @@ import {
   Settings,
   User,
   UserCheck,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +45,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 
 interface Segment {
@@ -244,7 +246,11 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const Audience = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { accessToken } = useAuth();
+
+  // Check if we're in adtest context
+  const isAdTest = location.pathname.includes("/adtest/");
 
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
     null
@@ -2109,6 +2115,23 @@ const Audience = () => {
     }
   }, [segments.length]);
 
+  // Navigation functions
+  const prevStep = () => {
+    if (isAdTest) {
+      navigate(`/adtest/${id}/questions`);
+    } else {
+      navigate(`/questionnaire/${id}`);
+    }
+  };
+
+  const nextStep = () => {
+    if (isAdTest) {
+      navigate(`/adtest/${id}/results`);
+    } else {
+      navigate(`/questionnaire/${id}/results`);
+    }
+  };
+
   const fetchQuestionnaire = async () => {
     try {
       const response = await fetch(
@@ -2164,22 +2187,47 @@ const Audience = () => {
         setFormTitle={setFormTitle}
         steps={
           id
-            ? [
-                { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
-                {
-                  id: 2,
-                  title: "انتخاب مخاطب",
-                  path: `/questionnaire/${id}/audience`,
-                },
-                {
-                  id: 3,
-                  title: "گزارش نتایج",
-                  path: `/questionnaire/${id}/results`,
-                },
-              ]
+            ? isAdTest
+              ? [
+                  { id: 1, title: "تعیین محتوا", path: `/adtest/${id}` },
+                  {
+                    id: 2,
+                    title: "سوالات",
+                    path: `/adtest/${id}/questions`,
+                  },
+                  {
+                    id: 3,
+                    title: "انتخاب مخاطب",
+                    path: `/adtest/${id}/audience`,
+                  },
+                  {
+                    id: 4,
+                    title: "گزارش نتایج",
+                    path: `/adtest/${id}/results`,
+                  },
+                ]
+              : [
+                  {
+                    id: 1,
+                    title: "طراحی نظرسنجی",
+                    path: `/questionnaire/${id}`,
+                  },
+                  {
+                    id: 2,
+                    title: "انتخاب مخاطب",
+                    path: `/questionnaire/${id}/audience`,
+                  },
+                  {
+                    id: 3,
+                    title: "گزارش نتایج",
+                    path: `/questionnaire/${id}/results`,
+                  },
+                ]
             : undefined
         }
-        backPath={id ? `/questionnaire/${id}` : "/"}
+        backPath={
+          id ? (isAdTest ? `/adtest/${id}` : `/questionnaire/${id}`) : "/"
+        }
       />
 
       <div className="flex flex-1 h-[calc(100vh-64px)] mt-16">
@@ -3301,6 +3349,33 @@ const Audience = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Fixed Navigation Buttons */}
+      <div className="fixed bottom-6 left-6 right-6 flex items-center justify-between z-50">
+        <Button
+          onClick={prevStep}
+          variant="outline"
+          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-700 hover:shadow-lg transition-all duration-200 px-6 py-3"
+          size="lg"
+        >
+          <ArrowRight className="w-5 h-5 ml-2" />
+          مرحله قبل
+        </Button>
+        <Button
+          onClick={nextStep}
+          disabled={
+            segments.length === 0 ||
+            summaryLoading ||
+            segmentOperationLoading ||
+            filterOperationLoading
+          }
+          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white shadow-sm hover:shadow-md transition-all duration-200 px-6 py-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          size="lg"
+        >
+          مرحله بعد
+          <ArrowLeft className="w-5 h-5 mr-2" />
+        </Button>
       </div>
     </div>
   );

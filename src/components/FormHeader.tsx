@@ -27,16 +27,35 @@ const FormHeader: React.FC<FormHeaderProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Detect if we're in adtest context
+  const isAdTest = location.pathname.includes("/adtest/");
+  const pathSegments = location.pathname.split("/");
+  const currentId = pathSegments[2]; // Extract ID from path
+
   const defaultSteps = [
     { id: 1, title: "طراحی نظرسنجی", path: "/" },
     { id: 2, title: "انتخاب مخاطب", path: "/audience" },
     { id: 3, title: "گزارش نتایج", path: "/results" },
   ];
 
-  const currentSteps = steps || defaultSteps;
+  const adTestSteps = [
+    { id: 1, title: "تعیین محتوا", path: `/adtest/${currentId}` },
+    { id: 2, title: "سوالات", path: `/adtest/${currentId}/questions` },
+    { id: 3, title: "انتخاب مخاطب", path: `/adtest/${currentId}/audience` },
+    { id: 4, title: "گزارش نتایج", path: `/adtest/${currentId}/results` },
+  ];
+
+  const currentSteps = steps || (isAdTest ? adTestSteps : defaultSteps);
 
   const getCurrentStep = () => {
     const currentPath = location.pathname;
+    // For adtest context, match more intelligently
+    if (isAdTest) {
+      if (currentPath.includes("/questions")) return 2;
+      if (currentPath.includes("/audience")) return 3;
+      if (currentPath.includes("/results")) return 4;
+      return 1; // Default to first step (content determination)
+    }
     const step = currentSteps.find((s) => s.path === currentPath);
     return step ? step.id : 1;
   };

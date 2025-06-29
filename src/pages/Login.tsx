@@ -20,13 +20,15 @@ import {
   BarChart3,
   Target,
 } from "lucide-react";
-import LogoSanjup from "@/assets/Logo-Sanjup.png";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { usePersianInput, toPersianNumbers } from "@/hooks/use-persian-input";
 
+import LogoSanjup from "@/assets/Logo-Sanjup.png";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Login() {
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+  const phoneInput = usePersianInput("", { maxLength: 11 });
+  const otpInput = usePersianInput("", { maxLength: 6 });
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
@@ -39,7 +41,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(phone);
+      await login(phoneInput.value);
       setShowOtpInput(true);
       toast.success("کد تایید ارسال شد");
     } catch (error) {
@@ -53,7 +55,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await verifyOTP(phone, otp);
+      await verifyOTP(phoneInput.value, otpInput.value);
       toast.success("ورود موفقیت آمیز");
       navigate("/");
     } catch (error: any) {
@@ -80,7 +82,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append("phone", phone);
+      formData.append("phone", phoneInput.value);
       formData.append("first_name", firstName.trim());
       formData.append("last_name", lastName.trim());
 
@@ -120,13 +122,17 @@ export default function Login() {
   const resetToPhoneInput = () => {
     setShowOtpInput(false);
     setShowSignupForm(false);
-    setOtp("");
+    otpInput.handleChange("");
     setFirstName("");
     setLastName("");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex relative">
+      {/* Theme Toggle */}
+      <div className="absolute top-6 left-6 z-10">
+        <ThemeToggle />
+      </div>
       {/* Left Side - Branding & Features */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-12 flex-col justify-between text-white relative overflow-hidden">
         {/* Background Pattern */}
@@ -140,7 +146,7 @@ export default function Login() {
         {/* Logo */}
         <div className="relative z-10">
           <img
-            src={LogoSanjup}
+           src={LogoSanjup}
             alt="سنجاپ"
             className="h-12 w-auto brightness-0 invert"
           />
@@ -197,34 +203,36 @@ export default function Login() {
       </div>
 
       {/* Right Side - Authentication Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 dark:bg-slate-900">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <img
               src={LogoSanjup}
               alt="سنجاپ"
-              className="h-10 w-auto mx-auto mb-4"
+              className="h-10 w-auto mx-auto mb-4 dark:brightness-0 dark:invert"
             />
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
               پلتفرم طراحی و انتشار نظرسنجی
             </h1>
           </div>
 
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm dark:border-slate-700/50 border dark:shadow-slate-900/30">
             <CardHeader className="text-center pb-8">
-              <CardTitle className="text-2xl font-bold text-slate-900">
+              <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
                 {showSignupForm
                   ? "تکمیل اطلاعات"
                   : showOtpInput
                   ? "تایید هویت"
                   : "ورود"}
               </CardTitle>
-              <CardDescription className="text-slate-600 text-base">
+              <CardDescription className="text-slate-600 dark:text-slate-300 text-base">
                 {showSignupForm
                   ? "برای ادامه، اطلاعات زیر را تکمیل کنید"
                   : showOtpInput
-                  ? `کد تایید به شماره ${phone} ارسال شد`
+                  ? `کد تایید به شماره ${toPersianNumbers(
+                      phoneInput.value
+                    )} ارسال شد`
                   : "شماره موبایل خود را وارد کنید"}
               </CardDescription>
             </CardHeader>
@@ -238,7 +246,7 @@ export default function Login() {
                       placeholder="نام"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="h-12 bg-white/50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                      className="h-12 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 dark:text-white dark:placeholder-slate-400"
                       required
                     />
                     <Input
@@ -246,7 +254,7 @@ export default function Login() {
                       placeholder="نام خانوادگی"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="h-12 bg-white/50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                      className="h-12 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 dark:text-white dark:placeholder-slate-400"
                       required
                     />
                   </div>
@@ -260,7 +268,7 @@ export default function Login() {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full h-12 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    className="w-full h-12 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
                     onClick={resetToPhoneInput}
                   >
                     <ArrowLeft className="w-4 h-4 ml-2" />
@@ -270,14 +278,14 @@ export default function Login() {
               ) : !showOtpInput ? (
                 <form onSubmit={handlePhoneSubmit} className="space-y-6">
                   <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-5 h-5" />
                     <Input
                       type="tel"
-                      placeholder="09123456789"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                      value={phoneInput.displayValue}
+                      onChange={(e) => phoneInput.handleChange(e.target.value)}
                       dir="ltr"
-                      className="h-12 pl-4 pr-12 bg-white/50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-left"
+                      className="h-12 pl-4 pr-12 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 text-left dark:text-white dark:placeholder-slate-400 persian-numbers"
                       required
                     />
                   </div>
@@ -293,11 +301,11 @@ export default function Login() {
                 <form onSubmit={handleOtpSubmit} className="space-y-6">
                   <Input
                     type="text"
-                    placeholder="کد 4 رقمی"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="کد ۴ رقمی"
+                    value={otpInput.displayValue}
+                    onChange={(e) => otpInput.handleChange(e.target.value)}
                     dir="ltr"
-                    className="h-12 text-center text-2xl font-mono bg-white/50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 tracking-widest"
+                    className="h-12 text-center text-2xl font-mono bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 tracking-widest dark:text-white dark:placeholder-slate-400 persian-numbers"
                     maxLength={6}
                     required
                   />
@@ -311,7 +319,7 @@ export default function Login() {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full h-12 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    className="w-full h-12 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
                     onClick={resetToPhoneInput}
                   >
                     <ArrowLeft className="w-4 h-4 ml-2" />
@@ -321,10 +329,10 @@ export default function Login() {
               )}
 
               {/* Platform Benefits */}
-              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-slate-600">
+                  <div className="text-sm text-slate-600 dark:text-slate-300">
                     <p className="font-medium mb-1">پلتفرم کامل و یکپارچه</p>
                     <p>از طراحی تا انتشار و تحلیل نتایج، همه چیز در یک مکان.</p>
                   </div>

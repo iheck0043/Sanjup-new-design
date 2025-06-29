@@ -3,16 +3,6 @@ import { toast } from "sonner";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Debug log for BASE_URL
-if (import.meta.env.DEV) {
-  console.log("AUTH Context - BASE_URL:", BASE_URL);
-  console.log(
-    "AUTH Context - ENV VITE_BASE_URL:",
-    import.meta.env.VITE_BASE_URL
-  );
-  console.log("AUTH Context - Window Origin:", window.location.origin);
-}
-
 interface User {
   id: string;
   phone: string;
