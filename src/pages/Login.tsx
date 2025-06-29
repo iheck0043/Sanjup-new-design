@@ -142,6 +142,10 @@ export default function Login() {
             src="/Logo-Sanjup.png"
             alt="سنجاپ"
             className="h-12 w-auto brightness-0 invert"
+            onError={(e) => {
+              console.error("Logo loading failed:", e);
+              e.currentTarget.style.display = "none";
+            }}
           />
         </div>
 
@@ -204,6 +208,10 @@ export default function Login() {
               src="/Logo-Sanjup.png"
               alt="سنجاپ"
               className="h-10 w-auto mx-auto mb-4"
+              onError={(e) => {
+                console.error("Mobile logo loading failed:", e);
+                e.currentTarget.style.display = "none";
+              }}
             />
             <h1 className="text-2xl font-bold text-slate-900">
               پلتفرم طراحی و انتشار نظرسنجی

@@ -63,6 +63,51 @@ VITE_BASE_URL=https://your-api-server.com
 console.log('BASE_URL:', import.meta.env.VITE_BASE_URL);
 ```
 
+## مشکل‌یابی Static Files (عکس‌ها و فایل‌های public)
+
+### مشکل: عکس‌ها در production نمایش داده نمی‌شوند
+
+#### راه‌حل‌ها:
+
+1. **بررسی فایل‌های static پس از build:**
+```bash
+npm run check-static
+```
+
+2. **استفاده از nginx debug mode:**
+```bash
+# استفاده از debug configuration
+docker build -t your-app-debug .
+docker run -p 80:80 -v $(pwd)/nginx-debug.conf:/etc/nginx/conf.d/default.conf your-app-debug
+
+# بررسی logs
+docker logs container-name
+```
+
+3. **بررسی مسیر فایل‌ها:**
+```bash
+# وارد container شوید
+docker exec -it container-name sh
+
+# بررسی فایل‌ها در nginx root
+ls -la /usr/share/nginx/html/
+ls -la /usr/share/nginx/html/*.png
+```
+
+4. **Test کردن فایل‌های static مستقیماً:**
+```bash
+# در container
+curl -I http://localhost/Logo-Sanjup.png
+curl -I http://localhost/Logo-Sanjup-blue.png
+```
+
+### علت‌های محتمل:
+
+- فایل‌ها در build process کپی نشده‌اند
+- nginx configuration مشکل دارد
+- مسیریابی nginx برای static files درست نیست
+- فایل‌ها با نام متفاوت کپی شده‌اند
+
 ## نکات امنیتی
 
 - فایل `.env` را به `.gitignore` اضافه کنید

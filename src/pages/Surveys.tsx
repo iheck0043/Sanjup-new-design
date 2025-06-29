@@ -444,6 +444,10 @@ const Surveys = () => {
               src="/Logo-Sanjup-blue.png"
               alt="سنجاپ"
               className="h-10 w-auto"
+              onError={(e) => {
+                console.error("Header logo loading failed:", e);
+                e.currentTarget.style.display = "none";
+              }}
             />
           </div>
 
