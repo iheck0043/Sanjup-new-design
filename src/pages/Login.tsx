@@ -146,7 +146,7 @@ export default function Login() {
         {/* Logo */}
         <div className="relative z-10">
           <img
-           src={LogoSanjup}
+            src={LogoSanjup}
             alt="سنجاپ"
             className="h-12 w-auto brightness-0 invert"
           />
@@ -227,13 +227,19 @@ export default function Login() {
                   : "ورود"}
               </CardTitle>
               <CardDescription className="text-slate-600 dark:text-slate-300 text-base">
-                {showSignupForm
-                  ? "برای ادامه، اطلاعات زیر را تکمیل کنید"
-                  : showOtpInput
-                  ? `کد تایید به شماره ${toPersianNumbers(
-                      phoneInput.value
-                    )} ارسال شد`
-                  : "شماره موبایل خود را وارد کنید"}
+                {showSignupForm ? (
+                  "برای ادامه، اطلاعات زیر را تکمیل کنید"
+                ) : showOtpInput ? (
+                  <>
+                    کد تایید به شماره{" "}
+                    <span className="persian-number-display">
+                      {toPersianNumbers(phoneInput.value)}
+                    </span>{" "}
+                    ارسال شد
+                  </>
+                ) : (
+                  "شماره موبایل خود را وارد کنید"
+                )}
               </CardDescription>
             </CardHeader>
 
@@ -285,7 +291,7 @@ export default function Login() {
                       value={phoneInput.displayValue}
                       onChange={(e) => phoneInput.handleChange(e.target.value)}
                       dir="ltr"
-                      className="h-12 pl-4 pr-12 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 text-left dark:text-white dark:placeholder-slate-400 persian-numbers"
+                      className="h-12 pl-4 pr-12 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 text-left dark:text-white dark:placeholder-slate-400 persian-number-display"
                       required
                     />
                   </div>
@@ -305,7 +311,7 @@ export default function Login() {
                     value={otpInput.displayValue}
                     onChange={(e) => otpInput.handleChange(e.target.value)}
                     dir="ltr"
-                    className="h-12 text-center text-2xl font-mono bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 tracking-widest dark:text-white dark:placeholder-slate-400 persian-numbers"
+                    className="h-12 text-center text-2xl font-mono bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 tracking-widest dark:text-white dark:placeholder-slate-400 persian-number-display"
                     maxLength={6}
                     required
                   />

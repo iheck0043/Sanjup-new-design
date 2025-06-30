@@ -2088,6 +2088,80 @@ const Audience = () => {
     }
   };
 
+  // همه فیلترهای اعمال‌شده روی سگمنت را گردآوری می‌کند
+  const getAllAppliedFilters = (
+    segmentId: string
+  ): { type: string; key: string; label: string; value: string }[] => {
+    const segment = segments.find((s) => s.id === segmentId);
+    if (!segment) return [];
+
+    const list: { type: string; key: string; label: string; value: string }[] =
+      [];
+
+    // جنسیت
+    if (segment.target_gender !== null) {
+      list.push({
+        type: "gender",
+        key: "gender",
+        label: "جنسیت",
+        value: segment.target_gender === "M" ? "مرد" : "زن",
+      });
+    }
+
+    // سن
+    if (
+      segment.target_min_age !== (defaultFilterData?.min_age || 18) ||
+      segment.target_max_age !== (defaultFilterData?.max_age || 65)
+    ) {
+      list.push({
+        type: "age",
+        key: "age",
+        label: "محدوده سنی",
+        value: `${segment.target_min_age} تا ${segment.target_max_age} سال`,
+      });
+    }
+
+    // شهر
+    if (segment.target_city && segment.target_city.length > 0) {
+      const desc = getSelectedCitiesShortDescription(segmentId);
+      if (desc) {
+        list.push({
+          type: "location",
+          key: "city",
+          label: "شهرها",
+          value: desc,
+        });
+      }
+    }
+
+    // فیلترهای تخصصی
+    if (segmentMetrics[segmentId] && segmentMetrics[segmentId].length > 0) {
+      const grouped: Record<string, string[]> = {};
+      segmentMetrics[segmentId].forEach((metricId) => {
+        filterCategories.forEach((cat) => {
+          cat.labels.forEach((label) => {
+            const metric = label.metrics.find((m) => m.id === metricId);
+            if (metric) {
+              if (!grouped[label.title]) grouped[label.title] = [];
+              grouped[label.title].push(metric.title);
+            }
+          });
+        });
+      });
+
+      Object.entries(grouped).forEach(([lbl, mArr]) => {
+        list.push({
+          type: "metric",
+          key: lbl,
+          label: lbl,
+          value: mArr.join(", "),
+        });
+      });
+    }
+
+    return list;
+  };
+
   useEffect(() => {
     if (!accessToken) {
       toast.error("لطفا ابتدا وارد حساب کاربری خود شوید");
@@ -2163,6 +2237,28 @@ const Audience = () => {
       );
     }
   };
+
+  useEffect(() => {
+    if (!selectedSegmentId) return;
+    // اگر هنوز هیچ فیلتری برای نمایش انتخاب نشده است، اولین فیلتر اعمالشده را بهطور خودکار فعال کن
+    if (generalFilterType || selectedFilterForSettings) return;
+
+    const filters = getAllAppliedFilters(selectedSegmentId);
+    if (filters.length === 0) return;
+
+    const first = filters[0];
+    if (first.type === "metric") {
+      let lblId: number | null = null;
+      filterCategories.forEach((cat) => {
+        cat.labels.forEach((lbl) => {
+          if (lbl.title === first.key) lblId = lbl.id;
+        });
+      });
+      if (lblId) setSelectedFilterForSettings(lblId);
+    } else {
+      setGeneralFilterType(first.type);
+    }
+  }, [selectedSegmentId, segments, segmentMetrics, filterCategories]);
 
   return (
     <div
@@ -2885,7 +2981,7 @@ const Audience = () => {
 
               {/* Column 2: Filter Settings */}
               <div className="col-span-4">
-                <Card className="rounded-2xl shadow-lg sticky top-20 max-h-[calc(100vh-100px)] overflow-hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+                <Card className="rounded-2xl shadow-lg sticky top-20 max-h-[calc(100vh-100px)] flex flex-col overflow-hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
                   <CardHeader className="pb-4 flex-shrink-0 p-6">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -2921,52 +3017,160 @@ const Audience = () => {
                         </p>
                       </div>
                     ) : (
-                      <div
-                        className={`border rounded-lg p-3 border-gray-200 dark:border-gray-600 ${
-                          segmentOperationLoading || filterOperationLoading
-                            ? "bg-gray-50/50 dark:bg-gray-700/50 opacity-50"
-                            : "bg-gray-50 dark:bg-gray-700"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-xs text-gray-900 dark:text-white">
-                            {generalFilterType
-                              ? getFilterLabel(generalFilterType)
-                              : getFilterLabel(
-                                  selectedFilterForSettings!.toString()
-                                )}
-                          </h4>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            disabled={
+                      (() => {
+                        let appliedFilters =
+                          getAllAppliedFilters(selectedSegmentId);
+
+                        // اگر فیلتری در حال ویرایش است ولی هنوز ذخیره نشده، آن را نیز به لیست کارت‌ها اضافه کن
+                        if (selectedFilterForSettings) {
+                          const editingLabel = filterCategories
+                            .flatMap((cat) => cat.labels)
+                            .find(
+                              (lbl) => lbl.id === selectedFilterForSettings
+                            );
+
+                          if (
+                            editingLabel &&
+                            !appliedFilters.some(
+                              (f) => f.key === editingLabel.title
+                            )
+                          ) {
+                            appliedFilters.push({
+                              type: "metric",
+                              key: editingLabel.title,
+                              label: editingLabel.title,
+                              value: "",
+                            });
+                          }
+                        }
+
+                        if (
+                          generalFilterType &&
+                          !appliedFilters.some(
+                            (f) => f.type === generalFilterType
+                          )
+                        ) {
+                          appliedFilters.push({
+                            type: generalFilterType,
+                            key: generalFilterType,
+                            label: getFilterLabel(generalFilterType),
+                            value: "",
+                          });
+                        }
+
+                        if (appliedFilters.length === 0) {
+                          return (
+                            <div className="text-center text-gray-500 dark:text-gray-400 py-6">
+                              <p className="text-xs">
+                                هیچ فیلتری اعمال نشده است
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        // اگر هیچ فیلتر انتخاب نشده بود، اولین را انتخاب کنیم
+                        if (!selectedFilterForSettings && !generalFilterType) {
+                          const first = appliedFilters[0];
+                          if (first.type === "metric") {
+                            let id: number | null = null;
+                            filterCategories.forEach((cat) => {
+                              cat.labels.forEach((lbl) => {
+                                if (lbl.title === first.key) id = lbl.id;
+                              });
+                            });
+                            if (id) setSelectedFilterForSettings(id);
+                          } else {
+                            setGeneralFilterType(first.type);
+                          }
+                        }
+
+                        const activeLabel = generalFilterType
+                          ? getFilterLabel(generalFilterType)
+                          : getFilterLabel(
+                              selectedFilterForSettings?.toString() || ""
+                            );
+
+                        return (
+                          <div
+                            className={`border rounded-lg p-3 border-gray-200 dark:border-gray-600 ${
                               segmentOperationLoading || filterOperationLoading
-                            }
-                            onClick={() => {
-                              if (
-                                segmentOperationLoading ||
-                                filterOperationLoading
-                              )
-                                return;
-                              setSelectedFilterForSettings(null);
-                              setGeneralFilterType(null);
-                            }}
+                                ? "bg-gray-50/50 dark:bg-gray-700/50 opacity-50"
+                                : "bg-gray-50 dark:bg-gray-700"
+                            }`}
                           >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        {segmentOperationLoading || filterOperationLoading ? (
-                          <div className="text-center py-4">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              در حال اعمال تغییرات...
-                            </p>
+                            {/* Cards per filter */}
+                            <div className="space-y-2">
+                              {appliedFilters.map((flt) => {
+                                const isActive =
+                                  (flt.type === "metric" &&
+                                    flt.label === activeLabel) ||
+                                  (flt.type !== "metric" &&
+                                    flt.type === generalFilterType);
+
+                                return (
+                                  <div
+                                    key={`flt-${flt.key}`}
+                                    className={`border rounded-lg p-3 transition-colors cursor-pointer ${
+                                      isActive
+                                        ? "bg-blue-50 dark:bg-blue-900/20"
+                                        : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                    }`}
+                                    onClick={() => {
+                                      if (
+                                        flt.type === "gender" ||
+                                        flt.type === "age" ||
+                                        flt.type === "location"
+                                      ) {
+                                        setGeneralFilterType(flt.type);
+                                        setSelectedFilterForSettings(null);
+                                      } else {
+                                        let lblId: number | null = null;
+                                        filterCategories.forEach((cat) => {
+                                          cat.labels.forEach((lbl) => {
+                                            if (lbl.title === flt.key)
+                                              lblId = lbl.id;
+                                          });
+                                        });
+                                        if (lblId)
+                                          setSelectedFilterForSettings(lblId);
+                                        setGeneralFilterType(null);
+                                      }
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="font-medium text-xs text-gray-900 dark:text-white">
+                                        {flt.label}
+                                      </span>
+                                      {isActive && (
+                                        <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+                                      {flt.value}
+                                    </p>
+
+                                    {isActive && (
+                                      <div className="border-t pt-3 mt-2 border-dashed border-blue-200 dark:border-blue-600">
+                                        {segmentOperationLoading ||
+                                        filterOperationLoading ? (
+                                          <div className="text-center py-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                                              در حال اعمال تغییرات...
+                                            </p>
+                                          </div>
+                                        ) : (
+                                          renderFilterSettings()
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        ) : (
-                          renderFilterSettings()
-                        )}
-                      </div>
+                        );
+                      })()
                     )}
                   </CardContent>
                 </Card>

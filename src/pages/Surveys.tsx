@@ -70,6 +70,7 @@ import UploadSurveyModal from "@/components/UploadSurveyModal";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import UserMenu from "@/components/UserMenu";
 import { toPersianNumbers } from "@/hooks/use-persian-input";
+import LogoSanjupBlue from "@/assets/Logo-Sanjup-blue.png";
 
 const Surveys = () => {
   const navigate = useNavigate();
@@ -417,11 +418,7 @@ const Surveys = () => {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           {/* Logo */}
           <div className="flex items-center">
-            <img
-              src="/Logo-Sanjup-blue.png"
-              alt="سنجاپ"
-              className="h-8 w-auto"
-            />
+            <img src={LogoSanjupBlue} alt="سنجاپ" className="h-8 w-auto" />
           </div>
 
           {/* Theme Toggle and User Menu */}
@@ -510,21 +507,24 @@ const Surveys = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {/* New Survey Button for Grid View */}
               <Card
-                className="cursor-pointer border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105"
+                className="cursor-pointer border-0 bg-gradient-to-br from-[#0466C8] via-[#0556D8] to-[#0446B8] dark:from-slate-800 dark:via-slate-900 dark:to-black rounded-lg transition-all hover:scale-105 hover:shadow-xl shadow-lg hover:shadow-[#0466C8]/25 dark:hover:shadow-slate-900/50 group relative overflow-hidden"
                 onClick={() => setIsMainModalOpen(true)}
               >
-                <CardContent className="p-5 flex flex-col items-center justify-center h-[260px]">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#0466C8] to-[#0456B8] rounded-lg flex items-center justify-center mb-3">
-                    <Plus className="w-6 h-6 text-white" />
+                {/* Subtle animated background overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 dark:from-white/5 dark:via-transparent dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <CardContent className="p-5 flex flex-col items-center justify-center h-[260px] relative z-10">
+                  <div className="w-14 h-14 bg-white/20 dark:bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-white/30 dark:border-white/20">
+                    <Plus className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
+                  <h3 className="text-xl font-bold text-white mb-2 text-center drop-shadow-sm">
                     ایجاد نظرسنجی جدید
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-slate-300 text-center mb-3">
+                  <p className="text-sm text-white/90 dark:text-white/80 text-center mb-4 drop-shadow-sm">
                     شروع نظرسنجی جدید
                   </p>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-[#0466C8]/10 to-[#0456B8]/10 text-[#0466C8] border border-[#0466C8]/20 backdrop-blur-sm">
-                    <Sparkles className="w-3 h-3" />
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/20 dark:bg-white/15 text-white border border-white/30 dark:border-white/25 backdrop-blur-md shadow-lg">
+                    <Sparkles className="w-4 h-4" />
                     کلیک کنید
                   </div>
                 </CardContent>
@@ -538,7 +538,7 @@ const Surveys = () => {
                   <Card
                     key={questionnaire.id}
                     ref={isLast ? lastQuestionnaireRef : null}
-                    className="group border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all hover:scale-105"
+                    className="group border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all hover:scale-100"
                     onClick={() => handleQuestionnaireClick(questionnaire)}
                   >
                     <CardContent className="p-5">
@@ -590,21 +590,28 @@ const Surveys = () => {
                         {/* Stats */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs text-gray-600 dark:text-slate-400">
-                            <span className="persian-numbers">
-                              {toPersianNumbers(
-                                questionnaire.questionnaire_completed
-                                  .answer_count
-                              )}{" "}
+                            <span>
+                              <span className="persian-number-display">
+                                {toPersianNumbers(
+                                  questionnaire.questionnaire_completed
+                                    .answer_count
+                                )}
+                              </span>{" "}
                               از{" "}
-                              {toPersianNumbers(
-                                questionnaire.questionnaire_completed.user_limit
-                              )}{" "}
+                              <span className="persian-number-display">
+                                {toPersianNumbers(
+                                  questionnaire.questionnaire_completed
+                                    .user_limit
+                                )}
+                              </span>{" "}
                               نفر پاسخ داده
                             </span>
-                            <span className="font-semibold text-[#0466C8] text-xs persian-numbers">
-                              {toPersianNumbers(
-                                questionnaire.questionnaire_completed.percent
-                              )}
+                            <span className="font-semibold text-[#0466C8] text-xs">
+                              <span className="persian-number-display">
+                                {toPersianNumbers(
+                                  questionnaire.questionnaire_completed.percent
+                                )}
+                              </span>
                               %
                             </span>
                           </div>
@@ -623,7 +630,7 @@ const Surveys = () => {
                         {/* Date */}
                         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 pt-2 border-t border-gray-200/50 dark:border-slate-700/50">
                           <Calendar className="w-3 h-3" />
-                          <span className="persian-numbers">
+                          <span className="persian-number-display">
                             {new Date(
                               questionnaire.created * 1000
                             ).toLocaleDateString("fa-IR")}
@@ -715,25 +722,31 @@ const Surveys = () => {
               {/* New Survey Button for List View */}
               {viewMode === "list" && (
                 <Card
-                  className="cursor-pointer border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all"
+                  className="cursor-pointer border-0 bg-gradient-to-r from-[#0466C8] via-[#0556D8] to-[#0446B8] dark:from-slate-800 dark:via-slate-900 dark:to-black rounded-lg transition-all hover:scale-[1.02] hover:shadow-xl shadow-lg hover:shadow-[#0466C8]/25 dark:hover:shadow-slate-900/50 group relative overflow-hidden"
                   onClick={() => setIsMainModalOpen(true)}
                 >
-                  <CardContent className="p-5">
+                  {/* Subtle animated background overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 dark:from-white/5 dark:via-transparent dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                  {/* Right border indicator */}
+                  <div className="absolute right-0 top-0 bottom-0 w-1.5 rounded-r-lg bg-gradient-to-b from-white/40 to-white/70 dark:from-gray-400 dark:to-gray-200"></div>
+
+                  <CardContent className="p-5 pr-6 relative z-10">
                     <div className="flex items-center gap-4">
                       {/* Title and Type - Left side */}
-                      <div className="flex items-center min-w-0 flex-1 gap-3">
+                      <div className="flex items-center min-w-0 flex-1 gap-4">
                         {/* Type Icon */}
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-[#0466C8] to-[#0456B8] flex-shrink-0">
-                          <Plus className="w-5 h-5 text-white" />
+                        <div className="w-12 h-12 bg-white/20 dark:bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 border border-white/30 dark:border-white/25">
+                          <Plus className="w-6 h-6 text-white" />
                         </div>
 
                         <div className="cursor-pointer flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-[#0466C8] dark:hover:text-[#0466C8] truncate mb-2">
+                          <h3 className="text-xl font-bold text-white truncate mb-2 drop-shadow-sm">
                             ایجاد نظرسنجی جدید
                           </h3>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-[#0466C8]/10 to-[#0456B8]/10 text-[#0466C8] border border-[#0466C8]/20 backdrop-blur-sm">
-                              <Sparkles className="w-3 h-3" />
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/20 dark:bg-white/15 text-white border border-white/30 dark:border-white/25 backdrop-blur-md shadow-lg">
+                              <Sparkles className="w-4 h-4" />
                               شروع نظرسنجی جدید
                             </div>
                           </div>
@@ -755,18 +768,18 @@ const Surveys = () => {
                     <Card
                       key={questionnaire.id}
                       ref={isLast ? lastQuestionnaireRef : null}
-                      className="group border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-[1.02]"
+                      className="group border border-gray-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-[1]"
                     >
-                      {/* Left border indicator */}
+                      {/* Right border indicator */}
                       <div
-                        className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg ${
+                        className={`absolute right-0 top-0 bottom-0 w-1.5 rounded-r-lg ${
                           questionnaire.default_questionnaire
                             ? "bg-gradient-to-b from-amber-400 to-amber-600"
                             : "bg-gradient-to-b from-[#0466C8] to-[#0456B8]"
                         }`}
                       ></div>
 
-                      <CardContent className="p-5 pl-6">
+                      <CardContent className="p-5 pr-6">
                         <div className="flex items-center justify-between gap-4">
                           {/* Title and Type - Left side */}
                           <div className="flex items-center min-w-0 flex-1 gap-3">
@@ -839,16 +852,20 @@ const Surveys = () => {
                                 <div className="text-xs text-gray-600 dark:text-slate-400 mb-1">
                                   پاسخ‌ها
                                 </div>
-                                <div className="text-xs font-semibold text-gray-900 dark:text-white persian-numbers">
-                                  {toPersianNumbers(
-                                    questionnaire.questionnaire_completed
-                                      .answer_count
-                                  )}{" "}
+                                <div className="text-xs font-semibold text-gray-900 dark:text-white">
+                                  <span className="persian-number-display">
+                                    {toPersianNumbers(
+                                      questionnaire.questionnaire_completed
+                                        .answer_count
+                                    )}
+                                  </span>{" "}
                                   از{" "}
-                                  {toPersianNumbers(
-                                    questionnaire.questionnaire_completed
-                                      .user_limit
-                                  )}{" "}
+                                  <span className="persian-number-display">
+                                    {toPersianNumbers(
+                                      questionnaire.questionnaire_completed
+                                        .user_limit
+                                    )}
+                                  </span>{" "}
                                   نفر
                                 </div>
                               </div>
@@ -858,11 +875,13 @@ const Surveys = () => {
                                 <div className="text-xs text-gray-600 dark:text-slate-400 mb-1">
                                   درصد تکمیل
                                 </div>
-                                <div className="text-xs font-semibold text-[#0466C8] mb-1 persian-numbers">
-                                  {toPersianNumbers(
-                                    questionnaire.questionnaire_completed
-                                      .percent
-                                  )}
+                                <div className="text-xs font-semibold text-[#0466C8] mb-1">
+                                  <span className="persian-number-display">
+                                    {toPersianNumbers(
+                                      questionnaire.questionnaire_completed
+                                        .percent
+                                    )}
+                                  </span>
                                   %
                                 </div>
                                 <div className="w-16 bg-gray-100/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-full h-2 shadow-inner">
@@ -880,10 +899,12 @@ const Surveys = () => {
                                 <div className="text-xs text-gray-600 dark:text-slate-400 mb-1">
                                   تاریخ ایجاد
                                 </div>
-                                <div className="text-xs text-gray-900 dark:text-white font-medium persian-numbers">
-                                  {new Date(
-                                    questionnaire.created * 1000
-                                  ).toLocaleDateString("fa-IR")}
+                                <div className="text-xs text-gray-900 dark:text-white font-medium">
+                                  <span className="persian-number-display">
+                                    {new Date(
+                                      questionnaire.created * 1000
+                                    ).toLocaleDateString("fa-IR")}
+                                  </span>
                                 </div>
                               </div>
                             </div>

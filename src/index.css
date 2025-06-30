@@ -119,8 +119,6 @@
     font-family: "Vazir", "IRANSans", sans-serif !important;
     font-feature-settings: "pnum" on, "tnum" off;
     font-variant-numeric: proportional-nums;
-    unicode-bidi: bidi-override;
-    direction: inherit;
   }
 
   /* اجبار استفاده از ارقام فارسی */
@@ -129,7 +127,19 @@
     font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif !important;
     font-feature-settings: "ss01" on, "cv01" on, "pnum" on, "tnum" off !important;
     font-variant-numeric: proportional-nums !important;
-    unicode-bidi: bidi-override !important;
+    direction: ltr !important;
+    unicode-bidi: embed !important;
+    text-align: inherit !important;
+  }
+
+  /* For displaying Persian numbers inline correctly */
+  .persian-number-display {
+    display: inline-block;
+    direction: ltr !important;
+    unicode-bidi: embed !important;
+    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif !important;
+    font-feature-settings: "ss01" on, "cv01" on, "pnum" on !important;
+    font-variant-numeric: proportional-nums !important;
   }
 
   /* Specific styles for input elements with Persian numbers */
@@ -137,8 +147,9 @@
     font-family: "Vazir", "IRANSans", sans-serif !important;
     font-feature-settings: "ss01" on, "cv01" on, "pnum" on !important;
     font-variant-numeric: proportional-nums !important;
-    unicode-bidi: bidi-override !important;
     direction: ltr !important;
+    text-align: left !important;
+    unicode-bidi: embed !important;
   }
 }
 /* * {
