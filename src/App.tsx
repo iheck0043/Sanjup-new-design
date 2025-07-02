@@ -16,7 +16,7 @@ import ReportResults from "./pages/ReportResults";
 import Preview from "./pages/Preview";
 import SurveyResultsDemo from "./components/SurveyResultsDemo";
 import SurveyResultsRealDemo from "./components/SurveyResultsRealDemo";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
@@ -148,7 +148,7 @@ function App() {
               }
             />
           </Routes>
-          <Toaster position="top-center" theme="system" />
+          <Toaster position="bottom-left" richColors closeButton />
         </AuthProvider>
       </Router>
     </ThemeProvider>

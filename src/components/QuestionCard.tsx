@@ -17,9 +17,15 @@ import {
   CreditCard,
   Flag,
   Copy,
-  GitBranch,
+  SlidersHorizontal,
   Star,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { Question } from "../pages/Index";
 
 interface QuestionCardProps {
@@ -201,15 +207,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-1 transform translate-x-2 group-hover:translate-x-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onConditionClick(question)}
-            className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md transition-all duration-200 hover:scale-110"
-            title="شرط‌گذاری"
-          >
-            <GitBranch className="w-3.5 h-3.5" />
-          </Button>
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onConditionClick(question)}
+                  className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md transition-all duration-200 hover:scale-110"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">شرط‌گذاری</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           <Button
             variant="ghost"

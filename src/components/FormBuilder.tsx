@@ -1062,7 +1062,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             put: true,
             pull: true,
           }}
-          className="space-y-3"
+          className="space-y-3 min-h-[calc(100vh-200px)] pb-32"
           animation={200}
           ghostClass="opacity-50"
           chosenClass="shadow-lg"

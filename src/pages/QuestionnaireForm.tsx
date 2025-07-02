@@ -2495,6 +2495,15 @@ const Index = () => {
     );
   };
 
+  // Navigate to the next step (audience selection)
+  const handleNextStep = () => {
+    if (id && id !== "new") {
+      navigate(`/questionnaire/${id}/audience`);
+    } else {
+      toast.warning("ابتدا پرسشنامه را ذخیره کنید");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -2575,6 +2584,13 @@ const Index = () => {
           questions={questions}
           onUpdateQuestion={updateQuestionInList}
         />
+
+        {/* Next Step Button */}
+        <div className="fixed bottom-6 left-6 z-30">
+          <Button size="lg" onClick={handleNextStep} className="px-6 py-3">
+            مرحله بعد
+          </Button>
+        </div>
       </div>
     </FormHeader>
   );

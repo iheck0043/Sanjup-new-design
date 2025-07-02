@@ -43,7 +43,6 @@ export default function Login() {
     try {
       await login(phoneInput.value);
       setShowOtpInput(true);
-      toast.success("کد تایید ارسال شد");
     } catch (error) {
       toast.error("خطا در ارسال کد تایید");
     } finally {
@@ -56,7 +55,6 @@ export default function Login() {
     setIsLoading(true);
     try {
       await verifyOTP(phoneInput.value, otpInput.value);
-      toast.success("ورود موفقیت آمیز");
       navigate("/");
     } catch (error: any) {
       if (error?.message === "NEW_USER_SIGNUP_REQUIRED") {
