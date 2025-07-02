@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronDown,
   MoveRight,
+  GitBranch,
   SquareCheck,
   BarChart3,
   SquarePlus,
@@ -32,6 +33,12 @@ import { cn } from "@/lib/utils";
 import { ApiQuestion } from "../pages/QuestionnaireForm";
 import { Card, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface SortableItem {
   id: string;
@@ -518,17 +525,24 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               >
                 <Settings className="h-3.5 w-3.5" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onConditionClick(item.data);
-                }}
-              >
-                <MoveRight className="h-3.5 w-3.5" />
-              </Button>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onConditionClick(item.data);
+                      }}
+                    >
+                      <GitBranch className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">شرط‌گذاری</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button
                 variant="ghost"
                 size="icon"
@@ -932,17 +946,24 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               >
                 <Settings className="h-3.5 w-3.5" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onConditionClick(item.data);
-                }}
-              >
-                <MoveRight className="h-3.5 w-3.5" />
-              </Button>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onConditionClick(item.data);
+                      }}
+                    >
+                      <GitBranch className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">شرط‌گذاری</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button
                 variant="ghost"
                 size="icon"

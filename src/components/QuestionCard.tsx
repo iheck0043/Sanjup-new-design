@@ -17,7 +17,7 @@ import {
   CreditCard,
   Flag,
   Copy,
-  SlidersHorizontal,
+  GitBranch,
   Star,
 } from "lucide-react";
 import {
@@ -26,7 +26,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { Question } from "../pages/Index";
+import { Question } from "../pages/QuestionnaireForm";
 
 interface QuestionCardProps {
   question: Question;
@@ -216,7 +216,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   onClick={() => onConditionClick(question)}
                   className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 w-7 h-7 p-0 rounded-md transition-all duration-200 hover:scale-110"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <GitBranch className="w-3.5 h-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">شرط‌گذاری</TooltipContent>
