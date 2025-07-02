@@ -67,19 +67,85 @@ const DescriptionQuestionSettings: React.FC<
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => {
+                  onClick={async () => {
                     const input = document.createElement("input");
                     input.type = "file";
                     input.accept =
                       question.mediaType === "image" ? "image/*" : "video/*";
-                    input.onchange = (e) => {
+                    input.onchange = async (e) => {
                       const file = (e.target as HTMLInputElement).files?.[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          onUpdateField("mediaUrl", e.target?.result);
-                        };
-                        reader.readAsDataURL(file);
+                        try {
+                          const formData = new FormData();
+                          formData.append(
+                            question.mediaType === "image" ? "image" : "video",
+                            file
+                          );
+
+                          const endpoint =
+                            question.mediaType === "image"
+                              ? "images"
+                              : "videos";
+                          const response = await fetch(
+                            `${
+                              import.meta.env.VITE_API_BASE_URL
+                            }/api/v1/uploader/${endpoint}/`,
+                            {
+                              method: "POST",
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem(
+                                  "access_token"
+                                )}`,
+                              },
+                              body: formData,
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error(
+                              `خطا در آپلود ${
+                                question.mediaType === "image"
+                                  ? "تصویر"
+                                  : "ویدئو"
+                              }`
+                            );
+                          }
+
+                          const data = await response.json();
+                          if (data.info.status === 201) {
+                            const mediaUrl =
+                              data.data[`${question.mediaType}_url`];
+                            onUpdateField("mediaUrl", mediaUrl);
+                            onUpdateField("attachment", mediaUrl);
+                            onUpdateField(
+                              "attachment_type",
+                              question.mediaType
+                            );
+                            toast.success(
+                              `${
+                                question.mediaType === "image"
+                                  ? "تصویر"
+                                  : "ویدئو"
+                              } با موفقیت آپلود شد`
+                            );
+                          } else {
+                            throw new Error(data.info.message);
+                          }
+                        } catch (error) {
+                          console.error(
+                            `Error uploading ${question.mediaType}:`,
+                            error
+                          );
+                          toast.error(
+                            error instanceof Error
+                              ? error.message
+                              : `خطا در آپلود ${
+                                  question.mediaType === "image"
+                                    ? "تصویر"
+                                    : "ویدئو"
+                                }`
+                          );
+                        }
                       }
                     };
                     input.click();

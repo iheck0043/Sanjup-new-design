@@ -23,6 +23,14 @@ interface QuestionPreviewProps {
 }
 
 const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
+  const [scaleValue, setScaleValue] = React.useState(
+    Math.ceil((question.scaleMax || 5) / 2)
+  );
+
+  React.useEffect(() => {
+    setScaleValue(Math.ceil((question.scaleMax || 5) / 2));
+  }, [question.scaleMax, question.id]);
+
   const isText =
     question.type === "text_question_short" ||
     question.type === "text_question_long";
@@ -106,30 +114,97 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
 
                 {/* Scale Question Preview */}
                 {isScale && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>{question.scaleLabels?.left || "کم"}</span>
-                      <span>{question.scaleLabels?.center || "متوسط"}</span>
-                      <span>{question.scaleLabels?.right || "زیاد"}</span>
-                    </div>
-                    <div className="flex justify-between">
+                  <div className="space-y-4 bg-gray-50 p-4 rounded-lg border">
+                    {/* Slider */}
+                    <div className="relative" dir="ltr">
+                      <style>{`
+                        .scale-slider::-webkit-slider-thumb {
+                          appearance: none;
+                          height: 0;
+                          width: 0;
+                          opacity: 0;
+                        }
+                        .scale-slider::-moz-range-thumb {
+                          height: 0;
+                          width: 0;
+                          opacity: 0;
+                          border: none;
+                          background: transparent;
+                        }
+                      `}</style>
+                      <input
+                        type="range"
+                        min="1"
+                        max={question.scaleMax || 5}
+                        value={scaleValue}
+                        onChange={(e) =>
+                          setScaleValue(parseInt(e.target.value))
+                        }
+                        className="w-full h-8 bg-gray-200 rounded-lg appearance-none cursor-pointer scale-slider"
+                        dir="ltr"
+                        style={{
+                          background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+                            ((scaleValue - 1) /
+                              ((question.scaleMax || 5) - 1)) *
+                            100
+                          }%, #e5e7eb ${
+                            ((scaleValue - 1) /
+                              ((question.scaleMax || 5) - 1)) *
+                            100
+                          }%, #e5e7eb 100%)`,
+                        }}
+                      />
+
+                      {/* Scale numbers inside slider */}
+                      <div
+                        className="absolute inset-0 flex justify-between items-center px-3 pointer-events-none"
+                        dir="ltr"
+                      >
                       {Array.from(
                         { length: question.scaleMax || 5 },
                         (_, i) => (
-                          <label
+                            <span
                             key={i}
-                            className="flex flex-col items-center cursor-pointer"
-                          >
-                            <input
-                              type="radio"
-                              name="scale-preview"
-                              disabled
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
-                            />
-                            <span className="text-xs mt-1">{i + 1}</span>
-                          </label>
-                        )
-                      )}
+                              className="text-sm text-gray-700 font-semibold"
+                            >
+                              {i + 1}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Current value display */}
+                    <div className="text-center text-sm font-medium text-blue-600 mb-2">
+                      مقدار انتخابی: {scaleValue}
+                    </div>
+
+                    {/* Scale labels - فقط سه برچسب کاربر */}
+                    <div
+                      className="flex justify-between items-center text-sm text-gray-600 mt-4 px-2"
+                      dir="ltr"
+                    >
+                      <div className="text-center max-w-[30%]">
+                        {question.scaleLabels?.left && (
+                          <span className="block leading-tight font-medium text-gray-700">
+                            {question.scaleLabels.left}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-center max-w-[30%]">
+                        {question.scaleLabels?.center && (
+                          <span className="block leading-tight font-medium text-gray-700">
+                            {question.scaleLabels.center}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-center max-w-[30%]">
+                        {question.scaleLabels?.right && (
+                          <span className="block leading-tight font-medium text-gray-700">
+                            {question.scaleLabels.right}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

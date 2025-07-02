@@ -2004,13 +2004,28 @@ const Index = () => {
 
   const handleQuestionCancel = useCallback(() => {
     // If this was a new question from drag-drop, remove it from state
-    if (selectedQuestion) {
-      const isNewQuestion = questions.some((q) => q.id === selectedQuestion.id);
-      if (isNewQuestion) {
-        setQuestions((prev) =>
-          prev.filter((q) => q.id !== selectedQuestion.id)
+    if (selectedQuestion && isCreatingNewQuestion) {
+      console.log("🗑️ Removing new question on cancel:", selectedQuestion.id);
+      const questionIdToRemove = selectedQuestion.id.toString();
+      setQuestions((prev) => {
+        const filteredQuestions = prev.filter(
+          (q) => q.id.toString() !== questionIdToRemove
         );
-      }
+        console.log("🗑️ Before filtering:", prev.length, "questions");
+        console.log(
+          "🗑️ After filtering:",
+          filteredQuestions.length,
+          "questions"
+        );
+        console.log("🗑️ Removed question ID:", questionIdToRemove);
+        return filteredQuestions;
+      });
+      toast.success("سوال لغو شد و از لیست حذف شد");
+    } else {
+      console.log(
+        "💾 Keeping existing question on cancel:",
+        selectedQuestion?.id
+      );
     }
 
     // Don't add question if cancelled
@@ -2019,7 +2034,7 @@ const Index = () => {
     setIsCreatingNewQuestion(false);
     setShowConditionalLogic(false);
     setExpandedGroups([]);
-  }, [selectedQuestion, questions]);
+  }, [selectedQuestion, isCreatingNewQuestion]);
 
   const duplicateQuestion = useCallback(
     (question: ApiQuestion) => {
@@ -2373,10 +2388,14 @@ const Index = () => {
 
     console.log("Final mapped question:", mappedQuestion);
     setSelectedQuestion(mappedQuestion);
-    setIsCreatingNewQuestion(false);
-    setShowSettings(true);
-    setShowConditionalLogic(false);
-    setExpandedGroups([]);
+
+    // Only reset 'isCreatingNewQuestion' when this is an existing (server-side) question.
+    // Server IDs are numeric, whereas freshly-added client questions use UUIDs that contain a dash.
+    const idStr = question.id.toString();
+    const isServerQuestion = /^\d+$/.test(idStr);
+    if (isServerQuestion) {
+      setIsCreatingNewQuestion(false);
+    }
   };
 
   // Helper function to map API question types to our format
@@ -2485,79 +2504,79 @@ const Index = () => {
   }
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col overflow-x-hidden"
-      dir="rtl"
+    <FormHeader
+      formTitle={questionnaire?.title || "پرسشنامه جدید"}
+      setFormTitle={setFormTitle}
+      steps={
+        id && id !== "new"
+          ? [
+              { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+              {
+                id: 2,
+                title: "انتخاب مخاطب",
+                path: `/questionnaire/${id}/audience`,
+              },
+              {
+                id: 3,
+                title: "گزارش نتایج",
+                path: `/questionnaire/${id}/results`,
+              },
+            ]
+          : undefined
+      }
     >
-      <FormHeader
-        formTitle={questionnaire?.title || "پرسشنامه جدید"}
-        setFormTitle={setFormTitle}
-        steps={
-          id && id !== "new"
-            ? [
-                { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
-                {
-                  id: 2,
-                  title: "انتخاب مخاطب",
-                  path: `/questionnaire/${id}/audience`,
-                },
-                {
-                  id: 3,
-                  title: "گزارش نتایج",
-                  path: `/questionnaire/${id}/results`,
-                },
-              ]
-            : undefined
-        }
-      />
+      <div
+        className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col overflow-x-hidden min-h-[calc(100vh-64px)]"
+        dir="rtl"
+      >
+        <div className="flex flex-1">
+          <QuestionSidebar onAddQuestion={addQuestion} />
 
-      <div className="flex flex-1 h-[calc(100vh-80px)] mt-20">
-        <QuestionSidebar onAddQuestion={addQuestion} />
-
-        <div className="flex-1 mr-96 relative">
-          <FormBuilder
-            questions={questions}
-            onRemoveQuestion={removeQuestion}
-            onUpdateQuestion={updateQuestionInList}
-            onMoveQuestion={moveQuestion}
-            onQuestionClick={openQuestionSettings}
-            onAddQuestion={addQuestion}
-            onDuplicateQuestion={duplicateQuestion}
-            onConditionClick={(question: ApiQuestion) => {
-              console.log(
-                "🎯 onConditionClick called with ApiQuestion:",
-                question.id
-              );
-              openConditionModal(question);
-            }}
-            onMoveToGroup={moveToGroup}
-            expandedGroups={expandedGroups}
-            onToggleGroup={toggleGroup}
-            renderQuestionTitle={renderQuestionTitle}
-            questionnaireId={questionnaire?.id}
-            accessToken={accessToken}
-            fetchQuestions={fetchQuestions}
-          />
+          <div className="flex-1 mr-96 relative">
+            <FormBuilder
+              questions={questions}
+              onRemoveQuestion={removeQuestion}
+              onUpdateQuestion={updateQuestionInList}
+              onMoveQuestion={moveQuestion}
+              onQuestionClick={openQuestionSettings}
+              onAddQuestion={addQuestion}
+              onDuplicateQuestion={duplicateQuestion}
+              onConditionClick={(question: ApiQuestion) => {
+                console.log(
+                  "🎯 onConditionClick called with ApiQuestion:",
+                  question.id
+                );
+                openConditionModal(question);
+              }}
+              onMoveToGroup={moveToGroup}
+              expandedGroups={expandedGroups}
+              onToggleGroup={toggleGroup}
+              renderQuestionTitle={renderQuestionTitle}
+              questionnaireId={questionnaire?.id}
+              accessToken={accessToken}
+              fetchQuestions={fetchQuestions}
+            />
+          </div>
         </div>
+
+        <QuestionSettingsModal
+          isOpen={showSettings}
+          onClose={handleQuestionCancel}
+          question={selectedQuestion}
+          onSave={handleQuestionSave}
+          onCancel={handleQuestionCancel}
+          isNewQuestion={isCreatingNewQuestion}
+        />
+
+        <ConditionalLogicModal
+          isOpen={showConditionalLogic}
+          onClose={closeConditionModal}
+          question={selectedApiQuestion}
+          questions={questions}
+          onUpdateQuestion={updateQuestionInList}
+        />
       </div>
-
-      <QuestionSettingsModal
-        isOpen={showSettings}
-        onClose={handleQuestionCancel}
-        question={selectedQuestion}
-        onSave={handleQuestionSave}
-        onCancel={handleQuestionCancel}
-        isNewQuestion={isCreatingNewQuestion}
-      />
-
-      <ConditionalLogicModal
-        isOpen={showConditionalLogic}
-        onClose={closeConditionModal}
-        question={selectedApiQuestion}
-        questions={questions}
-        onUpdateQuestion={updateQuestionInList}
-      />
-    </div>
+    </FormHeader>
   );
 };
 

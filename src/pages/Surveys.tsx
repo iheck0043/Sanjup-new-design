@@ -412,25 +412,11 @@ const Surveys = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      {/* Fixed Top Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-white/20 dark:border-slate-700/50 px-4 sm:px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          {/* Logo */}
-          <div className="flex items-center">
-            <img src={LogoSanjupBlue} alt="سنجاپ" className="h-8 w-auto" />
-          </div>
-
-          {/* Theme Toggle and User Menu */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <UserMenu />
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-2">
+      {/* Content */}
 
       {/* Main Content with top padding for fixed header */}
-      <div className="pt-20 px-4 sm:px-6 lg:px-8">
+      <div className="pt-2 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-8 mt-6">
@@ -513,20 +499,13 @@ const Surveys = () => {
                 {/* Subtle animated background overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 dark:from-white/5 dark:via-transparent dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                <CardContent className="p-5 flex flex-col items-center justify-center h-[260px] relative z-10">
+                <CardContent className="p-5 flex flex-col items-center justify-center h-[200px] relative z-10">
                   <div className="w-14 h-14 bg-white/20 dark:bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-white/30 dark:border-white/20">
                     <Plus className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2 text-center drop-shadow-sm">
+                  <h3 className="text-xl font-bold text-white text-center drop-shadow-sm">
                     ایجاد نظرسنجی جدید
                   </h3>
-                  <p className="text-sm text-white/90 dark:text-white/80 text-center mb-4 drop-shadow-sm">
-                    شروع نظرسنجی جدید
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/20 dark:bg-white/15 text-white border border-white/30 dark:border-white/25 backdrop-blur-md shadow-lg">
-                    <Sparkles className="w-4 h-4" />
-                    کلیک کنید
-                  </div>
                 </CardContent>
               </Card>
               {questionnaires.map((questionnaire, index) => {
@@ -732,26 +711,15 @@ const Surveys = () => {
                   <div className="absolute right-0 top-0 bottom-0 w-1.5 rounded-r-lg bg-gradient-to-b from-white/40 to-white/70 dark:from-gray-400 dark:to-gray-200"></div>
 
                   <CardContent className="p-5 pr-6 relative z-10">
-                    <div className="flex items-center gap-4">
-                      {/* Title and Type - Left side */}
-                      <div className="flex items-center min-w-0 flex-1 gap-4">
-                        {/* Type Icon */}
-                        <div className="w-12 h-12 bg-white/20 dark:bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 border border-white/30 dark:border-white/25">
-                          <Plus className="w-6 h-6 text-white" />
-                        </div>
-
-                        <div className="cursor-pointer flex-1 min-w-0">
-                          <h3 className="text-xl font-bold text-white truncate mb-2 drop-shadow-sm">
-                            ایجاد نظرسنجی جدید
-                          </h3>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/20 dark:bg-white/15 text-white border border-white/30 dark:border-white/25 backdrop-blur-md shadow-lg">
-                              <Sparkles className="w-4 h-4" />
-                              شروع نظرسنجی جدید
-                            </div>
-                          </div>
-                        </div>
+                    <div className="flex flex-col items-center justify-center text-center h-[60px] gap-3">
+                      {/* Type Icon */}
+                      <div className="w-10 h-10 bg-white/20 dark:bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/30 dark:border-white/25">
+                        <Plus className="w-5 h-5 text-white" />
                       </div>
+
+                      <h3 className="text-lg font-bold text-white drop-shadow-sm">
+                        ایجاد نظرسنجی جدید
+                      </h3>
                     </div>
                   </CardContent>
                 </Card>
@@ -976,208 +944,178 @@ const Surveys = () => {
 
       {/* Main Modal */}
       <Dialog open={isMainModalOpen} onOpenChange={setIsMainModalOpen}>
-        <DialogContent className="sm:max-w-4xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg">
-          <DialogHeader className="pb-6 border-b border-gray-200 dark:border-slate-700">
-            <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white text-right mb-1">
+        <DialogContent className="sm:max-w-3xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg">
+          <DialogHeader className="pb-4 border-b border-gray-100 dark:border-slate-800">
+            <DialogTitle className="text-lg font-bold text-gray-900 dark:text-white text-right mb-1">
               انتخاب نوع نظرسنجی
             </DialogTitle>
             <p className="text-sm text-gray-600 dark:text-slate-300 text-right">
-              نوع نظرسنجی مورد نظر خود را انتخاب کنید
+              روش مناسب برای ایجاد نظرسنجی خود را انتخاب کنید
             </p>
           </DialogHeader>
-          <div className="py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="py-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* نظرسنجی خام */}
               <Card
-                className={`cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-md shadow-sm hover:shadow transition-all ${
+                className={`cursor-pointer group border border-gray-200 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 rounded-md shadow-sm hover:shadow-md transition-all ${
                   apiLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 onClick={
                   apiLoading ? undefined : () => setIsNameModalOpen(true)
                 }
               >
-                <CardContent className="flex items-center p-4">
-                  <div className="flex justify-center items-center p-3 rounded-md bg-blue-50 dark:bg-blue-900/30 ml-4 border border-blue-200 dark:border-blue-800">
-                    <FileText className="w-6 h-6 text-[#0466C8]" />
+                <CardContent className="flex items-center p-3">
+                  <div className="flex justify-center items-center p-2 rounded-md bg-blue-500 ml-3">
+                    <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                    <div className="text-base font-bold text-gray-900 dark:text-white mb-1">
                       نظرسنجی خام
                     </div>
                     <div className="text-sm text-gray-600 dark:text-slate-300">
-                      ساخت نظرسنجی توسط شما
+                      ایجاد نظرسنجی سفارشی از ابتدا
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={apiLoading}
-                    className="w-10 h-10 rounded-md"
-                  >
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-600 flex items-center justify-center">
                     {apiLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-[#0466C8]"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-500"></div>
                     ) : (
-                      <ChevronLeft className="w-5 h-5 text-gray-600" />
+                      <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-slate-300" />
                     )}
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* نظرسنجی آماده */}
               <Card
-                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-md shadow-sm hover:shadow transition-all"
+                className="cursor-pointer group border border-gray-200 dark:border-slate-600 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-md shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsReadySurveyModalOpen(true);
                 }}
               >
-                <CardContent className="flex items-center p-4">
-                  <div className="flex justify-center items-center p-3 rounded-md bg-emerald-50 dark:bg-emerald-900/30 ml-4 border border-emerald-200 dark:border-emerald-800">
-                    <Target className="w-6 h-6 text-emerald-700 dark:text-emerald-400" />
+                <CardContent className="flex items-center p-3">
+                  <div className="flex justify-center items-center p-2 rounded-md bg-emerald-500 ml-3">
+                    <Target className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                    <div className="text-base font-bold text-gray-900 dark:text-white mb-1">
                       نظرسنجی آماده
                     </div>
                     <div className="text-sm text-gray-600 dark:text-slate-300">
-                      استفاده از نظرسنجی های تخصصی آماده
+                      قالب‌های تخصصی و آماده
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={apiLoading}
-                    className="w-10 h-10 rounded-md"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-gray-600" />
-                  </Button>
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-600 flex items-center justify-center">
+                    <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-slate-300" />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* تست تبلیغات */}
               <Card
-                className={`cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all ${
+                className={`cursor-pointer group border border-gray-200 dark:border-slate-600 hover:border-cyan-500 dark:hover:border-cyan-400 rounded-md shadow-sm hover:shadow-md transition-all ${
                   adTestLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 onClick={adTestLoading ? undefined : handleBillboardTestCreate}
               >
-                <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 ml-6 border border-cyan-200 dark:border-cyan-800">
-                    <Monitor className="w-8 h-8 text-cyan-700 dark:text-cyan-400" />
+                <CardContent className="flex items-center p-3">
+                  <div className="flex justify-center items-center p-2 rounded-md bg-cyan-500 ml-3">
+                    <Monitor className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <div className="text-base font-bold text-gray-900 dark:text-white mb-1">
                       تست تبلیغات
                     </div>
-                    <div className="text-gray-600 dark:text-slate-300">
-                      نظرسنجی آماده جهت تست تبلیغات قبل از اکران تبلیغ
+                    <div className="text-sm text-gray-600 dark:text-slate-300">
+                      ارزیابی تبلیغات پیش از انتشار
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={adTestLoading}
-                    className="w-12 h-12 rounded-lg"
-                  >
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-600 flex items-center justify-center">
                     {adTestLoading ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-[#0466C8]"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-cyan-500"></div>
                     ) : (
-                      <ChevronLeft className="w-6 h-6 text-gray-600" />
+                      <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-slate-300" />
                     )}
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* طراحی نظرسنجی با هوش مصنوعی */}
               <Card
-                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="cursor-pointer group border border-gray-200 dark:border-slate-600 hover:border-purple-500 dark:hover:border-purple-400 rounded-md shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsAISurveyModalOpen(true);
                 }}
               >
-                <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-xl bg-violet-50 dark:bg-violet-900/30 ml-6 border border-violet-200 dark:border-violet-800">
-                    <Sparkles className="w-8 h-8 text-violet-700 dark:text-violet-400" />
+                <CardContent className="flex items-center p-3">
+                  <div className="flex justify-center items-center p-2 rounded-md bg-purple-500 ml-3">
+                    <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      طراحی نظرسنجی با هوش مصنوعی
+                    <div className="text-base font-bold text-gray-900 dark:text-white mb-1">
+                      طراحی با هوش مصنوعی
                     </div>
-                    <div className="text-gray-600 dark:text-slate-300">
-                      طراحی نظرسنجی با کمک هوش مصنوعی
+                    <div className="text-sm text-gray-600 dark:text-slate-300">
+                      ایجاد هوشمند با AI
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={apiLoading}
-                    className="w-12 h-12 rounded-lg"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-gray-600" />
-                  </Button>
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-600 flex items-center justify-center">
+                    <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-slate-300" />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* طراحی نظرسنجی با ما */}
               <Card
-                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="cursor-pointer group border border-gray-200 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-md shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsDesignWithUsModalOpen(true);
                 }}
               >
-                <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 ml-6 border border-indigo-200 dark:border-indigo-800">
-                    <Building className="w-8 h-8 text-indigo-700 dark:text-indigo-400" />
+                <CardContent className="flex items-center p-3">
+                  <div className="flex justify-center items-center p-2 rounded-md bg-indigo-500 ml-3">
+                    <Building className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      طراحی نظرسنجی با ما
+                    <div className="text-base font-bold text-gray-900 dark:text-white mb-1">
+                      طراحی با کارشناسان ما
                     </div>
-                    <div className="text-gray-600 dark:text-slate-300">
-                      طراحی نظرسنجی توسط کارشناسان سنجاپ
+                    <div className="text-sm text-gray-600 dark:text-slate-300">
+                      تیم متخصص سنجاپ
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={apiLoading}
-                    className="w-12 h-12 rounded-lg"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-gray-600" />
-                  </Button>
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-600 flex items-center justify-center">
+                    <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-slate-300" />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* بارگذاری نظرسنجی */}
               <Card
-                className="cursor-pointer border border-gray-200 dark:border-slate-700 hover:border-[#0466C8] dark:hover:border-[#0466C8] rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="cursor-pointer group border border-gray-200 dark:border-slate-600 hover:border-orange-500 dark:hover:border-orange-400 rounded-md shadow-sm hover:shadow-md transition-all"
                 onClick={() => {
                   setIsMainModalOpen(false);
                   setIsUploadSurveyModalOpen(true);
                 }}
               >
-                <CardContent className="flex items-center p-6">
-                  <div className="flex justify-center items-center p-4 rounded-xl bg-orange-50 dark:bg-orange-900/30 ml-6 border border-orange-200 dark:border-orange-800">
-                    <Upload className="w-8 h-8 text-orange-700 dark:text-orange-400" />
+                <CardContent className="flex items-center p-3">
+                  <div className="flex justify-center items-center p-2 rounded-md bg-orange-500 ml-3">
+                    <Upload className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <div className="text-base font-bold text-gray-900 dark:text-white mb-1">
                       بارگذاری نظرسنجی
                     </div>
-                    <div className="text-gray-600 dark:text-slate-300">
-                      وارد کردن نظرسنجی از طریق لینک پرسلاین یا فایل ورد
+                    <div className="text-sm text-gray-600 dark:text-slate-300">
+                      ایمپورت از پرسلاین یا فایل
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={apiLoading}
-                    className="w-12 h-12 rounded-lg"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-gray-600" />
-                  </Button>
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-600 flex items-center justify-center">
+                    <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-slate-300" />
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -1187,21 +1125,28 @@ const Surveys = () => {
 
       {/* Name Modal */}
       <Dialog open={isNameModalOpen} onOpenChange={setIsNameModalOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl">
-          <DialogHeader className="pb-8 border-b border-gray-100 dark:border-slate-800">
-            <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white text-right mb-2">
-              نام نظرسنجی خام
-            </DialogTitle>
-            <p className="text-gray-600 dark:text-slate-300 text-right">
-              عنوان نظرسنجی خود را وارد کنید
-            </p>
+        <DialogContent className="sm:max-w-[550px] bg-white dark:bg-slate-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
+          <DialogHeader className="pb-6 border-b border-gray-100 dark:border-slate-800 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700 px-6 py-6 -mx-6 -mt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white text-right mb-1">
+                  ایجاد نظرسنجی خام
+                </DialogTitle>
+                <p className="text-sm text-gray-600 dark:text-slate-300 text-right">
+                  عنوان نظرسنجی سفارشی خود را وارد کنید
+                </p>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="py-8">
+          <div className="p-6 -mx-6 -mb-6">
             <div className="space-y-6">
               <div>
                 <label
                   htmlFor="title"
-                  className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-3 text-right"
+                  className="block text-sm font-semibold text-gray-900 dark:text-white mb-4 text-right"
                 >
                   عنوان نظرسنجی
                 </label>
@@ -1210,35 +1155,38 @@ const Surveys = () => {
                   value={surveyTitle}
                   onChange={(e) => setSurveyTitle(e.target.value)}
                   placeholder="مثال: نظرسنجی رضایتمندی مشتریان"
-                  className="h-14 text-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#0466C8]/20 focus:border-[#0466C8] transition-all"
+                  className="h-12 text-base bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm"
                   dir="rtl"
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-4 pt-6 border-t border-gray-100 dark:border-slate-800">
+          <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-gray-100 dark:border-slate-800 bg-gradient-to-r from-gray-50 to-blue-50/30 dark:from-slate-800 dark:to-slate-700 px-6 py-4 -mx-6 -mb-6 rounded-b-2xl">
             <Button
               variant="outline"
               onClick={() => {
                 setIsNameModalOpen(false);
                 setSurveyTitle("");
               }}
-              className="px-8 py-3 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium"
+              className="px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-md"
             >
               انصراف
             </Button>
             <Button
               onClick={handleRawSurveyCreate}
               disabled={apiLoading || !surveyTitle.trim()}
-              className="px-10 py-3 rounded-lg bg-[#0466C8] hover:bg-[#0456B8] text-white font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100"
             >
               {apiLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
                   در حال ایجاد...
                 </div>
               ) : (
-                "ایجاد نظرسنجی"
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  ایجاد نظرسنجی
+                </div>
               )}
             </Button>
           </div>

@@ -261,7 +261,9 @@ const Audience = () => {
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(
     null
   );
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([
+    "general",
+  ]);
   const [filterCategories, setFilterCategories] = useState<FilterCategory[]>(
     []
   );
@@ -521,7 +523,7 @@ const Audience = () => {
 
         // Fetch segment labels/metrics
         const labelsResponse = await fetch(
-          `${BASE_URL}/api/v1/questionnaire/segment/${segmentId}/label`,
+          `${BASE_URL}/api/v1/questionnaire/segment/${segmentId}/label/?page_size=100`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -800,6 +802,33 @@ const Audience = () => {
   };
 
   // Fetch segment invoice/pricing
+  // Helper function to convert Persian/Arabic numerals to English
+  const convertToEnglishNumber = (num: number | string): number => {
+    const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+    const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
+    const englishDigits = "0123456789";
+
+    let numStr = num.toString();
+
+    // Convert Persian digits to English
+    for (let i = 0; i < persianDigits.length; i++) {
+      numStr = numStr.replace(
+        new RegExp(persianDigits[i], "g"),
+        englishDigits[i]
+      );
+    }
+
+    // Convert Arabic digits to English
+    for (let i = 0; i < arabicDigits.length; i++) {
+      numStr = numStr.replace(
+        new RegExp(arabicDigits[i], "g"),
+        englishDigits[i]
+      );
+    }
+
+    return parseInt(numStr) || 0;
+  };
+
   const fetchSegmentInvoice = async () => {
     if (!id || id === "new") return;
 
@@ -836,8 +865,18 @@ const Audience = () => {
   const saveSegmentMetric = async (segmentId: string, metricId: number) => {
     try {
       setFilterOperationLoading(true);
+
+      // Ensure metricId is a proper number
+      const numericMetricId = convertToEnglishNumber(metricId);
+      console.log(
+        "Save - Original metricId:",
+        metricId,
+        "Converted:",
+        numericMetricId
+      );
+
       const requestData = {
-        label_metric: metricId,
+        label_metric: numericMetricId,
       };
 
       const response = await fetch(
@@ -870,6 +909,59 @@ const Audience = () => {
     } catch (error) {
       console.error("Error saving segment metric:", error);
       toast.error("خطا در ذخیره فیلتر");
+    } finally {
+      setFilterOperationLoading(false);
+    }
+  };
+
+  const removeSegmentMetric = async (segmentId: string, metricId: number) => {
+    try {
+      setFilterOperationLoading(true);
+
+      // Ensure metricId is a proper number
+      const numericMetricId = convertToEnglishNumber(metricId);
+      console.log(
+        "Remove - Original metricId:",
+        metricId,
+        "Converted:",
+        numericMetricId
+      );
+
+      const response = await fetch(
+        `${BASE_URL}/api/v1/questionnaire/segment/${segmentId}/label/${numericMetricId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("خطا در حذف فیلتر");
+      }
+
+      // Check for successful status codes (200, 204)
+      if (response.status === 200 || response.status === 204) {
+        console.log("Segment metric removed successfully");
+        // Refetch segment details to get updated metrics
+        fetchSegmentDetails(segmentId);
+
+        // Fetch updated invoice data after metric change
+        fetchSegmentInvoice();
+      } else {
+        // Try to parse JSON response for error message if available
+        try {
+          const data = await response.json();
+          throw new Error(data.info?.message || "خطا در حذف فیلتر");
+        } catch (jsonError) {
+          throw new Error("خطا در حذف فیلتر");
+        }
+      }
+    } catch (error) {
+      console.error("Error removing segment metric:", error);
+      toast.error("خطا در حذف فیلتر");
     } finally {
       setFilterOperationLoading(false);
     }
@@ -938,16 +1030,16 @@ const Audience = () => {
     }
   };
 
-  const renderGeneralFilterSettings = () => {
-    switch (generalFilterType) {
+  const renderGeneralFilterSettingsForType = (filterType: string) => {
+    switch (filterType) {
       case "location":
         return (
           <div className="space-y-4">
-            <h4 className="font-medium">محل سکونت</h4>
+            <h4 className="font-medium text-[10px]">محل سکونت</h4>
 
             {/* Province Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">استان:</label>
+              <label className="text-[10px] font-medium">استان:</label>
               {provincesLoading ? (
                 <div className="text-center py-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
@@ -982,7 +1074,816 @@ const Audience = () => {
             {/* Cities Selection */}
             {selectedProvince && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">شهر:</label>
+                <label className="text-[10px] font-medium">شهر:</label>
+                {citiesLoading ? (
+                  <div className="text-center py-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                      >
+                        انتخاب شهر
+                        <ChevronDown className="w-4 h-4 opacity-50" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 max-h-60 overflow-y-auto">
+                      {/* Select All Option */}
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                        }}
+                        className="font-medium text-blue-600 dark:text-blue-400 bg-gray-50 dark:bg-gray-700"
+                        onClick={() => {
+                          if (!selectedSegmentId) return;
+                          const allCitiesInProvince = cities.map(
+                            (city) => city.id
+                          );
+                          const currentCities =
+                            tempSelectedCities[selectedSegmentId] ||
+                            selectedSegment?.target_city ||
+                            [];
+                          const citiesNotInList = allCitiesInProvince.filter(
+                            (cityId) => !currentCities.includes(cityId)
+                          );
+                          const updated = [
+                            ...currentCities,
+                            ...citiesNotInList,
+                          ];
+                          setTempSelectedCities((prev) => ({
+                            ...prev,
+                            [selectedSegmentId]: updated,
+                          }));
+                        }}
+                      >
+                        <div className="flex items-center space-x-2 space-x-reverse">
+                          <Checkbox
+                            checked={(() => {
+                              const currentCities =
+                                tempSelectedCities[selectedSegmentId] ||
+                                selectedSegment?.target_city ||
+                                [];
+                              const allCitiesInProvince = cities.map(
+                                (city) => city.id
+                              );
+                              return (
+                                allCitiesInProvince.length > 0 &&
+                                allCitiesInProvince.every((cityId) =>
+                                  currentCities.includes(cityId)
+                                )
+                              );
+                            })()}
+                            onCheckedChange={() => {}}
+                          />
+                          <span>همه شهرها ({cities.length} شهر)</span>
+                        </div>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+
+                      {/* Individual Cities */}
+                      {cities.map((city) => (
+                        <DropdownMenuItem
+                          key={city.id}
+                          onSelect={(e) => {
+                            e.preventDefault();
+                          }}
+                          onClick={() => {
+                            if (!selectedSegmentId) return;
+                            const currentCities =
+                              tempSelectedCities[selectedSegmentId] ||
+                              selectedSegment?.target_city ||
+                              [];
+                            const isSelected = currentCities.includes(city.id);
+                            const updated = isSelected
+                              ? currentCities.filter((id) => id !== city.id)
+                              : [...currentCities, city.id];
+                            setTempSelectedCities((prev) => ({
+                              ...prev,
+                              [selectedSegmentId]: updated,
+                            }));
+                          }}
+                        >
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <Checkbox
+                              checked={(() => {
+                                const currentCities =
+                                  tempSelectedCities[selectedSegmentId] ||
+                                  selectedSegment?.target_city ||
+                                  [];
+                                return currentCities.includes(city.id);
+                              })()}
+                              onCheckedChange={() => {}}
+                            />
+                            <span>{city.name}</span>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            )}
+
+            {/* Currently Selected Cities Display */}
+            {selectedSegmentId &&
+              (() => {
+                const currentCities =
+                  tempSelectedCities[selectedSegmentId] ||
+                  selectedSegment?.target_city ||
+                  [];
+                return currentCities.length > 0;
+              })() && (
+                <div className="space-y-3 mt-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-medium text-gray-800 dark:text-gray-200">
+                      شهرهای انتخاب شده (
+                      {(() => {
+                        const currentCities =
+                          tempSelectedCities[selectedSegmentId] ||
+                          selectedSegment?.target_city ||
+                          [];
+                        return currentCities.length;
+                      })()}{" "}
+                      شهر):
+                    </label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                      disabled={
+                        segmentOperationLoading || filterOperationLoading
+                      }
+                      onClick={() => {
+                        if (
+                          !selectedSegmentId ||
+                          segmentOperationLoading ||
+                          filterOperationLoading
+                        )
+                          return;
+                        setTempSelectedCities((prev) => ({
+                          ...prev,
+                          [selectedSegmentId]: [],
+                        }));
+                      }}
+                    >
+                      پاک کردن همه
+                    </Button>
+                  </div>
+
+                  {(() => {
+                    const cityDetails = segmentCityDetails[selectedSegmentId];
+                    if (!cityDetails || !cityDetails.target_city_name)
+                      return null;
+
+                    const { target_city_name, target_all_cities_province } =
+                      cityDetails;
+
+                    // Use temp selected cities if available, otherwise use segment data
+                    const currentSelectedCityIds =
+                      tempSelectedCities[selectedSegmentId] ||
+                      selectedSegment?.target_city ||
+                      [];
+
+                    // Filter city details based on currently selected cities
+                    const filteredCityNames = target_city_name.filter((city) =>
+                      currentSelectedCityIds.includes(city.id)
+                    );
+
+                    // Get IDs of provinces that have ALL cities selected
+                    const completeProvinceIds = target_all_cities_province
+                      ? target_all_cities_province.map((p) => p.id)
+                      : [];
+
+                    // Filter out cities that belong to complete provinces
+                    const partialCityNames = filteredCityNames.filter(
+                      (city) => !completeProvinceIds.includes(city.province)
+                    );
+
+                    // Group remaining cities by province
+                    const citiesByProvince: Record<
+                      string,
+                      { name: string; cities: { id: number; name: string }[] }
+                    > = {};
+                    partialCityNames.forEach((city) => {
+                      if (!citiesByProvince[city.province.toString()]) {
+                        citiesByProvince[city.province.toString()] = {
+                          name: city.province_name,
+                          cities: [],
+                        };
+                      }
+                      citiesByProvince[city.province.toString()].cities.push({
+                        id: city.id,
+                        name: city.name,
+                      });
+                    });
+
+                    return (
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {/* نمایش استان‌های کامل */}
+                        {target_all_cities_province &&
+                          target_all_cities_province.length > 0 &&
+                          target_all_cities_province.map((province) => (
+                            <div
+                              key={`complete-${province.id}`}
+                              className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-2 space-x-reverse">
+                                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                    <span className="text-[9px] text-white">
+                                      ✓
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-medium text-green-800 dark:text-green-300">
+                                    همه شهرهای {province.name}
+                                  </span>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                  disabled={
+                                    segmentOperationLoading ||
+                                    filterOperationLoading
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      !selectedSegmentId ||
+                                      segmentOperationLoading ||
+                                      filterOperationLoading
+                                    )
+                                      return;
+                                    // Remove all cities from this province
+                                    const provinceCityIds = target_city_name
+                                      .filter(
+                                        (city) => city.province === province.id
+                                      )
+                                      .map((city) => city.id);
+                                    const currentCities =
+                                      tempSelectedCities[selectedSegmentId] ||
+                                      selectedSegment.target_city ||
+                                      [];
+                                    const updatedCities = currentCities.filter(
+                                      (cityId) =>
+                                        !provinceCityIds.includes(cityId)
+                                    );
+                                    setTempSelectedCities((prev) => ({
+                                      ...prev,
+                                      [selectedSegmentId]: updatedCities,
+                                    }));
+                                  }}
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                              <p className="text-[9px] text-green-700 dark:text-green-400">
+                                تمام شهرهای این استان انتخاب شده‌اند
+                              </p>
+                            </div>
+                          ))}
+
+                        {/* نمایش شهرهای جزئی از استان‌های دیگر */}
+                        {Object.entries(citiesByProvince).map(
+                          ([provinceId, provinceData]) => (
+                            <div
+                              key={`partial-${provinceId}`}
+                              className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-medium text-blue-800 dark:text-blue-300">
+                                  {provinceData.name} (
+                                  {provinceData.cities.length} شهر)
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                  disabled={
+                                    segmentOperationLoading ||
+                                    filterOperationLoading
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      !selectedSegmentId ||
+                                      segmentOperationLoading ||
+                                      filterOperationLoading
+                                    )
+                                      return;
+                                    // Remove all cities from this province
+                                    const provinceCityIds =
+                                      provinceData.cities.map(
+                                        (city) => city.id
+                                      );
+                                    const currentCities =
+                                      tempSelectedCities[selectedSegmentId] ||
+                                      selectedSegment.target_city ||
+                                      [];
+                                    const updatedCities = currentCities.filter(
+                                      (cityId) =>
+                                        !provinceCityIds.includes(cityId)
+                                    );
+                                    setTempSelectedCities((prev) => ({
+                                      ...prev,
+                                      [selectedSegmentId]: updatedCities,
+                                    }));
+                                  }}
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {provinceData.cities.map((city) => (
+                                  <div
+                                    key={city.id}
+                                    className="inline-flex items-center bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 rounded-full px-2 py-1 text-[9px]"
+                                  >
+                                    <span className="text-gray-700 dark:text-gray-300 ml-1">
+                                      {city.name}
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-4 w-4 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                      disabled={
+                                        segmentOperationLoading ||
+                                        filterOperationLoading
+                                      }
+                                      onClick={() => {
+                                        if (
+                                          !selectedSegmentId ||
+                                          segmentOperationLoading ||
+                                          filterOperationLoading
+                                        )
+                                          return;
+                                        const currentCities =
+                                          tempSelectedCities[
+                                            selectedSegmentId
+                                          ] ||
+                                          selectedSegment.target_city ||
+                                          [];
+                                        const updatedCities =
+                                          currentCities.filter(
+                                            (id) => id !== city.id
+                                          );
+                                        setTempSelectedCities((prev) => ({
+                                          ...prev,
+                                          [selectedSegmentId]: updatedCities,
+                                        }));
+                                      }}
+                                    >
+                                      <X className="w-2.5 h-2.5" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Save Button for City Changes */}
+                  {selectedSegmentId &&
+                    hasUnsavedCityChanges(selectedSegmentId) && (
+                      <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-yellow-800 dark:text-yellow-300">
+                            تغییرات ذخیره نشده‌ای دارید
+                          </span>
+                          <div className="flex space-x-2 space-x-reverse">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-3 text-[9px] text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                              disabled={filterOperationLoading}
+                              onClick={() => {
+                                if (!selectedSegmentId) return;
+                                // Reset to original cities
+                                setTempSelectedCities((prev) => {
+                                  const newState = { ...prev };
+                                  delete newState[selectedSegmentId];
+                                  return newState;
+                                });
+                              }}
+                            >
+                              لغو
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 px-3 text-[9px] bg-blue-600 hover:bg-blue-700 text-white"
+                              disabled={filterOperationLoading}
+                              onClick={() => {
+                                if (!selectedSegmentId) return;
+                                saveCityChanges(selectedSegmentId);
+                              }}
+                            >
+                              {filterOperationLoading ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                              ) : null}
+                              ذخیره تغییرات
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                </div>
+              )}
+          </div>
+        );
+
+      case "gender":
+        const isMaleChecked =
+          selectedSegment?.target_gender === "M" ||
+          selectedSegment?.target_gender === null;
+        const isFemaleChecked =
+          selectedSegment?.target_gender === "F" ||
+          selectedSegment?.target_gender === null;
+
+        return (
+          <div className="space-y-4">
+            <h4 className="font-medium text-[10px]">جنسیت</h4>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <Checkbox
+                  checked={isMaleChecked}
+                  onCheckedChange={(checked) => {
+                    if (!selectedSegmentId) return;
+
+                    let newGender: "M" | "F" | null = null;
+                    if (checked && isFemaleChecked) {
+                      newGender = null;
+                    } else if (checked && !isFemaleChecked) {
+                      newGender = "M";
+                    } else if (!checked && isFemaleChecked) {
+                      newGender = "F";
+                    } else {
+                      newGender = null;
+                    }
+
+                    setSegments(
+                      segments.map((s) =>
+                        s.id === selectedSegmentId
+                          ? { ...s, target_gender: newGender }
+                          : s
+                      )
+                    );
+                    updateSegmentApi(selectedSegmentId, {
+                      target_gender: newGender,
+                    });
+                  }}
+                />
+                <User className="w-4 h-4 text-blue-500" />
+                <span className="text-[10px]">مرد</span>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <Checkbox
+                  checked={isFemaleChecked}
+                  onCheckedChange={(checked) => {
+                    if (!selectedSegmentId) return;
+
+                    let newGender: "M" | "F" | null = null;
+                    if (checked && isMaleChecked) {
+                      newGender = null;
+                    } else if (checked && !isMaleChecked) {
+                      newGender = "F";
+                    } else if (!checked && isMaleChecked) {
+                      newGender = "M";
+                    } else {
+                      newGender = null;
+                    }
+
+                    setSegments(
+                      segments.map((s) =>
+                        s.id === selectedSegmentId
+                          ? { ...s, target_gender: newGender }
+                          : s
+                      )
+                    );
+                    updateSegmentApi(selectedSegmentId, {
+                      target_gender: newGender,
+                    });
+                  }}
+                />
+                <UserCheck className="w-4 h-4 text-pink-500" />
+                <span className="text-[10px]">زن</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "age":
+        const currentMinAge = selectedSegment?.target_min_age || 18;
+        const currentMaxAge = selectedSegment?.target_max_age || 65;
+
+        return (
+          <div className="space-y-4">
+            <h4 className="font-medium text-[10px]">سن</h4>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] text-gray-600">حداقل سن</label>
+                  <Input
+                    type="number"
+                    min={defaultFilterData?.min_age || 15}
+                    max={defaultFilterData?.max_age || 80}
+                    value={currentMinAge}
+                    onChange={(e) => {
+                      if (!selectedSegmentId) return;
+                      const minAge = Math.max(
+                        parseInt(e.target.value) ||
+                          defaultFilterData?.min_age ||
+                          15,
+                        defaultFilterData?.min_age || 15
+                      );
+                      const maxAge = Math.max(minAge, currentMaxAge);
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? {
+                                ...s,
+                                target_min_age: minAge,
+                                target_max_age: maxAge,
+                              }
+                            : s
+                        )
+                      );
+                    }}
+                    onBlur={(e) => {
+                      if (!selectedSegmentId) return;
+                      const minAge = Math.max(
+                        parseInt(e.target.value) ||
+                          defaultFilterData?.min_age ||
+                          15,
+                        defaultFilterData?.min_age || 15
+                      );
+                      const maxAge = Math.max(minAge, currentMaxAge);
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: minAge,
+                        target_max_age: maxAge,
+                      });
+                    }}
+                    className="text-[10px] h-8"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] text-gray-600">حداکثر سن</label>
+                  <Input
+                    type="number"
+                    min={defaultFilterData?.min_age || 15}
+                    max={defaultFilterData?.max_age || 80}
+                    value={currentMaxAge}
+                    onChange={(e) => {
+                      if (!selectedSegmentId) return;
+                      const maxAge = Math.min(
+                        parseInt(e.target.value) ||
+                          defaultFilterData?.max_age ||
+                          80,
+                        defaultFilterData?.max_age || 80
+                      );
+                      const minAge = Math.min(currentMinAge, maxAge);
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? {
+                                ...s,
+                                target_min_age: minAge,
+                                target_max_age: maxAge,
+                              }
+                            : s
+                        )
+                      );
+                    }}
+                    onBlur={(e) => {
+                      if (!selectedSegmentId) return;
+                      const maxAge = Math.min(
+                        parseInt(e.target.value) ||
+                          defaultFilterData?.max_age ||
+                          80,
+                        defaultFilterData?.max_age || 80
+                      );
+                      const minAge = Math.min(currentMinAge, maxAge);
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: minAge,
+                        target_max_age: maxAge,
+                      });
+                    }}
+                    className="text-[10px] h-8"
+                  />
+                </div>
+              </div>
+
+              {/* Age Slider */}
+              <div className="space-y-3">
+                <label className="text-[9px] text-gray-600 dark:text-gray-400">
+                  اسلایدر سن:
+                </label>
+                <div className="px-2">
+                  <Slider
+                    value={[currentMinAge, currentMaxAge]}
+                    onValueChange={(values) => {
+                      if (!selectedSegmentId) return;
+                      const [minAge, maxAge] = values;
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? {
+                                ...s,
+                                target_min_age: minAge,
+                                target_max_age: maxAge,
+                              }
+                            : s
+                        )
+                      );
+                    }}
+                    onValueCommit={(values) => {
+                      if (!selectedSegmentId) return;
+                      const [minAge, maxAge] = values;
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: minAge,
+                        target_max_age: maxAge,
+                      });
+                    }}
+                    min={defaultFilterData?.min_age || 15}
+                    max={defaultFilterData?.max_age || 80}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[9px] text-gray-500 dark:text-gray-400">
+                      {defaultFilterData?.min_age || 15}
+                    </span>
+                    <span className="text-[9px] text-gray-500 dark:text-gray-400">
+                      {defaultFilterData?.max_age || 80}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Age Preset Buttons */}
+              <div className="space-y-2">
+                <label className="text-[9px] text-gray-600 dark:text-gray-400">
+                  انتخاب سریع:
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-[9px] h-7"
+                    onClick={() => {
+                      if (!selectedSegmentId) return;
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? { ...s, target_min_age: 18, target_max_age: 30 }
+                            : s
+                        )
+                      );
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: 18,
+                        target_max_age: 30,
+                      });
+                    }}
+                  >
+                    18-30
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-[9px] h-7"
+                    onClick={() => {
+                      if (!selectedSegmentId) return;
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? { ...s, target_min_age: 31, target_max_age: 45 }
+                            : s
+                        )
+                      );
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: 31,
+                        target_max_age: 45,
+                      });
+                    }}
+                  >
+                    31-45
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-[9px] h-7"
+                    onClick={() => {
+                      if (!selectedSegmentId) return;
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? { ...s, target_min_age: 46, target_max_age: 65 }
+                            : s
+                        )
+                      );
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: 46,
+                        target_max_age: 65,
+                      });
+                    }}
+                  >
+                    46-65
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-[9px] h-7"
+                    onClick={() => {
+                      if (!selectedSegmentId) return;
+                      const minAge = defaultFilterData?.min_age || 15;
+                      const maxAge = defaultFilterData?.max_age || 80;
+                      setSegments(
+                        segments.map((s) =>
+                          s.id === selectedSegmentId
+                            ? {
+                                ...s,
+                                target_min_age: minAge,
+                                target_max_age: maxAge,
+                              }
+                            : s
+                        )
+                      );
+                      updateSegmentApi(selectedSegmentId, {
+                        target_min_age: minAge,
+                        target_max_age: maxAge,
+                      });
+                    }}
+                  >
+                    همه سنین
+                  </Button>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center space-x-2 space-x-reverse bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">
+                  <span className="text-[10px] font-medium text-blue-700 dark:text-blue-300">
+                    {currentMinAge} تا {currentMaxAge} سال
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const renderGeneralFilterSettings = () => {
+    switch (generalFilterType) {
+      case "location":
+        return (
+          <div className="space-y-4">
+            <h4 className="font-medium">محل سکونت</h4>
+
+            {/* Province Selection */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-medium">استان:</label>
+              {provincesLoading ? (
+                <div className="text-center py-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+                </div>
+              ) : (
+                <Select
+                  value={selectedProvince?.toString() || ""}
+                  onValueChange={(value) => {
+                    const provinceId = parseInt(value);
+                    setSelectedProvince(provinceId);
+                    setCities([]);
+                    fetchCities(provinceId);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="انتخاب استان" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {provinces.map((province) => (
+                      <SelectItem
+                        key={province.id}
+                        value={province.id.toString()}
+                      >
+                        {province.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* Cities Selection */}
+            {selectedProvince && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-medium">شهر:</label>
                 {citiesLoading ? (
                   <div className="text-center py-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
@@ -1108,7 +2009,7 @@ const Audience = () => {
               })() && (
                 <div className="space-y-3 mt-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <label className="text-[10px] font-medium text-gray-800 dark:text-gray-200">
                       شهرهای انتخاب شده (
                       {(() => {
                         const currentCities =
@@ -1122,7 +2023,7 @@ const Audience = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                      className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                       disabled={
                         segmentOperationLoading || filterOperationLoading
                       }
@@ -1203,11 +2104,11 @@ const Audience = () => {
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center space-x-2 space-x-reverse">
                                   <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                                    <span className="text-xs text-white">
+                                    <span className="text-[9px] text-white">
                                       ✓
                                     </span>
                                   </div>
-                                  <span className="text-sm font-medium text-green-800 dark:text-green-300">
+                                  <span className="text-[10px] font-medium text-green-800 dark:text-green-300">
                                     همه شهرهای {province.name}
                                   </span>
                                 </div>
@@ -1249,7 +2150,7 @@ const Audience = () => {
                                   <X className="w-3 h-3" />
                                 </Button>
                               </div>
-                              <p className="text-xs text-green-700 dark:text-green-400">
+                              <p className="text-[9px] text-green-700 dark:text-green-400">
                                 تمام شهرهای این استان انتخاب شده‌اند
                               </p>
                             </div>
@@ -1263,7 +2164,7 @@ const Audience = () => {
                               className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
                             >
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                <span className="text-[10px] font-medium text-blue-800 dark:text-blue-300">
                                   {provinceData.name} (
                                   {provinceData.cities.length} شهر)
                                 </span>
@@ -1308,7 +2209,7 @@ const Audience = () => {
                                 {provinceData.cities.map((city) => (
                                   <div
                                     key={city.id}
-                                    className="inline-flex items-center bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 rounded-full px-2 py-1 text-xs"
+                                    className="inline-flex items-center bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 rounded-full px-2 py-1 text-[9px]"
                                   >
                                     <span className="text-gray-700 dark:text-gray-300 ml-1">
                                       {city.name}
@@ -1361,14 +2262,14 @@ const Audience = () => {
                     hasUnsavedCityChanges(selectedSegmentId) && (
                       <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600 rounded-lg">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-yellow-800 dark:text-yellow-300">
+                          <span className="text-[10px] text-yellow-800 dark:text-yellow-300">
                             تغییرات ذخیره نشده‌ای دارید
                           </span>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 px-3 text-xs text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                              className="h-7 px-3 text-[9px] text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                               disabled={filterOperationLoading}
                               onClick={() => {
                                 if (!selectedSegmentId) return;
@@ -1384,7 +2285,7 @@ const Audience = () => {
                             </Button>
                             <Button
                               size="sm"
-                              className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                              className="h-7 px-3 text-[9px] bg-blue-600 hover:bg-blue-700 text-white"
                               disabled={filterOperationLoading}
                               onClick={() => {
                                 if (!selectedSegmentId) return;
@@ -1452,7 +2353,7 @@ const Audience = () => {
                   }}
                 />
                 <User className="w-4 h-4 text-blue-500" />
-                <span className="text-sm">مرد</span>
+                <span className="text-[10px]">مرد</span>
               </div>
               <div className="flex items-center space-x-2 space-x-reverse">
                 <Checkbox
@@ -1489,7 +2390,7 @@ const Audience = () => {
                   }}
                 />
                 <UserCheck className="w-4 h-4 text-pink-500" />
-                <span className="text-sm">زن</span>
+                <span className="text-[10px]">زن</span>
               </div>
             </div>
           </div>
@@ -1510,7 +2411,7 @@ const Audience = () => {
               {/* Input fields for precise control */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-600">حداقل سن</label>
+                  <label className="text-[9px] text-gray-600">حداقل سن</label>
                   <Input
                     type="number"
                     min={defaultFilterData?.min_age || 15}
@@ -1567,11 +2468,11 @@ const Audience = () => {
                         e.currentTarget.blur();
                       }
                     }}
-                    className="text-sm h-8"
+                    className="text-[10px] h-8"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-600">حداکثر سن</label>
+                  <label className="text-[9px] text-gray-600">حداکثر سن</label>
                   <Input
                     type="number"
                     min={defaultFilterData?.min_age || 15}
@@ -1628,7 +2529,7 @@ const Audience = () => {
                         e.currentTarget.blur();
                       }
                     }}
-                    className="text-sm h-8"
+                    className="text-[10px] h-8"
                   />
                 </div>
               </div>
@@ -1636,7 +2537,7 @@ const Audience = () => {
               {/* Display current range */}
               <div className="text-center">
                 <div className="inline-flex items-center space-x-2 space-x-reverse bg-blue-50 px-3 py-1 rounded-full">
-                  <span className="text-sm font-medium text-blue-700">
+                  <span className="text-[10px] font-medium text-blue-700">
                     {currentMinAge} تا {currentMaxAge} سال
                   </span>
                 </div>
@@ -1683,7 +2584,7 @@ const Audience = () => {
                   dir="rtl"
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500">
+                <div className="flex justify-between text-[9px] text-gray-500">
                   <span>{defaultFilterData?.min_age || 15} سال</span>
                   <span>{defaultFilterData?.max_age || 80} سال</span>
                 </div>
@@ -1694,7 +2595,7 @@ const Audience = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-7"
+                  className="text-[9px] h-7"
                   onClick={() => {
                     if (!selectedSegmentId) return;
                     // Update both local state and API immediately for preset buttons
@@ -1716,7 +2617,7 @@ const Audience = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-7"
+                  className="text-[9px] h-7"
                   onClick={() => {
                     if (!selectedSegmentId) return;
                     setSegments(
@@ -1737,7 +2638,7 @@ const Audience = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-7"
+                  className="text-[9px] h-7"
                   onClick={() => {
                     if (!selectedSegmentId) return;
                     setSegments(
@@ -1758,7 +2659,7 @@ const Audience = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-7"
+                  className="text-[9px] h-7"
                   onClick={() => {
                     if (!selectedSegmentId) return;
                     const minAge = defaultFilterData?.min_age || 15;
@@ -1813,7 +2714,7 @@ const Audience = () => {
 
     return (
       <div className="space-y-4">
-        <h4 className="font-medium">{filterLabel.title}</h4>
+        <h4 className="font-medium text-[10px]">{filterLabel.title}</h4>
         <div className="space-y-2">
           {filterLabel.metrics.map((metric) => (
             <div
@@ -1840,7 +2741,7 @@ const Audience = () => {
                   updateSegmentFilter(selectedSegmentId, filterIdStr, updated);
                 }}
               />
-              <span className="text-sm">{metric.title}</span>
+              <span className="text-[10px]">{metric.title}</span>
             </div>
           ))}
         </div>
@@ -2123,7 +3024,70 @@ const Audience = () => {
 
     // شهر
     if (segment.target_city && segment.target_city.length > 0) {
-      const desc = getSelectedCitiesShortDescription(segmentId);
+      // Use temp selected cities if available, otherwise use segment data
+      const currentSelectedCityIds =
+        tempSelectedCities[segmentId] || segment.target_city;
+
+      let desc = "";
+      const cityDetails = segmentCityDetails[segmentId];
+
+      if (cityDetails && cityDetails.target_city_name) {
+        const { target_city_name, target_all_cities_province } = cityDetails;
+
+        // Get IDs of provinces that have ALL cities selected
+        const completeProvinceIds = target_all_cities_province
+          ? target_all_cities_province.map((p) => p.id)
+          : [];
+
+        if (completeProvinceIds.length > 0) {
+          // Show complete provinces
+          const completeProvinceNames = target_all_cities_province
+            ? target_all_cities_province.map((p) => p.name)
+            : [];
+
+          // Filter out cities that belong to complete provinces
+          const partialCityNames = target_city_name.filter(
+            (city) =>
+              currentSelectedCityIds.includes(city.id) &&
+              !completeProvinceIds.includes(city.province)
+          );
+
+          const parts = [];
+          if (completeProvinceNames.length > 0) {
+            parts.push(`همه شهرهای ${completeProvinceNames.join(", ")}`);
+          }
+          if (partialCityNames.length > 0) {
+            if (partialCityNames.length <= 3) {
+              parts.push(partialCityNames.map((c) => c.name).join(", "));
+            } else {
+              parts.push(
+                `${partialCityNames
+                  .slice(0, 2)
+                  .map((c) => c.name)
+                  .join(", ")} و ${partialCityNames.length - 2} شهر دیگر`
+              );
+            }
+          }
+          desc = parts.join(" + ");
+        } else {
+          // No complete provinces, just show individual cities
+          const selectedCityNames = target_city_name
+            .filter((city) => currentSelectedCityIds.includes(city.id))
+            .map((city) => city.name);
+
+          if (selectedCityNames.length <= 3) {
+            desc = selectedCityNames.join(", ");
+          } else {
+            desc = `${selectedCityNames.slice(0, 2).join(", ")} و ${
+              selectedCityNames.length - 2
+            } شهر دیگر`;
+          }
+        }
+      } else {
+        // Fallback if city details are not available
+        desc = `${currentSelectedCityIds.length} شهر انتخاب شده`;
+      }
+
       if (desc) {
         list.push({
           type: "location",
@@ -2135,9 +3099,10 @@ const Audience = () => {
     }
 
     // فیلترهای تخصصی
-    if (segmentMetrics[segmentId] && segmentMetrics[segmentId].length > 0) {
+    const currentSegmentMetrics = segmentMetrics[segmentId] || [];
+    if (currentSegmentMetrics.length > 0) {
       const grouped: Record<string, string[]> = {};
-      segmentMetrics[segmentId].forEach((metricId) => {
+      currentSegmentMetrics.forEach((metricId) => {
         filterCategories.forEach((cat) => {
           cat.labels.forEach((label) => {
             const metric = label.metrics.find((m) => m.id === metricId);
@@ -2154,7 +3119,7 @@ const Audience = () => {
           type: "metric",
           key: lbl,
           label: lbl,
-          value: mArr.join(", "),
+          value: mArr.length > 0 ? mArr.join(", ") : "انتخاب نشده",
         });
       });
     }
@@ -2188,6 +3153,17 @@ const Audience = () => {
       });
     }
   }, [segments.length]);
+
+  // Auto-expand only general filter categories when they are loaded
+  useEffect(() => {
+    if (filterCategories.length > 0) {
+      setExpandedCategories((prev) => {
+        // Only expand general filters, not API filters
+        const newExpanded = [...new Set([...prev, "general"])];
+        return newExpanded;
+      });
+    }
+  }, [filterCategories]);
 
   // Navigation functions
   const prevStep = () => {
@@ -2258,22 +3234,27 @@ const Audience = () => {
     } else {
       setGeneralFilterType(first.type);
     }
-  }, [selectedSegmentId, segments, segmentMetrics, filterCategories]);
+  }, [
+    selectedSegmentId,
+    segments,
+    segmentMetrics,
+    filterCategories,
+    tempSelectedCities,
+    segmentCityDetails,
+  ]);
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col font-['Vazirmatn'] relative"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col  relative"
       dir="rtl"
     >
-      {/* Loading Overlay */}
-      {(segmentOperationLoading || filterOperationLoading) && (
+      {/* Loading Overlay - فقط برای عملیات کلی */}
+      {segmentsLoading && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 border border-gray-200/50 dark:border-gray-700/50">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
             <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {segmentOperationLoading
-                ? "در حال بروزرسانی سگمنت..."
-                : "در حال اعمال فیلتر..."}
+              در حال بارگذاری اولیه...
             </p>
           </div>
         </div>
@@ -2326,7 +3307,7 @@ const Audience = () => {
         }
       />
 
-      <div className="flex flex-1 h-[calc(100vh-64px)] mt-16">
+      <div className="flex flex-1 h-[calc(100vh-64px)]">
         {/* Fixed Segments Sidebar */}
         <div className="w-96 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 h-[calc(100vh-64px)] fixed top-16 right-0 flex flex-col shadow-xl">
           <div className="p-6 border-b border-gray-100 dark:border-gray-700/50 flex-shrink-0">
@@ -2556,7 +3537,7 @@ const Audience = () => {
                       تعریف ویژگی‌های مخاطبان هدف
                     </p>
                   </CardHeader>
-                  <CardContent className="space-y-4 p-6 pt-0">
+                  <CardContent className="space-y-2 p-6 pt-0">
                     {filtersLoading ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
@@ -2592,7 +3573,7 @@ const Audience = () => {
                             }
                           >
                             <div
-                              className={`p-4 rounded-xl border transition-all duration-200 ${
+                              className={`p-2 rounded-xl border transition-all duration-200 ${
                                 segmentDetailsLoading ||
                                 filterOperationLoading ||
                                 segmentOperationLoading
@@ -2610,7 +3591,7 @@ const Audience = () => {
                                     <Users className="w-3.5 h-3.5 text-white" />
                                   </div>
                                   <span
-                                    className={`text-xs font-semibold ${
+                                    className={`text-[10px] font-semibold ${
                                       isGeneralFilterApplied("location") ||
                                       isGeneralFilterApplied("gender") ||
                                       isGeneralFilterApplied("age")
@@ -2637,9 +3618,9 @@ const Audience = () => {
                             </div>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <div className="space-y-2 mt-3 mr-4">
+                            <div className="space-y-1 mt-2 mr-4">
                               <div
-                                className={`p-3 rounded-xl transition-all duration-200 border ${
+                                className={`p-2 rounded-lg transition-all duration-200 border ${
                                   segmentDetailsLoading ||
                                   filterOperationLoading ||
                                   segmentOperationLoading
@@ -2661,9 +3642,9 @@ const Audience = () => {
                                 }}
                               >
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-3 space-x-reverse">
+                                  <div className="flex items-center space-x-2 space-x-reverse">
                                     <div
-                                      className={`w-5 h-5 rounded-lg flex items-center justify-center ${
+                                      className={`w-4 h-4 rounded-lg flex items-center justify-center ${
                                         generalFilterType === "location"
                                           ? "bg-indigo-600"
                                           : isGeneralFilterApplied("location")
@@ -2704,7 +3685,7 @@ const Audience = () => {
                                 </div>
                               </div>
                               <div
-                                className={`p-3 rounded-xl transition-all duration-200 border ${
+                                className={`p-2 rounded-lg transition-all duration-200 border ${
                                   segmentDetailsLoading ||
                                   filterOperationLoading ||
                                   segmentOperationLoading
@@ -2726,9 +3707,9 @@ const Audience = () => {
                                 }}
                               >
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-3 space-x-reverse">
+                                  <div className="flex items-center space-x-2 space-x-reverse">
                                     <div
-                                      className={`w-5 h-5 rounded-lg flex items-center justify-center ${
+                                      className={`w-4 h-4 rounded-lg flex items-center justify-center ${
                                         generalFilterType === "gender"
                                           ? "bg-indigo-600"
                                           : isGeneralFilterApplied("gender")
@@ -2769,7 +3750,7 @@ const Audience = () => {
                                 </div>
                               </div>
                               <div
-                                className={`p-3 rounded-xl transition-all duration-200 border ${
+                                className={`p-2 rounded-lg transition-all duration-200 border ${
                                   segmentDetailsLoading ||
                                   filterOperationLoading ||
                                   segmentOperationLoading
@@ -2791,9 +3772,9 @@ const Audience = () => {
                                 }}
                               >
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-3 space-x-reverse">
+                                  <div className="flex items-center space-x-2 space-x-reverse">
                                     <div
-                                      className={`w-5 h-5 rounded-lg flex items-center justify-center ${
+                                      className={`w-4 h-4 rounded-lg flex items-center justify-center ${
                                         generalFilterType === "age"
                                           ? "bg-indigo-600"
                                           : isGeneralFilterApplied("age")
@@ -2811,7 +3792,7 @@ const Audience = () => {
                                       />
                                     </div>
                                     <span
-                                      className={`text-sm font-medium ${
+                                      className={`text-xs font-medium ${
                                         generalFilterType === "age"
                                           ? "text-indigo-700 dark:text-indigo-300 font-semibold"
                                           : isGeneralFilterApplied("age")
@@ -2881,7 +3862,7 @@ const Audience = () => {
                                       className="w-4 h-4"
                                     />
                                     <span
-                                      className={`text-xs font-medium ${
+                                      className={`text-[10px] font-medium ${
                                         isCategoryApplied(category.id)
                                           ? "text-blue-700 dark:text-blue-300"
                                           : "text-gray-900 dark:text-white"
@@ -2906,7 +3887,7 @@ const Audience = () => {
                               </div>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                              <div className="space-y-2 mt-2 mr-4">
+                              <div className="space-y-1 mt-2 mr-4">
                                 {category.labels?.map((label) => {
                                   // Check if any of this label's metrics are selected for the current segment
                                   const hasSelectedMetrics =
@@ -2996,12 +3977,7 @@ const Audience = () => {
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6 overflow-y-auto flex-1 p-6 pt-0">
-                    {segmentDetailsLoading ? (
-                      <div className="text-center text-gray-500 dark:text-gray-400 py-6">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-3"></div>
-                        <p className="text-xs">در حال بارگذاری تنظیمات...</p>
-                      </div>
-                    ) : !selectedSegmentId ? (
+                    {!selectedSegmentId ? (
                       <div className="text-center text-gray-500 dark:text-gray-400 py-6">
                         <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
                           <Settings className="w-6 h-6 text-gray-400" />
@@ -3018,6 +3994,7 @@ const Audience = () => {
                       </div>
                     ) : (
                       (() => {
+                        // Recalculate applied filters each render to ensure they're up to date
                         let appliedFilters =
                           getAllAppliedFilters(selectedSegmentId);
 
@@ -3091,83 +4068,193 @@ const Audience = () => {
                             );
 
                         return (
-                          <div
-                            className={`border rounded-lg p-3 border-gray-200 dark:border-gray-600 ${
-                              segmentOperationLoading || filterOperationLoading
-                                ? "bg-gray-50/50 dark:bg-gray-700/50 opacity-50"
-                                : "bg-gray-50 dark:bg-gray-700"
-                            }`}
-                          >
-                            {/* Cards per filter */}
-                            <div className="space-y-2">
-                              {appliedFilters.map((flt) => {
-                                const isActive =
-                                  (flt.type === "metric" &&
-                                    flt.label === activeLabel) ||
-                                  (flt.type !== "metric" &&
-                                    flt.type === generalFilterType);
+                          <div className="space-y-2">
+                            {appliedFilters.map((flt) => {
+                              const isActive =
+                                (flt.type === "metric" &&
+                                  flt.label === activeLabel) ||
+                                (flt.type !== "metric" &&
+                                  flt.type === generalFilterType);
 
-                                return (
-                                  <div
-                                    key={`flt-${flt.key}`}
-                                    className={`border rounded-lg p-3 transition-colors cursor-pointer ${
-                                      isActive
-                                        ? "bg-blue-50 dark:bg-blue-900/20"
-                                        : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-                                    }`}
-                                    onClick={() => {
+                              return (
+                                <div
+                                  key={`flt-${flt.key}`}
+                                  className={`border rounded-lg p-3 transition-colors cursor-pointer ${
+                                    isActive
+                                      ? "bg-blue-50 dark:bg-blue-900/20"
+                                      : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                  }`}
+                                  onClick={() => {
+                                    if (
+                                      flt.type === "gender" ||
+                                      flt.type === "age" ||
+                                      flt.type === "location"
+                                    ) {
+                                      setGeneralFilterType(flt.type);
+                                      setSelectedFilterForSettings(null);
+                                    } else {
+                                      let lblId: number | null = null;
+                                      filterCategories.forEach((cat) => {
+                                        cat.labels.forEach((lbl) => {
+                                          if (lbl.title === flt.key)
+                                            lblId = lbl.id;
+                                        });
+                                      });
+                                      if (lblId)
+                                        setSelectedFilterForSettings(lblId);
+                                      setGeneralFilterType(null);
+                                    }
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="font-medium text-[10px] text-gray-900 dark:text-white">
+                                      {flt.label}
+                                    </span>
+                                    {isActive && (
+                                      <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-gray-600 dark:text-gray-300 mb-2">
+                                    {flt.value}
+                                  </p>
+
+                                  <div className="border-t pt-3 mt-2 border-dashed border-blue-200 dark:border-blue-600 relative">
+                                    {(segmentOperationLoading ||
+                                      filterOperationLoading) && (
+                                      <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+                                        <div className="flex items-center gap-2">
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                                            در حال ذخیره...
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                    {(() => {
+                                      // Render settings for this specific filter
                                       if (
                                         flt.type === "gender" ||
                                         flt.type === "age" ||
                                         flt.type === "location"
                                       ) {
-                                        setGeneralFilterType(flt.type);
-                                        setSelectedFilterForSettings(null);
+                                        // For general filters, use the dedicated function
+                                        return renderGeneralFilterSettingsForType(
+                                          flt.type
+                                        );
                                       } else {
-                                        let lblId: number | null = null;
+                                        // For API filters, find the filter and render its settings
+                                        let filterLabelId: number | null = null;
                                         filterCategories.forEach((cat) => {
                                           cat.labels.forEach((lbl) => {
                                             if (lbl.title === flt.key)
-                                              lblId = lbl.id;
+                                              filterLabelId = lbl.id;
                                           });
                                         });
-                                        if (lblId)
-                                          setSelectedFilterForSettings(lblId);
-                                        setGeneralFilterType(null);
-                                      }
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between mb-1">
-                                      <span className="font-medium text-xs text-gray-900 dark:text-white">
-                                        {flt.label}
-                                      </span>
-                                      {isActive && (
-                                        <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
-                                      )}
-                                    </div>
-                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
-                                      {flt.value}
-                                    </p>
 
-                                    {isActive && (
-                                      <div className="border-t pt-3 mt-2 border-dashed border-blue-200 dark:border-blue-600">
-                                        {segmentOperationLoading ||
-                                        filterOperationLoading ? (
-                                          <div className="text-center py-2">
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
-                                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                                              در حال اعمال تغییرات...
-                                            </p>
-                                          </div>
-                                        ) : (
-                                          renderFilterSettings()
-                                        )}
-                                      </div>
-                                    )}
+                                        if (filterLabelId) {
+                                          const filterLabel = filterCategories
+                                            .flatMap(
+                                              (category) => category.labels
+                                            )
+                                            .find(
+                                              (label) =>
+                                                label.id === filterLabelId
+                                            );
+
+                                          if (filterLabel) {
+                                            const filterIdStr =
+                                              filterLabelId.toString();
+                                            const currentSelectedMetrics =
+                                              segmentMetrics[
+                                                selectedSegmentId
+                                              ] || [];
+
+                                            return (
+                                              <div className="space-y-4">
+                                                <h4 className="font-medium text-[10px]">
+                                                  {filterLabel.title}
+                                                </h4>
+                                                <div className="space-y-2">
+                                                  {filterLabel.metrics.map(
+                                                    (metric) => (
+                                                      <div
+                                                        key={metric.id}
+                                                        className="flex items-center space-x-2 space-x-reverse"
+                                                      >
+                                                        <Checkbox
+                                                          checked={currentSelectedMetrics.includes(
+                                                            metric.id
+                                                          )}
+                                                          onCheckedChange={(
+                                                            checked
+                                                          ) => {
+                                                            if (
+                                                              !selectedSegmentId
+                                                            )
+                                                              return;
+
+                                                            const updated =
+                                                              checked
+                                                                ? [
+                                                                    ...currentSelectedMetrics,
+                                                                    metric.id,
+                                                                  ]
+                                                                : currentSelectedMetrics.filter(
+                                                                    (
+                                                                      id: number
+                                                                    ) =>
+                                                                      id !==
+                                                                      metric.id
+                                                                  );
+
+                                                            setSegmentMetrics(
+                                                              (prev) => ({
+                                                                ...prev,
+                                                                [selectedSegmentId]:
+                                                                  updated,
+                                                              })
+                                                            );
+
+                                                            // Save or remove the clicked metric to/from API
+                                                            if (checked) {
+                                                              saveSegmentMetric(
+                                                                selectedSegmentId,
+                                                                metric.id
+                                                              );
+                                                            } else {
+                                                              // Remove metric from API when unchecked
+                                                              removeSegmentMetric(
+                                                                selectedSegmentId,
+                                                                metric.id
+                                                              );
+                                                            }
+
+                                                            // Update segment filters as well for local state
+                                                            updateSegmentFilter(
+                                                              selectedSegmentId,
+                                                              filterIdStr,
+                                                              updated
+                                                            );
+                                                          }}
+                                                        />
+                                                        <span className="text-[10px]">
+                                                          {metric.title}
+                                                        </span>
+                                                      </div>
+                                                    )
+                                                  )}
+                                                </div>
+                                              </div>
+                                            );
+                                          }
+                                        }
+                                        return null;
+                                      }
+                                    })()}
                                   </div>
-                                );
-                              })}
-                            </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         );
                       })()
@@ -3556,7 +4643,7 @@ const Audience = () => {
       </div>
 
       {/* Fixed Navigation Buttons */}
-      <div className="fixed bottom-6 left-6 right-6 flex items-center justify-between z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         <Button
           onClick={prevStep}
           variant="outline"
@@ -3565,20 +4652,6 @@ const Audience = () => {
         >
           <ArrowRight className="w-5 h-5 ml-2" />
           مرحله قبل
-        </Button>
-        <Button
-          onClick={nextStep}
-          disabled={
-            segments.length === 0 ||
-            summaryLoading ||
-            segmentOperationLoading ||
-            filterOperationLoading
-          }
-          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white shadow-sm hover:shadow-md transition-all duration-200 px-6 py-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          size="lg"
-        >
-          مرحله بعد
-          <ArrowLeft className="w-5 h-5 mr-2" />
         </Button>
       </div>
     </div>

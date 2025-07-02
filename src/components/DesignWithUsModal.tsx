@@ -139,56 +139,58 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[95vh] p-0 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] p-0 overflow-hidden bg-white dark:bg-slate-900 border-0 shadow-2xl rounded-2xl">
         <form onSubmit={handleSubmit} className="flex flex-col h-[85vh]">
-          {/* Luxury Header */}
-          <div className="flex items-center justify-between p-8 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-indigo-50/50 to-indigo-100/30 dark:from-indigo-900/20 dark:to-indigo-800/10">
+          {/* Header */}
+          <div className="pb-6 border-b border-gray-100 dark:border-slate-800 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-slate-800 dark:to-slate-700 px-6 py-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">درخواست طراحی نظرسنجی</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">همکاری با تیم متخصص سنجاپ</p>
-              </div>
-            </div>
-            <div className="w-12" /> {/* Spacer */}
-          </div>
-
-          {/* Luxury Alert */}
-          <div className="p-8 bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/20 dark:to-blue-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-4 text-indigo-800 dark:text-indigo-200">
-              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-base font-medium">
-                  برای طراحی نظرسنجی شما، لطفا به چند سوال زیر پاسخ بدهید
-                </p>
-                <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">
-                  تمام فیلدها اجباری هستند
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white text-right mb-1">
+                  درخواست طراحی نظرسنجی
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-slate-300 text-right">
+                  همکاری با تیم متخصص و با تجربه سنجاپ
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Luxury Form Content */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-br from-slate-50/30 to-white dark:from-slate-900/30 dark:to-slate-800/30">
+          {/* Alert */}
+          <div className="p-4 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+            <div className="text-gray-800 dark:text-slate-200">
+              <p className="text-sm font-medium">
+                برای طراحی نظرسنجی شما، لطفا به چند سوال زیر پاسخ بدهید
+              </p>
+              <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
+                تمام فیلدها اجباری هستند
+              </p>
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-white dark:bg-slate-900">
             {/* Category */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold text-slate-900 dark:text-white block">
-                دسته بندی نظرسنجی شما <span className="text-indigo-500">*</span>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-900 dark:text-white block">
+                دسته بندی نظرسنجی شما <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => handleInputChange("category", value)}
               >
-                <SelectTrigger className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500">
+                <SelectTrigger className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400">
                   <SelectValue placeholder="دسته بندی را انتخاب کنید" />
                 </SelectTrigger>
-                <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl">
+                <SelectContent className="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg">
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category} className="text-base">
+                    <SelectItem
+                      key={category}
+                      value={category}
+                      className="text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700"
+                    >
                       {category}
                     </SelectItem>
                   ))}
@@ -197,9 +199,13 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
             </div>
 
             {/* Goals */}
-            <div className="space-y-3">
-              <Label htmlFor="goals" className="text-base font-semibold text-slate-900 dark:text-white block">
-                اهداف اصلی خود را بنویسید <span className="text-indigo-500">*</span>
+            <div className="space-y-2">
+              <Label
+                htmlFor="goals"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
+                اهداف اصلی خود را بنویسید{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="goals"
@@ -209,14 +215,18 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
                 rows={5}
                 maxLength={100}
                 required
-                className="text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500 resize-none"
+                className="text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 resize-none placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
 
             {/* Audience */}
-            <div className="space-y-3">
-              <Label htmlFor="audience" className="text-base font-semibold text-slate-900 dark:text-white block">
-                مخاطب محصول/خدمات شما چه کسانی هستند؟ <span className="text-indigo-500">*</span>
+            <div className="space-y-2">
+              <Label
+                htmlFor="audience"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
+                مخاطب محصول/خدمات شما چه کسانی هستند؟{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="audience"
@@ -225,14 +235,18 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
                 placeholder="گروه هدف و مخاطبان خود را معرفی کنید"
                 maxLength={100}
                 required
-                className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500"
+                className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
 
             {/* Brand */}
-            <div className="space-y-3">
-              <Label htmlFor="brand" className="text-base font-semibold text-slate-900 dark:text-white block">
-                نام سازمان یا برند شما چیست؟ <span className="text-indigo-500">*</span>
+            <div className="space-y-2">
+              <Label
+                htmlFor="brand"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
+                نام سازمان یا برند شما چیست؟{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="brand"
@@ -241,38 +255,39 @@ const DesignWithUsModal: React.FC<DesignWithUsModalProps> = ({
                 placeholder="نام شرکت، سازمان یا برند خود را وارد کنید"
                 maxLength={100}
                 required
-                className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:focus:border-indigo-500"
+                className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
           </div>
 
-          {/* Luxury Footer */}
-          <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-8 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-900/50 dark:to-slate-800/50 backdrop-blur-sm">
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-                className="h-12 px-8 text-lg font-medium bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200"
-              >
-                بستن
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="h-12 px-8 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center gap-3"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    در حال ارسال...
-                  </>
-                ) : (
-                  "ارسال درخواست"
-                )}
-              </Button>
-            </div>
+          {/* Footer */}
+          <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-gray-100 dark:border-slate-800 bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-800 dark:to-slate-700 px-6 py-4 rounded-b-2xl">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              بستن
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  در حال ارسال...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  ارسال درخواست
+                </div>
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

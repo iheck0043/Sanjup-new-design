@@ -212,68 +212,77 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[95vh] p-0 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-3xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] p-0 overflow-hidden bg-white dark:bg-slate-900 border-0 shadow-2xl rounded-2xl">
         <form onSubmit={handleSubmit} className="flex flex-col h-[90vh]">
-          {/* Luxury Header */}
-          <div className="flex items-center justify-between p-8 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-violet-50/50 to-violet-100/30 dark:from-violet-900/20 dark:to-violet-800/10 relative">
+          {/* Header */}
+          <div className="pb-6 border-b border-gray-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-slate-800 dark:to-slate-700 px-6 py-6 relative">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-violet-600 dark:bg-violet-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">طراحی نظرسنجی با هوش مصنوعی</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">ایجاد نظرسنجی هوشمند با کمک AI</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white text-right mb-1">
+                  طراحی نظرسنجی با هوش مصنوعی
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-slate-300 text-right">
+                  ایجاد نظرسنجی هوشمند و پیشرفته با کمک AI
+                </p>
               </div>
             </div>
-            <div className="w-12" /> {/* Spacer */}
-            
-            {/* Luxury Loading Overlay */}
+            {/* Loading Overlay */}
             {isGenerating && (
-              <div className="absolute inset-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl flex items-center justify-center z-50 rounded-3xl">
+              <div className="absolute inset-0 bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl flex items-center justify-center z-50 rounded-2xl">
                 <div className="text-center">
-                  <div className="relative mb-8">
-                    <Loader2 className="h-20 w-20 animate-spin text-violet-600 dark:text-violet-400 mx-auto" />
-                    <div className="absolute inset-4 h-12 w-12 border-2 border-slate-300 dark:border-slate-600 border-t-transparent rounded-full animate-spin mx-auto" style={{animationDirection: 'reverse', animationDuration: '1.5s'}}></div>
+                  <div className="relative mb-6">
+                    <Loader2 className="h-16 w-16 animate-spin text-purple-500 mx-auto" />
+                    <div
+                      className="absolute inset-3 h-10 w-10 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto"
+                      style={{
+                        animationDirection: "reverse",
+                        animationDuration: "1.5s",
+                      }}
+                    ></div>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
                     هوش مصنوعی در حال طراحی نظرسنجی شما...
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-lg">لطفا صبر کنید، این فرآیند چند لحظه طول می‌کشد</p>
-                  
+                  <p className="text-gray-600 dark:text-slate-300 text-sm">
+                    لطفا صبر کنید، این فرآیند چند لحظه طول می‌کشد
+                  </p>
+
                   {/* Progress dots */}
-                  <div className="flex items-center justify-center gap-2 mt-6">
-                    <div className="w-3 h-3 bg-violet-500 rounded-full animate-bounce"></div>
-                    <div className="w-3 h-3 bg-violet-500 rounded-full animate-bounce delay-100"></div>
-                    <div className="w-3 h-3 bg-violet-500 rounded-full animate-bounce delay-200"></div>
+                  <div className="flex items-center justify-center gap-2 mt-4">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-100"></div>
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-200"></div>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Luxury Alert */}
-          <div className="p-8 bg-gradient-to-r from-violet-50/50 to-indigo-50/50 dark:from-violet-900/20 dark:to-indigo-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-4 text-violet-800 dark:text-violet-200">
-              <div className="w-10 h-10 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div>
-                <p className="text-base font-medium">
-                  لطفا اطلاعات مورد نیاز برای طراحی نظرسنجی با هوش مصنوعی را وارد کنید
-                </p>
-                <p className="text-sm text-violet-600 dark:text-violet-400 mt-1">
-                  فیلدهای ستاره‌دار اجباری هستند
-                </p>
-              </div>
+          {/* Alert */}
+          <div className="p-4 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+            <div className="text-gray-800 dark:text-slate-200">
+              <p className="text-sm font-medium">
+                لطفا اطلاعات مورد نیاز برای طراحی نظرسنجی با هوش مصنوعی را وارد
+                کنید
+              </p>
+              <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
+                فیلدهای ستاره‌دار اجباری هستند
+              </p>
             </div>
           </div>
 
-          {/* Luxury Form Content */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-br from-slate-50/30 to-white dark:from-slate-900/30 dark:to-slate-800/30">
+          {/* Form Content */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-white dark:bg-slate-900">
             {/* Title */}
-            <div className="space-y-3">
-              <Label htmlFor="title" className="text-base font-semibold text-slate-900 dark:text-white block">
-                عنوان نظرسنجی <span className="text-violet-500">*</span>
+            <div className="space-y-2">
+              <Label
+                htmlFor="title"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
+                عنوان نظرسنجی <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="title"
@@ -281,14 +290,17 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="عنوان مناسب برای نظرسنجی خود را وارد کنید"
                 required
-                className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500"
+                className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
 
             {/* Summary */}
-            <div className="space-y-3">
-              <Label htmlFor="summary" className="text-base font-semibold text-slate-900 dark:text-white block">
-                هدف نظرسنجی <span className="text-violet-500">*</span>
+            <div className="space-y-2">
+              <Label
+                htmlFor="summary"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
+                هدف نظرسنجی <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="summary"
@@ -296,26 +308,30 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
                 onChange={(e) => handleInputChange("summary", e.target.value)}
                 placeholder="توضیح کوتاه در مورد اینکه این نظرسنجی برای چه چیزی هست"
                 required
-                rows={4}
-                className="text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500 resize-none"
+                rows={3}
+                className="text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 resize-none placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
 
             {/* Category */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold text-slate-900 dark:text-white block">
-                دسته بندی نظرسنجی <span className="text-violet-500">*</span>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-900 dark:text-white block">
+                دسته بندی نظرسنجی <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => handleInputChange("category", value)}
               >
-                <SelectTrigger className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500">
+                <SelectTrigger className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400">
                   <SelectValue placeholder="دسته بندی را انتخاب کنید" />
                 </SelectTrigger>
-                <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl">
+                <SelectContent className="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg">
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category} className="text-base">
+                    <SelectItem
+                      key={category}
+                      value={category}
+                      className="text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700"
+                    >
                       {category}
                     </SelectItem>
                   ))}
@@ -324,8 +340,11 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
             </div>
 
             {/* Target */}
-            <div className="space-y-3">
-              <Label htmlFor="target" className="text-base font-semibold text-slate-900 dark:text-white block">
+            <div className="space-y-2">
+              <Label
+                htmlFor="target"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
                 مخاطب هدف
               </Label>
               <Input
@@ -333,31 +352,36 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
                 value={formData.target}
                 onChange={(e) => handleInputChange("target", e.target.value)}
                 placeholder="گروهی که قراره به سوالات پاسخ بدن"
-                className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500"
+                className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
 
             {/* Question Types */}
-            <Card className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-sm">
-              <CardContent className="p-6">
-                <Label className="text-base font-semibold text-slate-900 dark:text-white mb-6 block">
+            <Card className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm">
+              <CardContent className="p-4">
+                <Label className="text-sm font-semibold text-gray-900 dark:text-white mb-4 block">
                   نوع سوالاتی که می‌خواد داشته باشه
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {questionTypes.map((type) => (
                     <div
                       key={type.id}
-                      className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      className="flex items-center space-x-3 space-x-reverse p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                     >
                       <Checkbox
                         id={type.id}
-                        checked={formData.preferred_question_type.includes(type.id)}
+                        checked={formData.preferred_question_type.includes(
+                          type.id
+                        )}
                         onCheckedChange={(checked) =>
                           handleQuestionTypeChange(type.id, checked as boolean)
                         }
-                        className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600 dark:data-[state=checked]:bg-violet-500 dark:data-[state=checked]:border-violet-500"
+                        className="data-[state=checked]:bg-gray-800 data-[state=checked]:border-gray-800 dark:data-[state=checked]:bg-slate-500 dark:data-[state=checked]:border-slate-500 border-gray-400 dark:border-slate-500"
                       />
-                      <Label htmlFor={type.id} className="text-base text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <Label
+                        htmlFor={type.id}
+                        className="text-xs text-gray-700 dark:text-slate-200 cursor-pointer"
+                      >
                         {type.label}
                       </Label>
                     </div>
@@ -367,21 +391,27 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
             </Card>
 
             {/* Question Count and Style */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label className="text-base font-semibold text-slate-900 dark:text-white block">
-                  تعداد سوالات مورد نظر <span className="text-violet-500">*</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-900 dark:text-white block">
+                  تعداد سوالات مورد نظر <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.question_count}
-                  onValueChange={(value) => handleInputChange("question_count", value)}
+                  onValueChange={(value) =>
+                    handleInputChange("question_count", value)
+                  }
                 >
-                  <SelectTrigger className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500">
+                  <SelectTrigger className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400">
                     <SelectValue placeholder="تعداد سوالات را انتخاب کنید" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl">
+                  <SelectContent className="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg">
                     {questionCountOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base">
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700"
+                      >
                         {option.title}
                       </SelectItem>
                     ))}
@@ -389,20 +419,24 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
                 </Select>
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-base font-semibold text-slate-900 dark:text-white block">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-900 dark:text-white block">
                   استایل و لحن سوال‌ها
                 </Label>
                 <Select
                   value={formData.tone}
                   onValueChange={(value) => handleInputChange("tone", value)}
                 >
-                  <SelectTrigger className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500">
+                  <SelectTrigger className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400">
                     <SelectValue placeholder="لحن سوالات را انتخاب کنید" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl">
+                  <SelectContent className="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg">
                     {styleOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-base">
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700"
+                      >
                         {option.title}
                       </SelectItem>
                     ))}
@@ -412,80 +446,93 @@ const AISurveyModal: React.FC<AISurveyModalProps> = ({
             </div>
 
             {/* Sample Topics */}
-            <div className="space-y-3">
-              <Label htmlFor="sample_topics" className="text-base font-semibold text-slate-900 dark:text-white block">
+            <div className="space-y-2">
+              <Label
+                htmlFor="sample_topics"
+                className="text-sm font-semibold text-gray-900 dark:text-white block"
+              >
                 سوال نمونه یا موضوعاتی که دوست داره توش باشه
               </Label>
               <Textarea
                 id="sample_topics"
                 value={formData.sample_topics}
-                onChange={(e) => handleInputChange("sample_topics", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("sample_topics", e.target.value)
+                }
                 placeholder="مثال: می‌خوام حتماً سوالی درباره‌ی برند آگاهی توش باشه"
-                rows={4}
-                className="text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500 resize-none"
+                rows={3}
+                className="text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 resize-none placeholder:text-gray-500 dark:placeholder:text-slate-400"
               />
             </div>
 
             {/* Brand and Competitors */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label htmlFor="brand_name" className="text-base font-semibold text-slate-900 dark:text-white block">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="brand_name"
+                  className="text-sm font-semibold text-gray-900 dark:text-white block"
+                >
                   اسم شرکت / برند
                 </Label>
                 <Input
                   id="brand_name"
                   value={formData.brand_name}
-                  onChange={(e) => handleInputChange("brand_name", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("brand_name", e.target.value)
+                  }
                   placeholder="نام شرکت یا برند خود را وارد کنید"
-                  className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500"
+                  className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-500 dark:placeholder:text-slate-400"
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="competitors" className="text-base font-semibold text-slate-900 dark:text-white block">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="competitors"
+                  className="text-sm font-semibold text-gray-900 dark:text-white block"
+                >
                   اسم رقبا
                 </Label>
                 <Input
                   id="competitors"
                   value={formData.competitors}
-                  onChange={(e) => handleInputChange("competitors", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("competitors", e.target.value)
+                  }
                   placeholder="نام رقبای اصلی را وارد کنید"
-                  className="h-12 text-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 dark:focus:border-violet-500"
+                  className="h-10 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-500 dark:placeholder:text-slate-400"
                 />
               </div>
             </div>
           </div>
 
-          {/* Luxury Footer */}
-          <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-8 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-900/50 dark:to-slate-800/50 backdrop-blur-sm">
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-                className="h-12 px-8 text-lg font-medium bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200"
-              >
-                بستن
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="h-12 px-8 text-lg font-semibold bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center gap-3"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    در حال طراحی...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-5 w-5" />
-                    طراحی با هوش مصنوعی
-                  </>
-                )}
-              </Button>
-            </div>
+          {/* Footer */}
+          <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-gray-100 dark:border-slate-800 bg-gradient-to-r from-gray-50 to-purple-50/30 dark:from-slate-800 dark:to-slate-700 px-6 py-4 rounded-b-2xl">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              بستن
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  در حال طراحی...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  طراحی با هوش مصنوعی
+                </div>
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

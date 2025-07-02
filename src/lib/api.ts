@@ -246,7 +246,7 @@ export const fetchTemplates = async (
   }
 
   const response = await fetch(
-    `${BASE_URL}/api/v1/questionnaire/templates-list?${params}`,
+    `${BASE_URL}/api/v1/questionnaire/templates-list?${params}&&page_size=100`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,

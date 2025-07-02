@@ -276,22 +276,38 @@ const ReportResults: React.FC = () => {
         className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
         dir="rtl"
       >
-        <FormHeader 
-          formTitle={formTitle} 
+        <FormHeader
+          formTitle={formTitle}
           setFormTitle={setFormTitle}
           steps={
-            id ? [
-              { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
-              { id: 2, title: "انتخاب مخاطب", path: `/questionnaire/${id}/audience` },
-              { id: 3, title: "گزارش نتایج", path: `/questionnaire/${id}/results` },
-            ] : undefined
+            id
+              ? [
+                  {
+                    id: 1,
+                    title: "طراحی نظرسنجی",
+                    path: `/questionnaire/${id}`,
+                  },
+                  {
+                    id: 2,
+                    title: "انتخاب مخاطب",
+                    path: `/questionnaire/${id}/audience`,
+                  },
+                  {
+                    id: 3,
+                    title: "گزارش نتایج",
+                    path: `/questionnaire/${id}/results`,
+                  },
+                ]
+              : undefined
           }
           backPath={id ? `/questionnaire/${id}/audience` : "/"}
         />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">در حال بارگذاری گزارش...</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              در حال بارگذاری گزارش...
+            </p>
           </div>
         </div>
       </div>
@@ -304,15 +320,29 @@ const ReportResults: React.FC = () => {
         className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
         dir="rtl"
       >
-        <FormHeader 
-          formTitle={formTitle} 
+        <FormHeader
+          formTitle={formTitle}
           setFormTitle={setFormTitle}
           steps={
-            id ? [
-              { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
-              { id: 2, title: "انتخاب مخاطب", path: `/questionnaire/${id}/audience` },
-              { id: 3, title: "گزارش نتایج", path: `/questionnaire/${id}/results` },
-            ] : undefined
+            id
+              ? [
+                  {
+                    id: 1,
+                    title: "طراحی نظرسنجی",
+                    path: `/questionnaire/${id}`,
+                  },
+                  {
+                    id: 2,
+                    title: "انتخاب مخاطب",
+                    path: `/questionnaire/${id}/audience`,
+                  },
+                  {
+                    id: 3,
+                    title: "گزارش نتایج",
+                    path: `/questionnaire/${id}/results`,
+                  },
+                ]
+              : undefined
           }
           backPath={id ? `/questionnaire/${id}/audience` : "/"}
         />
@@ -333,15 +363,25 @@ const ReportResults: React.FC = () => {
       className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
       dir="rtl"
     >
-      <FormHeader 
-        formTitle={formTitle} 
+      <FormHeader
+        formTitle={formTitle}
         setFormTitle={setFormTitle}
         steps={
-          id ? [
-            { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
-            { id: 2, title: "انتخاب مخاطب", path: `/questionnaire/${id}/audience` },
-            { id: 3, title: "گزارش نتایج", path: `/questionnaire/${id}/results` },
-          ] : undefined
+          id
+            ? [
+                { id: 1, title: "طراحی نظرسنجی", path: `/questionnaire/${id}` },
+                {
+                  id: 2,
+                  title: "انتخاب مخاطب",
+                  path: `/questionnaire/${id}/audience`,
+                },
+                {
+                  id: 3,
+                  title: "گزارش نتایج",
+                  path: `/questionnaire/${id}/results`,
+                },
+              ]
+            : undefined
         }
         backPath={id ? `/questionnaire/${id}/audience` : "/"}
       />
@@ -393,9 +433,12 @@ const ReportResults: React.FC = () => {
                     className="h-3 mb-3"
                   />
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">پاسخ دریافت شده</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      پاسخ دریافت شده
+                    </span>
                     <span className="font-medium text-gray-700 dark:text-gray-200">
-                      {reportData.questionnaire_completed?.answer_count} از {reportData.questionnaire_completed?.user_limit} نفر
+                      {reportData.questionnaire_completed?.answer_count} از{" "}
+                      {reportData.questionnaire_completed?.user_limit} نفر
                     </span>
                   </div>
                 </div>
@@ -405,7 +448,9 @@ const ReportResults: React.FC = () => {
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">تاریخ ایجاد</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                        تاریخ ایجاد
+                      </span>
                     </div>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                       {formatDate(reportData.created)}
@@ -415,7 +460,9 @@ const ReportResults: React.FC = () => {
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
                     <div className="flex items-center gap-2">
                       <Eye className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">تاریخ انتشار</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                        تاریخ انتشار
+                      </span>
                     </div>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                       {reportData.single_user_publish_date
@@ -434,7 +481,7 @@ const ReportResults: React.FC = () => {
                   <Download className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   دانلود گزارش
                 </h3>
-                
+
                 <Button
                   onClick={handleExport}
                   disabled={isExporting}
@@ -472,12 +519,16 @@ const ReportResults: React.FC = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 mr-96 p-6 pt-32">
+        <div className="flex-1 mr-96 p-6 pt-6">
           <div className="max-w-none">
             {/* Page Title */}
             <div className="mb-8">
-              <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300 mb-2">تحلیل نتایج نظرسنجی</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">نمودارها و آمار تفصیلی پاسخ‌های دریافت شده</p>
+              <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300 mb-2">
+                تحلیل نتایج نظرسنجی
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                نمودارها و آمار تفصیلی پاسخ‌های دریافت شده
+              </p>
             </div>
 
             {/* Survey Results - Each chart in full width */}

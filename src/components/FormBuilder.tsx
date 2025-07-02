@@ -13,7 +13,6 @@ import {
   Copy,
   Settings,
   ChevronDown,
-  ChevronUp,
   MoveRight,
   SquareCheck,
   BarChart3,
@@ -32,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ApiQuestion } from "../pages/QuestionnaireForm";
 import { Card, CardHeader } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SortableItem {
   id: string;
@@ -129,6 +129,17 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   // Track if we're already processing a reorder to prevent duplicate API calls
   const [isReordering, setIsReordering] = useState(false);
+  // Track group that might become empty during drag
+  const [groupBecomingEmpty, setGroupBecomingEmpty] = useState<string | null>(
+    null
+  );
+  // Track question being dragged from group
+  const [questionBeingDragged, setQuestionBeingDragged] = useState<
+    string | null
+  >(null);
+
+  // Toast for showing error messages
+  const { toast } = useToast();
 
   // Ref to get latest questions in setTimeout callbacks
   const questionsRef = useRef(questions);
@@ -173,6 +184,27 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             }
             return matches;
           })
+          // Filter out question being dragged if it's the last one in group
+          .filter((q) => {
+            if (questionBeingDragged === q.id.toString()) {
+              // Check if this is the only question in the group
+              const groupQuestions = questions.filter((gq) => {
+                const relatedGroupNumber =
+                  typeof gq.related_group === "string"
+                    ? parseInt(gq.related_group.toString())
+                    : gq.related_group;
+                return relatedGroupNumber === groupIdNumber;
+              });
+
+              if (groupQuestions.length === 1) {
+                console.log(
+                  `🚫 Hiding dragged question ${q.id} from group ${question.id}`
+                );
+                return false; // Hide this question from children
+              }
+            }
+            return true;
+          })
           .sort((a, b) => (a.order || 0) - (b.order || 0))
           .map(
             (child): SortableItem => ({
@@ -208,7 +240,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       result.map((r) => `${r.id}-${r.type}`)
     );
     return result;
-  }, [questions]);
+  }, [questions, questionBeingDragged]);
 
   const handleSortUpdate = useCallback(
     (newItems: SortableItem[]) => {
@@ -443,7 +475,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     const isExpanded = expandedGroups.includes(item.data.id.toString());
 
     return (
-      <div className="relative group mb-1" style={{ userSelect: "none" }}>
+      <div
+        className="relative group pb-12"
+        style={{ userSelect: "none" }}
+        data-question-id={item.data.id}
+        data-group-id={item.data.id}
+      >
         {/* Group Header */}
         <div className="h-[50px] border rounded-lg p-2 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing">
           <div className="flex items-center justify-between h-full">
@@ -470,27 +507,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300"
               style={{ pointerEvents: "auto" }}
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log(
-                    "🎯 Toggle group clicked:",
-                    item.data.id.toString()
-                  );
-                  console.log("📋 Current expanded groups:", expandedGroups);
-                  console.log("🔍 Is expanded:", isExpanded);
-                  onToggleGroup(item.data.id.toString());
-                }}
-              >
-                {isExpanded ? (
-                  <ChevronUp className="h-3.5 w-3.5" />
-                ) : (
-                  <ChevronDown className="h-3.5 w-3.5" />
-                )}
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -539,193 +555,321 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
           </div>
         </div>
 
-        {/* Group Children */}
-        {isExpanded && item.children && item.children.length > 0 && (
-          <div className="ml-8 mt-2">
-            <ReactSortable
-              list={item.children || []}
-              setList={(newList) => {
-                // فقط اگر واقعاً تغییری بوده و در حالت drag نیستیم
-                console.log(
-                  "🔄 Children setList called for group",
-                  item.id,
-                  newList.length
-                );
+        {/* Group Children - Always show drop zone */}
+        <div className="mr-8 mt-2 relative">
+          {/* خط آبی برای گروه خالی یا گروهی که در حال خالی شدن است */}
+          {(!item.children ||
+            item.children.length === 0 ||
+            groupBecomingEmpty === item.data.id.toString()) && (
+            <div
+              className="absolute -right-2 w-1 bg-blue-300"
+              style={{
+                top: "-6px",
+                height: "calc(100% + 12px)",
               }}
-              group={{
-                name: "children", // Same group name for all children
-                put: true, // Allow items to be put into this group
-                pull: true, // Allow items to be pulled out of this group
-              }}
-              className="space-y-1"
-              animation={200}
-              ghostClass="opacity-50"
-              chosenClass="bg-blue-50"
-              dragClass="rotate-1"
-              fallbackOnBody={true}
-              swapThreshold={0.65}
-              onMove={(evt) => {
-                console.log("🔄 Child move event:", evt);
-                return true; // Allow the move
-              }}
-              onAdd={(evt) => {
-                console.log("➕ Child added to group", item.id, evt);
-                // در clone mode باید به evt.clone نگاه کنیم، نه evt.item
-                const draggedElement = evt.clone || evt.item;
+            />
+          )}
+          <ReactSortable
+            list={item.children || []}
+            setList={(newList) => {
+              console.log(
+                "🔄 Children setList called for group",
+                item.id,
+                newList.length
+              );
 
-                // بررسی اینکه آیا از sidebar آمده (سوال جدید) یا انتقال از جای دیگر
-                const isFromSidebar =
-                  draggedElement.hasAttribute("data-question-type");
-                const questionType =
-                  draggedElement.getAttribute("data-question-type");
+              // بررسی تغییر در محتوای گروه (تعداد یا آیتم‌ها)
+              const currentIds = (item.children || [])
+                .map((child) => child.id)
+                .sort();
+              const newIds = newList.map((newItem) => newItem.id).sort();
+              const hasChanged =
+                newList.length !== (item.children?.length || 0) ||
+                JSON.stringify(currentIds) !== JSON.stringify(newIds);
 
-                console.log("🔍 Group - Checking if from sidebar:", {
-                  isFromSidebar,
-                  questionType,
-                  hasAttribute:
-                    draggedElement.hasAttribute("data-question-type"),
-                  attributeValue:
-                    draggedElement.getAttribute("data-question-type"),
-                  isClone: !!evt.clone,
-                  usingElement: evt.clone ? "clone" : "item",
-                  draggedElement: draggedElement,
-                  allAttributes: Array.from(
-                    draggedElement.attributes || []
-                  ).map((attr) => ({
-                    name: attr.name,
-                    value: attr.value,
-                  })),
+              if (hasChanged) {
+                console.log("📋 Group children changed, updating questions");
+                console.log("📋 Current IDs:", currentIds);
+                console.log("📋 New IDs:", newIds);
+
+                // تبدیل newList به questions array و به‌روزرسانی API
+                const updatedQuestions = questions.map((q) => {
+                  // پیدا کردن سوالی که در این لیست جدید هست
+                  const foundInNewList = newList.find(
+                    (newItem) => newItem.id === q.id.toString()
+                  );
+
+                  if (foundInNewList) {
+                    // این سوال باید در این گروه باشد
+                    console.log(
+                      `🔄 Setting related_group of question ${q.id} to group ${item.data.id}`
+                    );
+                    return { ...q, related_group: item.data.id };
+                  } else if (
+                    q.related_group?.toString() === item.data.id.toString()
+                  ) {
+                    // این سوال قبلاً در این گروه بود اما حالا نیست
+                    console.log(
+                      `🔄 Removing related_group from question ${q.id}`
+                    );
+                    return { ...q, related_group: null };
+                  }
+
+                  return q;
                 });
 
-                if (isFromSidebar && questionType) {
+                // Optimistic update
+                onUpdateQuestion("reorder", {
+                  questions: updatedQuestions,
+                } as any);
+              }
+            }}
+            group={{
+              name: "shared", // Same group name as main container
+              put: (to, from, dragEl) => {
+                // بررسی اینکه آیا آیتم درحال drop یک گروه است
+                const questionType = dragEl.getAttribute("data-question-type");
+                if (questionType === "question_group") {
                   console.log(
-                    "📋 New question from sidebar to group:",
-                    questionType,
-                    item.id,
-                    "at index:",
-                    evt.newIndex
+                    "❌ Cannot drop question group inside another group"
                   );
-                  // اضافه کردن سوال جدید در گروه با index مناسب
-                  onAddQuestion(questionType, evt.newIndex, item.id);
+                  toast({
+                    title: "خطا",
+                    description:
+                      "گروه سوال نمی‌تواند داخل گروه سوال دیگری قرار بگیرد",
+                    variant: "destructive",
+                  });
+                  return false; // منع drop
+                }
+                return true; // اجازه drop
+              },
+              pull: true, // Allow items to be pulled out of this group
+            }}
+            className={`relative ${
+              !item.children || item.children.length === 0
+                ? "min-h-[50px]"
+                : "space-y-2"
+            }`}
+            animation={200}
+            ghostClass="opacity-50"
+            chosenClass="bg-blue-50"
+            dragClass="rotate-1"
+            fallbackOnBody={false}
+            swapThreshold={0.5}
+            emptyInsertThreshold={50}
+            forceFallback={false}
+            sort={item.children && item.children.length > 0}
+            onMove={(evt) => {
+              console.log("🔄 Child move event:", evt);
 
-                  // کمی تأخیر تا سوال اضافه شود، سپس مودال را باز می‌کنیم
-                  setTimeout(() => {
-                    // پیدا کردن سوال جدید در group
-                    const currentQuestions = questionsRef.current;
+              // بررسی اینکه آیا آیتم درحال جابجایی یک گروه موجود است
+              const draggedElement = evt.dragged;
+              const isGroupBeingDragged =
+                draggedElement?.hasAttribute("data-group-id");
+
+              if (isGroupBeingDragged) {
+                console.log("❌ Group cannot be nested inside another group");
+                toast({
+                  title: "خطا",
+                  description:
+                    "گروه سوال نمی‌تواند داخل گروه سوال دیگری قرار بگیرد",
+                  variant: "destructive",
+                });
+                return false; // منع جابجایی
+              }
+
+              return true; // اجازه جابجایی
+            }}
+            onAdd={(evt) => {
+              console.log("➕ Child added to group", item.id, evt);
+
+              const draggedElement = evt.clone || evt.item;
+              const isFromSidebar =
+                draggedElement.hasAttribute("data-question-type");
+              const questionType =
+                draggedElement.getAttribute("data-question-type");
+
+              if (isFromSidebar && questionType) {
+                // سوال جدید از sidebar
+                console.log(
+                  "📋 New question from sidebar to group:",
+                  questionType
+                );
+
+                // Store current questions count to identify the new question
+                const currentQuestionsCount = questionsRef.current.length;
+
+                onAddQuestion(questionType, evt.newIndex, item.id);
+
+                setTimeout(() => {
+                  const currentQuestions = questionsRef.current;
+
+                  // پیدا کردن سوال جدید بر اساس تعداد سوالات و نوع سوال
+                  const newQuestion = currentQuestions.find((q, index) => {
+                    // سوال جدید باید:
+                    // 1. در گروه مناسب باشد
+                    // 2. نوع مناسب داشته باشد
+                    // 3. آخرین سوال اضافه شده باشد (بیشترین ID یا آخرین index)
+                    const belongsToGroup =
+                      q.related_group?.toString() === item.id.toString();
+                    const hasCorrectType = q.type === questionType;
+
+                    return (
+                      belongsToGroup &&
+                      hasCorrectType &&
+                      index >= currentQuestionsCount
+                    );
+                  });
+
+                  // اگر روش بالا کار نکرد، آخرین سوال اضافه شده را پیدا کن
+                  const fallbackQuestion =
+                    currentQuestions.length > currentQuestionsCount
+                      ? currentQuestions[currentQuestions.length - 1]
+                      : null;
+
+                  const questionToOpen = newQuestion || fallbackQuestion;
+
+                  if (questionToOpen) {
                     console.log(
-                      "🔍 Group - Current questions length:",
-                      currentQuestions.length
+                      "🔧 Opening modal for new question:",
+                      questionToOpen.id,
+                      "type:",
+                      questionToOpen.type
                     );
-                    console.log(
-                      "🔍 Group - Current questions:",
-                      currentQuestions.map((q) => q.id)
-                    );
-
-                    // پیدا کردن سوال جدید در گروه
-                    const groupQuestions = currentQuestions.filter(
-                      (q) => q.related_group?.toString() === item.id.toString()
-                    );
-                    const newQuestion = groupQuestions[evt.newIndex];
-
-                    if (newQuestion) {
-                      console.log(
-                        "🔧 Group - Opening modal for new question:",
-                        newQuestion.id,
-                        "at group index:",
-                        evt.newIndex
-                      );
-
-                      // باز کردن مودال
-                      console.log("🔧 Group - About to call onQuestionClick");
-                      onQuestionClick(newQuestion);
-                    } else {
-                      console.error(
-                        "❌ Group - No questions found at group index:",
-                        evt.newIndex
-                      );
-                    }
-                  }, 300);
-                } else {
-                  // انتقال سوال موجود بین گروه‌ها یا از top-level
-                  // برای existing questions، از evt.item استفاده می‌کنیم نه clone
-                  const existingElement = evt.item;
-                  let questionId =
-                    existingElement.getAttribute("data-question-id");
-                  if (!questionId) {
-                    questionId = existingElement
-                      .querySelector("[data-question-id]")
-                      ?.getAttribute("data-question-id");
-                  }
-
-                  console.log("🔍 Found questionId:", questionId);
-                  console.log("🔍 Dragged element:", draggedElement);
-
-                  if (questionId) {
-                    console.log(
-                      `Moving question ${questionId} to group ${item.id}`
-                    );
-
-                    // ✨ Optimistic update - فوری در UI تغییر می‌دهیم
-                    const updatedQuestions = questions.map((q) =>
-                      q.id.toString() === questionId.toString()
-                        ? { ...q, related_group: item.id }
-                        : q
-                    );
-
-                    console.log(
-                      `🚀 Optimistic update: Question ${questionId} moved to group ${item.id}`
-                    );
-                    console.log(
-                      "📋 Updated questions:",
-                      updatedQuestions.filter(
-                        (q) => q.id.toString() === questionId.toString()
-                      )
-                    );
-
-                    onUpdateQuestion("reorder", {
-                      questions: updatedQuestions,
-                    } as any);
-
-                    // کمی تأخیر تا UI به‌روزرسانی شود
-                    setTimeout(() => {
-                      // سپس API call برای ذخیره در سرور
-                      onMoveToGroup(questionId, item.id);
-                    }, 50);
+                    onQuestionClick(questionToOpen);
                   } else {
                     console.error(
-                      "❌ Could not find questionId from dragged element"
+                      "❌ Could not find new question to open modal for"
                     );
                   }
+                }, 300);
+              } else {
+                // انتقال سوال موجود به این گروه
+                const existingElement = evt.item;
+                let questionId =
+                  existingElement.getAttribute("data-question-id");
+
+                if (!questionId) {
+                  questionId = existingElement
+                    .querySelector("[data-question-id]")
+                    ?.getAttribute("data-question-id");
                 }
-              }}
-              onRemove={(evt) => {
-                console.log("➖ Child removed from group", item.id, evt);
-                // فقط لاگ می‌کنیم - optimistic update در onAdd گروه مقصد انجام می‌شود
-              }}
-              onEnd={(evt) => {
-                console.log("🎯 Child drag ended", evt);
-                // Only handle reordering within the same group
-                if (evt.from === evt.to && evt.oldIndex !== evt.newIndex) {
-                  handleChildSortUpdate(
-                    item.id,
-                    item.children,
-                    evt.oldIndex,
-                    evt.newIndex
+
+                if (questionId) {
+                  console.log(
+                    `Moving existing question ${questionId} to group ${item.id}`
                   );
+
+                  // ✨ Optimistic update - فوری سوال را به این گروه منتقل می‌کنیم
+                  const updatedQuestions = questions.map((q) =>
+                    q.id.toString() === questionId.toString()
+                      ? { ...q, related_group: item.data.id }
+                      : q
+                  );
+
+                  console.log(
+                    `🚀 Optimistic update: Question ${questionId} moved to group ${item.data.id}`
+                  );
+
+                  onUpdateQuestion("reorder", {
+                    questions: updatedQuestions,
+                  } as any);
+
+                  // کمی تأخیر تا UI به‌روزرسانی شود
+                  setTimeout(async () => {
+                    // اول API call برای انتقال به گروه
+                    onMoveToGroup(questionId, item.data.id.toString());
+
+                    // سپس reorder کل سوالات
+                    const reorderData = updatedQuestions.map(
+                      (question, index) => ({
+                        id: parseInt(question.id.toString()),
+                        order: index + 1,
+                      })
+                    );
+
+                    console.log(
+                      "🚀 Sending reorder API call after group move:",
+                      reorderData
+                    );
+
+                    try {
+                      const BASE_URL = import.meta.env.VITE_BASE_URL;
+                      const response = await fetch(
+                        `${BASE_URL}/api/v1/questionnaire/${questionnaireId}/questions/reorder/`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${accessToken}`,
+                          },
+                          body: JSON.stringify(reorderData),
+                        }
+                      );
+
+                      if (response.ok) {
+                        console.log("✅ Reorder after group move successful");
+                      } else {
+                        console.error("❌ Reorder after group move failed");
+                      }
+                    } catch (error) {
+                      console.error(
+                        "❌ Error in reorder after group move:",
+                        error
+                      );
+                    }
+                  }, 50);
                 }
-              }}
-            >
-              {item.children.map((child, childIndex) => (
-                <QuestionCard
-                  key={child.id}
-                  item={child}
-                  index={childIndex}
-                  isChild={true}
-                />
-              ))}
-            </ReactSortable>
-          </div>
-        )}
+              }
+            }}
+            onRemove={(evt) => {
+              console.log("➖ Child removed from group", item.id, evt);
+              // فقط لاگ می‌کنیم - optimistic update در onAdd گروه مقصد انجام می‌شود
+            }}
+            onStart={(evt) => {
+              console.log("🚀 Child drag started");
+
+              // Check if this is the last question in the group
+              const draggedElement = evt.item;
+              const questionId =
+                draggedElement.getAttribute("data-question-id");
+
+              if (questionId && item.children && item.children.length === 1) {
+                // This is the only child in the group
+                console.log(`⚠️ Group ${item.data.id} will become empty!`);
+                setGroupBecomingEmpty(item.data.id.toString());
+                setQuestionBeingDragged(questionId);
+              }
+            }}
+            onEnd={(evt) => {
+              console.log("🎯 Child drag ended", evt);
+              setGroupBecomingEmpty(null); // Reset state
+              setQuestionBeingDragged(null); // Reset dragged question state
+
+              // Only handle reordering within the same group
+              if (evt.from === evt.to && evt.oldIndex !== evt.newIndex) {
+                handleChildSortUpdate(
+                  item.id,
+                  item.children,
+                  evt.oldIndex,
+                  evt.newIndex
+                );
+              }
+            }}
+          >
+            {item.children && item.children.length > 0
+              ? item.children.map((child, childIndex) => (
+                  <QuestionCard
+                    key={child.id}
+                    item={child}
+                    index={childIndex}
+                    isChild={true}
+                  />
+                ))
+              : // برای گروه خالی، هیچ محتوایی نداریم - فقط drop zone
+                []}
+          </ReactSortable>
+        </div>
       </div>
     );
   };
@@ -738,14 +882,14 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   }> = ({ item, index, isChild = false }) => {
     return (
       <div
-        className={`relative group mb-1 ${isChild ? "ml-4" : ""}`}
+        className={`relative group mb-3 ${isChild ? "ml-3" : ""}`}
         style={{ userSelect: "none" }}
         data-question-id={item.data.id}
       >
         {/* Blue line for group children */}
         {isChild && (
           <div
-            className="absolute right-4 w-1 bg-blue-200 transition-all duration-200"
+            className="absolute -right-2 w-1 bg-blue-300"
             style={{
               top: "-6px",
               bottom: "10px",
@@ -840,12 +984,15 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             newItems.forEach((item) => {
               if (item.type) {
                 console.log("📋 New question added from sidebar:", item.type);
+
+                // Store current questions count to identify the new question
+                const currentQuestionsCount = questionsRef.current.length;
+
                 // اضافه کردن سوال جدید در index 0 (اولین سوال)
                 onAddQuestion(item.type, 0);
 
                 // کمی تأخیر تا سوال اضافه شود، سپس مودال را باز می‌کنیم
                 setTimeout(() => {
-                  // پیدا کردن اولین سوال اضافه شده
                   const currentQuestions = questionsRef.current;
                   console.log(
                     "🔍 Current questions length:",
@@ -856,19 +1003,32 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                     currentQuestions.map((q) => q.id)
                   );
 
-                  const firstQuestion = currentQuestions[0];
-                  if (firstQuestion) {
+                  // پیدا کردن سوال جدید بر اساس نوع سوال
+                  const newQuestion = currentQuestions.find((q, index) => {
+                    // سوال جدید باید:
+                    // 1. نوع مناسب داشته باشد
+                    // 2. آخرین سوال اضافه شده باشد
+                    const hasCorrectType = q.type === item.type;
+
+                    return hasCorrectType && index >= currentQuestionsCount;
+                  });
+
+                  // اگر روش بالا کار نکرد، آخرین سوال اضافه شده را پیدا کن
+                  const fallbackQuestion =
+                    currentQuestions.length > currentQuestionsCount
+                      ? currentQuestions[currentQuestions.length - 1]
+                      : null;
+
+                  const questionToOpen = newQuestion || fallbackQuestion;
+
+                  if (questionToOpen) {
                     console.log(
                       "🔧 Opening modal for new question:",
-                      firstQuestion.id,
-                      "at index: 0"
+                      questionToOpen.id,
+                      "type:",
+                      questionToOpen.type
                     );
-                    console.log("🔧 Question type:", firstQuestion.type);
-                    console.log(
-                      "🔧 onQuestionClick function:",
-                      typeof onQuestionClick
-                    );
-                    onQuestionClick(firstQuestion);
+                    onQuestionClick(questionToOpen);
                   } else {
                     console.error("❌ No questions found to open modal for");
                   }
@@ -902,18 +1062,53 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             put: true,
             pull: true,
           }}
-          className="space-y-1"
+          className="space-y-3"
           animation={200}
           ghostClass="opacity-50"
           chosenClass="shadow-lg"
           dragClass="rotate-2"
-          onStart={() => {
+          fallbackOnBody={false}
+          swapThreshold={0.5}
+          emptyInsertThreshold={50}
+          forceFallback={false}
+          sort={true}
+          onStart={(evt) => {
             console.log("🚀 Drag started");
             setIsDragging(true);
+
+            // Check if this is the last question in a group
+            const draggedElement = evt.item;
+            const questionId = draggedElement.getAttribute("data-question-id");
+
+            if (questionId) {
+              const question = questions.find(
+                (q) => q.id.toString() === questionId
+              );
+              if (question && question.related_group) {
+                // Count how many questions are in this group
+                const groupId = question.related_group.toString();
+                const groupQuestions = questions.filter(
+                  (q) => q.related_group?.toString() === groupId
+                );
+
+                console.log(
+                  `🔍 Group ${groupId} has ${groupQuestions.length} questions`
+                );
+
+                // If this is the only question in the group, mark group as becoming empty
+                if (groupQuestions.length === 1) {
+                  console.log(`⚠️ Group ${groupId} will become empty!`);
+                  setGroupBecomingEmpty(groupId);
+                  setQuestionBeingDragged(questionId);
+                }
+              }
+            }
           }}
           onEnd={(evt) => {
             console.log("🎯 Drag ended", evt);
             setIsDragging(false);
+            setGroupBecomingEmpty(null); // Reset group becoming empty state
+            setQuestionBeingDragged(null); // Reset dragged question state
 
             // فقط اگر reorder در همان container بود و نه انتقال بین گروه‌ها
             if (evt.from === evt.to && evt.oldIndex !== evt.newIndex) {
@@ -963,37 +1158,44 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               console.log("📋 New question from sidebar:", questionType);
               console.log("📋 Drop index:", evt.newIndex);
 
+              // Snapshot IDs **before** adding to identify the incoming question precisely
+              const previousIds = new Set(
+                questionsRef.current.map((q) => q.id.toString())
+              );
+
               // اضافه کردن سوال جدید با index مناسب
               onAddQuestion(questionType, evt.newIndex);
 
               // کمی تأخیر تا سوال اضافه شود، سپس مودال را باز می‌کنیم
               setTimeout(() => {
-                // پیدا کردن سوال جدید در index مناسب
                 const currentQuestions = questionsRef.current;
-                console.log(
-                  "🔍 Main - Current questions length:",
-                  currentQuestions.length
-                );
-                console.log(
-                  "🔍 Main - Current questions:",
-                  currentQuestions.map((q) => q.id)
-                );
 
-                // پیدا کردن سوال در index مناسب
-                const newQuestion = currentQuestions[evt.newIndex];
-                if (newQuestion) {
+                // ⏱️ Find the newly added question by id difference
+                const newlyInserted = currentQuestions.find((q) => {
+                  const idStr = q.id.toString();
+                  const isNew = !previousIds.has(idStr);
+                  const isTopLevel = !q.related_group;
+                  const hasCorrectType = q.type === questionType;
+                  return isNew && isTopLevel && hasCorrectType;
+                });
+
+                // Fallback – if difference detection failed, try last element
+                const fallbackQuestion =
+                  currentQuestions[currentQuestions.length - 1];
+
+                const questionToOpen = newlyInserted || fallbackQuestion;
+
+                if (questionToOpen) {
                   console.log(
                     "🔧 Main - Opening modal for new question:",
-                    newQuestion.id,
-                    "at index:",
-                    evt.newIndex
+                    questionToOpen.id,
+                    "type:",
+                    questionToOpen.type
                   );
-                  console.log("🔧 Main - Question type:", newQuestion.type);
-                  onQuestionClick(newQuestion);
+                  onQuestionClick(questionToOpen);
                 } else {
                   console.error(
-                    "❌ Main - No questions found at index:",
-                    evt.newIndex
+                    "❌ Main - Could not find new question to open modal for"
                   );
                 }
               }, 300);
@@ -1027,9 +1229,48 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 } as any);
 
                 // کمی تأخیر تا UI به‌روزرسانی شود
-                setTimeout(() => {
-                  // سپس API call برای ذخیره در سرور
+                setTimeout(async () => {
+                  // اول API call برای انتقال به top-level
                   onMoveToGroup(questionId, "");
+
+                  // سپس reorder کل سوالات
+                  const reorderData = updatedQuestions.map(
+                    (question, index) => ({
+                      id: parseInt(question.id.toString()),
+                      order: index + 1,
+                    })
+                  );
+
+                  console.log(
+                    "🚀 Sending reorder API call after top-level move:",
+                    reorderData
+                  );
+
+                  try {
+                    const BASE_URL = import.meta.env.VITE_BASE_URL;
+                    const response = await fetch(
+                      `${BASE_URL}/api/v1/questionnaire/${questionnaireId}/questions/reorder/`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${accessToken}`,
+                        },
+                        body: JSON.stringify(reorderData),
+                      }
+                    );
+
+                    if (response.ok) {
+                      console.log("✅ Reorder after top-level move successful");
+                    } else {
+                      console.error("❌ Reorder after top-level move failed");
+                    }
+                  } catch (error) {
+                    console.error(
+                      "❌ Error in reorder after top-level move:",
+                      error
+                    );
+                  }
                 }, 50);
               }
             }

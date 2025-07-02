@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -20,7 +19,16 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        vazirmatn: ['Vazirmatn', 'sans-serif'],
+        default: [
+          "Vazirmatn FD",
+          "Vazir",
+          "IRANSans",
+          "Vazirmatn",
+          "sans-serif",
+        ],
+        "vazirmatn-fd": ["Vazirmatn FD", "sans-serif"],
+        vazirmatn: ["Vazirmatn", "sans-serif"],
+        vazir: ["Vazir", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

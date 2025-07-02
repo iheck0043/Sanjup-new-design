@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -524,9 +524,9 @@ const ConditionalLogicModal: React.FC<ConditionalLogicModalProps> = ({
         className="max-w-4xl max-h-[80vh] overflow-y-auto"
         dir="rtl"
       >
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold">شرط‌گذاری پیشرفته</h2>
-        </div>
+        <DialogTitle className="text-lg font-semibold mb-6">
+          شرط‌گذاری پیشرفته
+        </DialogTitle>
 
         <div className="space-y-6">
           <div>

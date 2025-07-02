@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import type { Question } from "../../pages/QuestionnaireForm";
@@ -96,6 +96,9 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl h-[90vh] p-0">
+        <DialogTitle className="sr-only">
+          {isNewQuestion ? "ایجاد سوال جدید" : "ویرایش سوال"}
+        </DialogTitle>
         <div className="flex h-full">
           <div className="flex-1 flex flex-col">
             <div className="flex items-center justify-between p-6 border-b">

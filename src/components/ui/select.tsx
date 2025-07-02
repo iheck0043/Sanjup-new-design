@@ -4,7 +4,16 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Select = SelectPrimitive.Root
+// Wrap Root to enforce RTL direction by default
+type SelectRootProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>
+
+const Select: React.FC<SelectRootProps> = ({ dir = "rtl", children, ...props }) => {
+  return (
+    <SelectPrimitive.Root dir={dir} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  )
+}
 
 const SelectGroup = SelectPrimitive.Group
 

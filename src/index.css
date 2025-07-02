@@ -1,3 +1,6 @@
+/* Import Vazirmatn FD Font */
+@import url("./assets/Vazirmatn-FD-font-face.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,63 +96,17 @@
 @layer base {
   * {
     @apply border-border;
+    font-feature-settings: "ss01" on; /* فعال‌سازی اعداد فارسی در همه المان‌ها */
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif;
-    font-feature-settings: "ss01" on, "cv01" on;
-    font-variant-numeric: oldstyle-nums;
+    font-family: "Vazirmatn FD", "Vazir", "IRANSans", "Vazirmatn", sans-serif;
   }
 
-  /* Persian Numbers Support - برای نمایش اعداد فارسی */
-  .persian-numbers,
-  .font-persian-numbers {
-    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif;
-    font-feature-settings: "ss01" on, "cv01" on, "pnum" on;
-    font-variant-numeric: proportional-nums;
-  }
-
-  /* Force Persian Digits - اجبار نمایش ارقام فارسی */
-  input[type="number"],
-  input[type="tel"],
-  input[type="text"],
-  .number-display,
+  /* کلاس کمکی برای اجبار نمایش اعداد فارسی در موارد خاص */
   .persian-digits {
-    font-family: "Vazir", "IRANSans", sans-serif !important;
-    font-feature-settings: "pnum" on, "tnum" off;
-    font-variant-numeric: proportional-nums;
-  }
-
-  /* اجبار استفاده از ارقام فارسی */
-  .force-persian-digits,
-  .persian-numbers {
-    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif !important;
-    font-feature-settings: "ss01" on, "cv01" on, "pnum" on, "tnum" off !important;
-    font-variant-numeric: proportional-nums !important;
-    direction: ltr !important;
-    unicode-bidi: embed !important;
-    text-align: inherit !important;
-  }
-
-  /* For displaying Persian numbers inline correctly */
-  .persian-number-display {
-    display: inline-block;
-    direction: ltr !important;
-    unicode-bidi: embed !important;
-    font-family: "Vazir", "IRANSans", "Vazirmatn", sans-serif !important;
-    font-feature-settings: "ss01" on, "cv01" on, "pnum" on !important;
-    font-variant-numeric: proportional-nums !important;
-  }
-
-  /* Specific styles for input elements with Persian numbers */
-  input.persian-numbers {
-    font-family: "Vazir", "IRANSans", sans-serif !important;
-    font-feature-settings: "ss01" on, "cv01" on, "pnum" on !important;
-    font-variant-numeric: proportional-nums !important;
-    direction: ltr !important;
-    text-align: left !important;
-    unicode-bidi: embed !important;
+    font-feature-settings: "ss01" on !important;
   }
 }
 /* * {

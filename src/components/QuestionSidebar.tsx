@@ -173,7 +173,7 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({ onAddQuestion }) => {
       <div
         className={`flex items-center p-2.5 rounded-lg border cursor-move hover:shadow-sm hover:scale-[1.02] transition-all ${
           item.color
-        } ${getDarkModeColors(item.color)} ${item.chosen ? "opacity-50" : ""}`}
+        } ${getDarkModeColors(item.color)}`}
         onClick={() => !item.chosen && onAddQuestion(item.type)}
       >
         <div className="flex items-center gap-2 w-full">

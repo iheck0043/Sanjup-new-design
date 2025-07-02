@@ -33,7 +33,9 @@ const QuestionTypeList: React.FC<QuestionTypeListProps> = ({
                 {...provided.dragHandleProps}
                 style={{
                   ...provided.draggableProps.style,
-                  opacity: snapshot.isDragging ? 0.5 : 1,
+                  opacity: snapshot.isDragging ? 1 : 1,
+
+                  pointerEvents: "auto",
                 }}
               >
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-move">

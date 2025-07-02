@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -291,6 +291,9 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         className="xl:max-w-[97%] xl:max-h-[97%] max-h-full max-w-full w-full h-full  "
         dir="rtl"
       >
+        <DialogTitle className="sr-only">
+          {isNewQuestion ? "ایجاد سوال جدید" : "ویرایش سوال"}
+        </DialogTitle>
         <div className="flex h-full w-full overflow-hidden">
           {/* Left Sidebar with Settings */}
           <div className="w-80 border-l border-gray-200 bg-gray-50/50 flex flex-col">

@@ -52,8 +52,8 @@ export function useApi<T = any>(endpoint: string): UseApiResponse<T> {
 
       // Add authorization header if token exists
       const token =
-        localStorage.getItem("auth-token") ||
-        sessionStorage.getItem("auth-token");
+        localStorage.getItem("access_token") ||
+        sessionStorage.getItem("access_token");
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
