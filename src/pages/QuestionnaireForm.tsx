@@ -2564,7 +2564,7 @@ const Index = () => {
 
         {/* Next Step Button */}
         <div className="fixed bottom-6 left-6 z-30">
-          <Button size="lg" onClick={handleNextStep} className="px-6 py-3">
+          <Button size="lg" onClick={handleNextStep} className="px-6 py-3 bg-blue-600 hover:bg-blue-500" >
             مرحله بعد
           </Button>
         </div>
