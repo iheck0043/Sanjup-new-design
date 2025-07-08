@@ -192,7 +192,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
                     className="flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 h-8"
                     disabled={amountLoading}
                   >
-                    <DollarSign className="w-3.5 h-3.5" />
+                    {/* <DollarSign className="w-3.5 h-3.5" /> */}
                     <span className="text-sm">پرداخت</span>
                   </Button>
                 </div>
