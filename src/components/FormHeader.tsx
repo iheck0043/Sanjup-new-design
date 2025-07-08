@@ -154,28 +154,8 @@ const FormHeader: React.FC<FormHeaderProps> = ({
 
             {/* Right Side - Preview, Pay button, Theme Toggle and User Menu */}
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePreview}
-                className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 h-8"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span className="text-sm">پیش‌نمایش</span>
-              </Button>
-
               {typeof totalAmount === "number" && (
                 <div className="flex items-center gap-1.5">
-                  <Button
-                    size="sm"
-                    onClick={onPay}
-                    className="flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 h-8"
-                    disabled={amountLoading}
-                  >
-                    <DollarSign className="w-3.5 h-3.5" />
-                    <span className="text-sm">پرداخت</span>
-                  </Button>
-
                   <HoverCard openDelay={100}>
                     <HoverCardTrigger asChild>
                       <Button
@@ -206,9 +186,26 @@ const FormHeader: React.FC<FormHeaderProps> = ({
                       </HoverCardContent>
                     )}
                   </HoverCard>
+                  <Button
+                    size="sm"
+                    onClick={onPay}
+                    className="flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 h-8"
+                    disabled={amountLoading}
+                  >
+                    {/* <DollarSign className="w-3.5 h-3.5" /> */}
+                    <span className="text-sm">پرداخت</span>
+                  </Button>
                 </div>
               )}
-
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreview}
+                className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 h-8"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span className="text-sm">پیش‌نمایش</span>
+              </Button>
               <ThemeToggle />
               <UserMenu />
             </div>
