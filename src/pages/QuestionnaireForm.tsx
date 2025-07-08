@@ -657,12 +657,15 @@ const Index = () => {
           type: mappedType,
           style: style,
           title: questionData.label || "",
-          attachment_type: questionData.hasMedia
-            ? questionData.mediaType
-            : null,
+          attachment_type:
+            (questionData as any).attachment_type ??
+            (questionData.hasMedia ? questionData.mediaType : null),
           related_group: questionData.parentId || null,
-          attachment: questionData.attachment,
-          description: questionData.description,
+          attachment:
+            (questionData as any).attachment ??
+            (questionData as any).mediaUrl ??
+            undefined,
+          caption: questionData.description,
         };
 
         // Add limit for text questions
@@ -887,7 +890,13 @@ const Index = () => {
 
         // Check if the response is successful (status 200 or 201)
         if (response.ok || response.status === 201) {
+          // Removed duplicate fetchQuestions to avoid double reload
           toast.success("سوال با موفقیت ایجاد شد");
+          setShowSettings(false);
+          setSelectedQuestion(null);
+          setIsCreatingNewQuestion(false);
+          setShowConditionalLogic(false);
+          setExpandedGroups([]);
           return data.data || { message: "Created" };
         } else {
           throw new Error(data.info?.message || "خطا در ایجاد سوال");
@@ -940,6 +949,13 @@ const Index = () => {
                   : q
               )
             );
+            // Removed duplicate fetchQuestions to avoid double reload
+            toast.success("سوال با موفقیت بروزرسانی شد");
+            setShowSettings(false);
+            setSelectedQuestion(null);
+            setIsCreatingNewQuestion(false);
+            setShowConditionalLogic(false);
+            setExpandedGroups([]);
             return { message: "Updated" };
           } else {
             throw new Error("Failed to update question");
@@ -951,11 +967,26 @@ const Index = () => {
           id: id,
           is_required: updates.required || false,
           title: updates.label || "",
-          attachment_type: updates.hasMedia ? updates.mediaType : null,
+          attachment_type:
+            (updates as any).attachment_type ??
+            (updates.hasMedia ? updates.mediaType : null),
           related_group: updates.parentId || null,
-          attachment: updates.attachment,
-          description: updates.description,
+          attachment:
+            (updates as any).attachment ?? (updates as any).mediaUrl ?? null,
+          caption: updates.description,
         };
+
+        console.log("🔍 updateQuestion - updates object:", updates);
+        console.log(
+          "🔍 updateQuestion - attachment value:",
+          (updates as any).attachment
+        );
+        console.log(
+          "🔍 updateQuestion - mediaUrl value:",
+          (updates as any).mediaUrl
+        );
+        console.log("🔍 updateQuestion - hasMedia value:", updates.hasMedia);
+        console.log("🔍 updateQuestion - final apiData:", apiData);
 
         // Get the existing question to determine its type
         const existingQuestion = questions.find(
@@ -1188,10 +1219,8 @@ const Index = () => {
             break;
 
           case "statement":
-            // Only allow one media type at a time
-            if (updates.hasMedia) {
-              apiData.attachment_type = updates.mediaType;
-            }
+            // Statement questions can have media attachments
+            // attachment and attachment_type are already set in the main apiData above
             break;
 
           case "range_slider":
@@ -1293,7 +1322,13 @@ const Index = () => {
 
         const data = await response.json();
         if (data.info.status === 200) {
+          // Removed duplicate fetchQuestions to avoid double reload
           toast.success("سوال با موفقیت بروزرسانی شد");
+          setShowSettings(false);
+          setSelectedQuestion(null);
+          setIsCreatingNewQuestion(false);
+          setShowConditionalLogic(false);
+          setExpandedGroups([]);
           return data.data;
         } else {
           throw new Error(data.info.message);
@@ -1440,7 +1475,7 @@ const Index = () => {
 
       const newQuestion: Question = {
         id: uuidv4(),
-        type: questionType, // Keep the original type for display
+        type: finalType, // Keep the original type for display
         label: "",
         title: "",
         isRequired: false,
@@ -1854,134 +1889,56 @@ const Index = () => {
 
   const handleQuestionSave = useCallback(
     async (questionData: Question) => {
+      // Ensure attachment populated if missing
+      if (!questionData.attachment && questionData.mediaUrl) {
+        questionData = { ...questionData, attachment: questionData.mediaUrl };
+      }
       try {
         let result;
 
-        // Check if this is a new question that was just added from sidebar
-        const isNewQuestion = questions.some((q) => q.id === questionData.id);
-
-        if (showSettings && selectedQuestion && !isNewQuestion) {
-          // Create new question (old behavior for questions not from drag-drop)
+        // Decide based on isCreatingNewQuestion flag instead of id existence
+        if (isCreatingNewQuestion) {
+          // --- ایجاد سوال جدید ---
           const apiData = {
             ...questionData,
-            type: mapQuestionType(selectedQuestion.type), // Map the type for API
+            type: mapQuestionType(selectedQuestion?.type || questionData.type),
           };
           result = await createQuestion(apiData);
 
           if (result) {
-            // Close modal and reset states
+            // Update local state with server response
+              const serverResponse = result;
+              const updatedQuestions = questions.map((q) =>
+              q.id === questionData.id ? { ...q, ...serverResponse } : q
+              );
+              setQuestions(updatedQuestions);
+                    await fetchQuestions();
+              toast.success("سوال با موفقیت ایجاد شد");
             setShowSettings(false);
             setSelectedQuestion(null);
             setIsCreatingNewQuestion(false);
             setShowConditionalLogic(false);
             setExpandedGroups([]);
-
-            // Refresh questions list
-            await fetchQuestions();
-
-            toast.success("سوال با موفقیت ایجاد شد");
-          }
-        } else {
-          // Create new question for questions added from drag-drop
-          if (isNewQuestion) {
-            const apiData = {
-              ...questionData,
-              type: mapQuestionType(
-                selectedQuestion?.type || questionData.type
-              ), // Map the type for API
-            };
-            result = await createQuestion(apiData);
-
-            if (result) {
-              // Update the question in state with server response
-              const serverResponse = result;
-              const updatedQuestions = questions.map((q) =>
-                q.id === questionData.id
-                  ? { ...q, id: serverResponse.id, ...serverResponse }
-                  : q
-              );
-
-              setQuestions(updatedQuestions);
-
-              // Call reorder API to ensure correct order with new server ID
-              const reorderAfterCreateAPI = async () => {
-                try {
-                  const reorderData = updatedQuestions.map(
-                    (question, index) => ({
-                      id: parseInt(question.id.toString()),
-                      order: index + 1,
-                    })
-                  );
-
-                  console.log(
-                    "🚀 Sending reorder API call after question creation:",
-                    reorderData
-                  );
-
-                  const BASE_URL = import.meta.env.VITE_BASE_URL;
-                  const response = await fetch(
-                    `${BASE_URL}/api/v1/questionnaire/${questionnaire?.id}/questions/reorder/`,
-                    {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${accessToken}`,
-                      },
-                      body: JSON.stringify(reorderData),
-                    }
-                  );
-
-                  if (response.ok) {
-                    console.log(
-                      "✅ Reorder API call successful after question creation"
-                    );
-                    // Fetch updated questions list
-                    await fetchQuestions();
-                  } else {
-                    console.error(
-                      "❌ Reorder API call failed after question creation"
-                    );
-                    const errorText = await response.text();
-                    console.error("Error details:", errorText);
-                  }
-                } catch (error) {
-                  console.error(
-                    "❌ Error in reorder API call after question creation:",
-                    error
-                  );
-                }
-              };
-
-              // Call reorder API with slight delay
-              setTimeout(() => {
-                reorderAfterCreateAPI();
-              }, 100);
-
-              toast.success("سوال با موفقیت ایجاد شد");
             }
           } else {
-            // Update existing question - don't send type field
-            const { type, ...updateData } = questionData;
+          // --- ویرایش سوال موجود ---
+          const { type, ...updateData } = questionData; // type not needed for update
             result = await updateQuestion(questionData.id, updateData);
 
             if (result) {
-              // Update local state
               setQuestions((prev) =>
                 prev.map((q) =>
                   q.id === questionData.id ? { ...q, ...result } : q
                 )
               );
-
+            await fetchQuestions();
               toast.success("سوال با موفقیت بروزرسانی شد");
-            }
-          }
-
-          // Close modal and reset states
           setShowSettings(false);
           setSelectedQuestion(null);
           setIsCreatingNewQuestion(false);
           setShowConditionalLogic(false);
           setExpandedGroups([]);
+          }
         }
       } catch (error) {
         console.error("Error saving question:", error);
@@ -1999,6 +1956,7 @@ const Index = () => {
       questionnaire?.id,
       accessToken,
       fetchQuestions,
+      isCreatingNewQuestion,
     ]
   );
 
@@ -2317,8 +2275,11 @@ const Index = () => {
           : question.style === "long"
           ? "long"
           : "short",
-      hasMedia: question.attachment_type === "image",
-      mediaType: "image",
+      hasMedia: Boolean(question.attachment),
+      mediaType:
+        (question.attachment_type as "image" | "video" | undefined) ||
+        (question.attachment ? "image" : undefined),
+      mediaUrl: question.attachment,
       parentId: question.related_group,
       maxLength: question.limit || 200,
       minChars: question.min_value,
@@ -2373,8 +2334,10 @@ const Index = () => {
         center: question.scale_labels?.center || question.middle_label || "",
         right: question.scale_labels?.right || question.right_label || "",
       },
-      description: question.description,
-      hasDescription: !!question.description,
+      description: (question as any).caption ?? (question as any).description,
+      hasDescription: Boolean(
+        (question as any).caption ?? (question as any).description
+      ),
       imageOptions:
         question.type === "select_multi_image" ||
         question.type === "select_single_image"
@@ -2384,6 +2347,8 @@ const Index = () => {
             }))
           : [],
       isMultiImage: question.type === "select_multi_image",
+      attachment: question.attachment,
+      attachment_type: question.attachment_type,
     };
 
     console.log("Final mapped question:", mappedQuestion);
@@ -2396,6 +2361,9 @@ const Index = () => {
     if (isServerQuestion) {
       setIsCreatingNewQuestion(false);
     }
+
+    // Finally, open the settings modal
+    setShowSettings(true);
   };
 
   // Helper function to map API question types to our format
@@ -2502,6 +2470,15 @@ const Index = () => {
     } else {
       toast.warning("ابتدا پرسشنامه را ذخیره کنید");
     }
+  };
+
+  const closeAfterSave = async () => {
+    await fetchQuestions();
+    setShowSettings(false);
+    setSelectedQuestion(null);
+    setIsCreatingNewQuestion(false);
+    setShowConditionalLogic(false);
+    setExpandedGroups([]);
   };
 
   if (loading) {

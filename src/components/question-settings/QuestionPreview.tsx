@@ -45,6 +45,22 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
   const isImageChoice = question.type === "select_multi_image";
   const hasOptions = question.type === "single_select";
 
+  // Determine the attachment path and build a full URL if it is a relative path
+  const attachmentPath =
+    (question as any).full_url || question.mediaUrl || question.attachment;
+
+  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const attachmentSrc = attachmentPath
+    ? attachmentPath.startsWith("http")
+      ? attachmentPath
+      : `${apiBase}/${attachmentPath}`
+    : null;
+
+  // Detect if the attachment is a video based on the declared type or file extension
+  const isVideoAttachment =
+    question.attachment_type === "video" ||
+    (attachmentPath && /\.(mp4|webm|ogg)(\?.*)?$/i.test(attachmentPath));
+
   return (
     <div className="flex-1 p-6 bg-white overflow-y-auto">
       <div className="max-w-2xl mx-auto">
@@ -66,6 +82,25 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
                 <p className="text-sm text-gray-600 mt-1 mb-3">
                   {question.description}
                 </p>
+              )}
+
+              {/* Media attachment preview (image / video) */}
+              {attachmentSrc && (
+                <div className="mb-4">
+                  {isVideoAttachment ? (
+                    <video
+                      src={attachmentSrc}
+                      controls
+                      className="w-full max-h-[300px] rounded-md border"
+                    />
+                  ) : (
+                    <img
+                      src={attachmentSrc}
+                      alt="attachment"
+                      className="w-full max-h-[300px] object-contain border rounded-md"
+                    />
+                  )}
+                </div>
               )}
 
               <div className="mt-3">
@@ -160,11 +195,11 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
                         className="absolute inset-0 flex justify-between items-center px-3 pointer-events-none"
                         dir="ltr"
                       >
-                      {Array.from(
-                        { length: question.scaleMax || 5 },
-                        (_, i) => (
+                        {Array.from(
+                          { length: question.scaleMax || 5 },
+                          (_, i) => (
                             <span
-                            key={i}
+                              key={i}
                               className="text-sm text-gray-700 font-semibold"
                             >
                               {i + 1}

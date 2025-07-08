@@ -17,10 +17,12 @@ const RatingQuestionSettings: React.FC<RatingQuestionSettingsProps> = ({
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-sm font-medium mb-3 block">تنظیم درجه</Label>
+        <Label className="text-sm font-medium text-right mb-3 block">
+          تنظیم درجه
+        </Label>
         <div className="space-y-3">
           <div>
-            <Label className="text-xs text-gray-600 mb-1 block">
+            <Label className="text-xs text-gray-600 text-right mb-1 block">
               تعداد درجه‌ها (1-10)
             </Label>
             <Slider
@@ -36,7 +38,7 @@ const RatingQuestionSettings: React.FC<RatingQuestionSettingsProps> = ({
               <span>10</span>
             </div>
           </div>
-          <div>
+          <div className="text-right flex flex-col items-end">
             <Label className="text-xs text-gray-600 mb-1 block">
               یا وارد کنید
             </Label>
@@ -57,7 +59,7 @@ const RatingQuestionSettings: React.FC<RatingQuestionSettingsProps> = ({
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 text-right">
         <Label className="text-sm font-medium">شکل درجه‌بندی</Label>
         <div className="grid grid-cols-3 gap-2">
           {[

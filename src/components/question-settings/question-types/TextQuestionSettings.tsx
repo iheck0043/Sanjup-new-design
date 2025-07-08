@@ -21,7 +21,6 @@ const TextQuestionSettings: React.FC<TextQuestionSettingsProps> = ({
         {(question.type === "text_question_short" ||
           question.type === "text_question_long") && (
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">حداکثر تعداد کاراکتر</Label>
             <Input
               type="number"
               value={maxLength}
@@ -31,6 +30,7 @@ const TextQuestionSettings: React.FC<TextQuestionSettingsProps> = ({
               className="w-24"
               min={1}
             />
+            <Label className="text-sm font-medium">حداکثر تعداد کاراکتر</Label>
           </div>
         )}
       </div>

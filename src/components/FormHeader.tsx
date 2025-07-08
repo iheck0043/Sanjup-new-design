@@ -1,9 +1,14 @@
 import React from "react";
-import { Eye, Edit3, ArrowRight } from "lucide-react";
+import { Eye, Edit3, ArrowRight, DollarSign, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import UserMenu from "./UserMenu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import LogoSanjupBlue from "@/assets/Logo-Sanjup-blue.png";
 
 interface Step {
@@ -18,6 +23,10 @@ interface FormHeaderProps {
   steps?: Step[];
   backPath?: string;
   children?: React.ReactNode;
+  totalAmount?: number;
+  summary?: React.ReactNode;
+  onPay?: () => void;
+  amountLoading?: boolean;
 }
 
 const FormHeader: React.FC<FormHeaderProps> = ({
@@ -26,6 +35,10 @@ const FormHeader: React.FC<FormHeaderProps> = ({
   steps,
   backPath = "/",
   children,
+  totalAmount,
+  summary,
+  onPay,
+  amountLoading = false,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -139,7 +152,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
               ))}
             </div>
 
-            {/* Right Side - Preview, Theme Toggle and User Menu */}
+            {/* Right Side - Preview, Pay button, Theme Toggle and User Menu */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -150,6 +163,52 @@ const FormHeader: React.FC<FormHeaderProps> = ({
                 <Eye className="w-3.5 h-3.5" />
                 <span className="text-sm">پیش‌نمایش</span>
               </Button>
+
+              {typeof totalAmount === "number" && (
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    onClick={onPay}
+                    className="flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 h-8"
+                    disabled={amountLoading}
+                  >
+                    <DollarSign className="w-3.5 h-3.5" />
+                    <span className="text-sm">پرداخت</span>
+                  </Button>
+
+                  <HoverCard openDelay={100}>
+                    <HoverCardTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 h-8"
+                        disabled={amountLoading}
+                      >
+                        {amountLoading ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">در حال محاسبه</span>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                          </div>
+                        ) : (
+                          <span className="text-sm font-medium">
+                            {totalAmount.toLocaleString()} تومان
+                          </span>
+                        )}
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </Button>
+                    </HoverCardTrigger>
+                    {summary && (
+                      <HoverCardContent
+                        className="p-0 border-none shadow-xl bg-transparent w-[380px] max-h-[80vh] overflow-y-auto"
+                        align="end"
+                      >
+                        {summary}
+                      </HoverCardContent>
+                    )}
+                  </HoverCard>
+                </div>
+              )}
+
               <ThemeToggle />
               <UserMenu />
             </div>

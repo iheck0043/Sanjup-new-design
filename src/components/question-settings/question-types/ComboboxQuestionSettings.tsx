@@ -120,7 +120,7 @@ const ComboboxQuestionSettings: React.FC<ComboboxQuestionSettingsProps> = ({
         </Select>
       </div>
 
-      <div className="space-y-2">
+      <div dir="rtl" className="space-y-2">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">گزینه‌ها</Label>
           <Button

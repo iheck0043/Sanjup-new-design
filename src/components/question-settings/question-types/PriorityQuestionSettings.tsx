@@ -41,7 +41,7 @@ const PriorityQuestionSettings: React.FC<PriorityQuestionSettingsProps> = ({
 
   return (
     <div className="space-y-4">
-      <div>
+      <div dir="rtl">
         <div className="flex items-center justify-between mb-3">
           <Label className="text-sm font-medium">گزینه‌ها</Label>
           <Button
@@ -79,13 +79,13 @@ const PriorityQuestionSettings: React.FC<PriorityQuestionSettingsProps> = ({
 
       <div className="space-y-3 border-t pt-4">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">ترتیب تصادفی گزینه‌ها</Label>
           <Switch
             checked={question.shuffleOptions || false}
             onCheckedChange={(checked) =>
               onUpdateField("shuffleOptions", checked)
             }
           />
+          <Label className="text-sm font-medium">ترتیب تصادفی گزینه‌ها</Label>
         </div>
       </div>
     </div>

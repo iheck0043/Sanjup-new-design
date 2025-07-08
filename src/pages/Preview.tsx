@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PreviewLayout from "@/components/PreviewLayout";
+import LogoSanjup from "@/assets/Logo-Sanjup.png";
 
 interface SurveyItem {
   id: string;
@@ -79,7 +80,8 @@ const Preview: React.FC = () => {
 
       // Generate survey URL
       const baseUrl = !window.location.hostname.includes("webapp-dev")
-        ? "https://survey-webview.pollche.com/survey/"
+        ? // ? "https://survey-webview.pollche.com/survey/"
+          "https://webapp-dev.pollche.com/survey/"
         : "https://webapp-dev.pollche.com/survey/";
 
       setUrl(
@@ -147,7 +149,7 @@ const Preview: React.FC = () => {
       {/* Logo */}
       <div className="fixed top-14 right-14 z-10">
         <img
-          src="/Logo-Sanjup.png"
+          src={LogoSanjup}
           alt="سنجاپ"
           className="h-8 w-auto brightness-0 invert"
         />
@@ -172,7 +174,7 @@ const Preview: React.FC = () => {
           {step !== 0 && (
             <button
               onClick={handlePrevStep}
-              className="absolute bg-white flex items-center justify-center text-black text-sm font-medium rounded px-3 py-2"
+              className="absolute bg-white flex items-center justify-center text-black text-xs font-medium rounded px-3 py-2"
               style={{
                 left: "-65px",
                 top: "60%",
@@ -180,8 +182,8 @@ const Preview: React.FC = () => {
                 height: "60px",
               }}
             >
-              <ArrowLeft className="w-4 h-4 ml-2" />
-              قبلی
+              اطلاعات نظرسنجی
+              <ArrowLeft className="w-4 h-4 mr-2 rotate-180" />
             </button>
           )}
 
@@ -197,8 +199,8 @@ const Preview: React.FC = () => {
                 height: "60px",
               }}
             >
-              <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
-              بعدی
+              سوالات
+              <ArrowLeft className="w-4 h-4 mr-2 " />
             </button>
           )}
 
@@ -217,14 +219,17 @@ const Preview: React.FC = () => {
           </button>
 
           {/* Phone Frame */}
-          <div style={{ transform: "translateX(90px)" }}>
+          <div
+            style={{ transform: "translateX(90px)" }}
+            className="relative z-10"
+          >
             <PreviewLayout />
           </div>
 
           {/* Content - Step 0: Survey Info */}
           {step === 0 && (
             <div
-              className="absolute bg-white rounded-xl p-5"
+              className="absolute bg-white rounded-xl p-5 z-20"
               style={{
                 height: "527px",
                 bottom: "23px",
@@ -346,7 +351,7 @@ const Preview: React.FC = () => {
           {/* Content - Step 1+: Survey iframe */}
           {step > 0 && (
             <div
-              className="absolute bg-white rounded-xl overflow-hidden"
+              className="absolute bg-white rounded-xl overflow-hidden z-20"
               style={{
                 height: "600px",
                 bottom: "23px",
@@ -369,7 +374,7 @@ const Preview: React.FC = () => {
           {/* Final Step: Completion Message */}
           {step === questions.length + 1 && (
             <div
-              className="absolute bg-purple-900 text-center rounded-3xl p-5 text-white"
+              className="absolute bg-purple-900 text-center rounded-3xl p-5 text-white z-20"
               style={{
                 height: "647px",
                 bottom: "23px",

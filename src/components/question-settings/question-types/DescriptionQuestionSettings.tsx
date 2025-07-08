@@ -3,7 +3,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { ImagePlus } from "lucide-react";
-import type { Question } from "../../../../pages/QuestionnaireForm";
+import { toast } from "sonner";
+import type { Question } from "../../../pages/QuestionnaireForm";
 
 interface DescriptionQuestionSettingsProps {
   question: Question;
@@ -17,7 +18,6 @@ const DescriptionQuestionSettings: React.FC<
     <div className="space-y-4">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">آپلود رسانه</Label>
           <Switch
             checked={question.hasMedia || false}
             onCheckedChange={(checked) => {
@@ -30,12 +30,13 @@ const DescriptionQuestionSettings: React.FC<
               }
             }}
           />
+          <Label className="text-sm font-medium">آپلود رسانه</Label>
         </div>
 
         {question.hasMedia && (
           <div className="space-y-2">
             <Label className="text-sm font-medium">نوع رسانه</Label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-end">
               <Button
                 type="button"
                 variant={question.mediaType === "image" ? "default" : "outline"}
@@ -88,7 +89,7 @@ const DescriptionQuestionSettings: React.FC<
                               : "videos";
                           const response = await fetch(
                             `${
-                              import.meta.env.VITE_API_BASE_URL
+                              import.meta.env.VITE_BASE_URL
                             }/api/v1/uploader/${endpoint}/`,
                             {
                               method: "POST",
@@ -115,8 +116,11 @@ const DescriptionQuestionSettings: React.FC<
                           if (data.info.status === 201) {
                             const mediaUrl =
                               data.data[`${question.mediaType}_url`];
+                            const full = data.data.full_url || mediaUrl;
                             onUpdateField("mediaUrl", mediaUrl);
                             onUpdateField("attachment", mediaUrl);
+                            // @ts-ignore
+                            onUpdateField("full_url", full);
                             onUpdateField(
                               "attachment_type",
                               question.mediaType
@@ -154,6 +158,62 @@ const DescriptionQuestionSettings: React.FC<
                   <ImagePlus className="w-4 h-4 ml-2" />
                   آپلود {question.mediaType === "image" ? "تصویر" : "ویدئو"}
                 </Button>
+
+                {/* Preview uploaded media (image / video) */}
+                {(question as any).full_url ||
+                question.mediaUrl ||
+                question.attachment
+                  ? (() => {
+                      const attachmentPath =
+                        (question as any).full_url ||
+                        question.mediaUrl ||
+                        question.attachment;
+                      const apiBase = import.meta.env.VITE_API_BASE_URL;
+                      const attachmentSrc = attachmentPath
+                        ? attachmentPath.startsWith("http")
+                          ? attachmentPath
+                          : `${apiBase}/${attachmentPath}`
+                        : null;
+
+                      if (!attachmentSrc) return null;
+
+                      const isVideoAttachment =
+                        question.attachment_type === "video" ||
+                        /\.(mp4|webm|ogg)(\?.*)?$/i.test(attachmentPath);
+
+                      return (
+                        <div className="relative mt-3">
+                          {isVideoAttachment ? (
+                            <video
+                              src={attachmentSrc}
+                              controls
+                              className="w-full max-h-48 border rounded-md"
+                            />
+                          ) : (
+                            <img
+                              src={attachmentSrc}
+                              alt="attachment"
+                              className="w-full max-h-48 object-contain border rounded-md"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onUpdateField("hasMedia", false);
+                              onUpdateField("mediaUrl", undefined);
+                              onUpdateField("attachment", undefined);
+                              onUpdateField("attachment_type", undefined);
+                              // @ts-ignore
+                              onUpdateField("full_url", undefined);
+                            }}
+                            className="absolute top-2 left-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      );
+                    })()
+                  : null}
               </div>
             )}
           </div>

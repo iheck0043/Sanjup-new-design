@@ -42,7 +42,6 @@ const MultiChoiceQuestionSettings: React.FC<
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <Label className="text-sm font-medium">گزینه‌ها</Label>
           <Button
             size="sm"
             variant="outline"
@@ -52,6 +51,7 @@ const MultiChoiceQuestionSettings: React.FC<
             <Plus className="w-4 h-4 ml-1" />
             افزودن
           </Button>
+          <Label className="text-sm font-medium">گزینه‌ها</Label>
         </div>
         <div className="space-y-2">
           {(question.options || ["گزینه ۱", "گزینه ۲"])
@@ -64,7 +64,7 @@ const MultiChoiceQuestionSettings: React.FC<
                 <Input
                   value={option}
                   onChange={(e) => updateOption(index, e.target.value)}
-                  className="flex-1"
+                  className="flex-1 text-right"
                 />
                 {(question.options?.length || 2) > 2 && (
                   <Button
@@ -83,34 +83,18 @@ const MultiChoiceQuestionSettings: React.FC<
 
       <div className="space-y-3 border-t pt-4">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">انتخاب چندگانه</Label>
           <Switch
             checked={question.isMultiSelect || false}
             onCheckedChange={(checked) =>
               onUpdateField("isMultiSelect", checked)
             }
           />
+          <Label className="text-sm font-medium">انتخاب چندگانه</Label>
         </div>
 
         {question.isMultiSelect && (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-sm font-medium">حداقل انتخاب</Label>
-              <Input
-                type="number"
-                value={question.minSelectableChoices || 2}
-                onChange={(e) =>
-                  onUpdateField(
-                    "minSelectableChoices",
-                    parseInt(e.target.value) || 2
-                  )
-                }
-                min={2}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium">حداکثر انتخاب</Label>
+          <div className="grid grid-cols-1 gap-3">
+            <div className="flex justify-between items-center">
               <Input
                 type="number"
                 value={question.maxSelectableChoices || 4}
@@ -121,29 +105,45 @@ const MultiChoiceQuestionSettings: React.FC<
                   )
                 }
                 min={2}
-                className="mt-1"
+                className="mt-1 text-right w-1/2 "
               />
+              <Label className="text-sm font-medium">حداکثر انتخاب</Label>
+            </div>
+            <div className="flex justify-between items-center">
+              <Input
+                type="number"
+                value={question.minSelectableChoices || 2}
+                onChange={(e) =>
+                  onUpdateField(
+                    "minSelectableChoices",
+                    parseInt(e.target.value) || 2
+                  )
+                }
+                min={2}
+                className="mt-1 text-right w-1/2 "
+              />
+              <Label className="text-sm font-medium">حداقل انتخاب</Label>
             </div>
           </div>
         )}
 
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">ترتیب تصادفی گزینه‌ها</Label>
           <Switch
             checked={question.shuffleOptions || false}
             onCheckedChange={(checked) =>
               onUpdateField("shuffleOptions", checked)
             }
           />
+          <Label className="text-sm font-medium">ترتیب تصادفی گزینه‌ها</Label>
         </div>
 
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">گزینه "سایر"</Label>
             <Switch
               checked={question.hasOther || false}
               onCheckedChange={(checked) => onUpdateField("hasOther", checked)}
             />
+            <Label className="text-sm font-medium">گزینه "سایر"</Label>
           </div>
 
           {question.hasOther && (
@@ -154,24 +154,25 @@ const MultiChoiceQuestionSettings: React.FC<
                 onChange={(e) =>
                   onUpdateField("otherOptionText", e.target.value)
                 }
+                className="text-right"
               />
             </div>
           )}
 
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">گزینه "هیچکدام"</Label>
             <Switch
               checked={question.hasNone || false}
               onCheckedChange={(checked) => onUpdateField("hasNone", checked)}
             />
+            <Label className="text-sm font-medium">گزینه "هیچکدام"</Label>
           </div>
 
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">گزینه "همه موارد"</Label>
             <Switch
               checked={question.hasAll || false}
               onCheckedChange={(checked) => onUpdateField("hasAll", checked)}
             />
+            <Label className="text-sm font-medium">گزینه "همه موارد"</Label>
           </div>
         </div>
       </div>

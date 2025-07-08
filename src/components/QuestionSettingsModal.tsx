@@ -26,7 +26,7 @@ import {
   Play,
   Video,
 } from "lucide-react";
-import type { Question } from "../pages/QuestionnaireForm";
+import type { Question } from "../../pages/QuestionnaireForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import QuestionHeader from "./question-settings/QuestionHeader";
 import QuestionSettingsSidebar from "./question-settings/QuestionSettingsSidebar";
@@ -77,31 +77,46 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   if (!localQuestion) return null;
 
   const handleUpdateField = (field: keyof Question, value: any) => {
-    console.log("Updating field:", field, "with value:", value);
-    const updated = { ...localQuestion };
+    setLocalQuestion((prev) => {
+      const updated = { ...prev } as Question;
 
     if (field === "label") {
+        updated.label = value;
       updated.title = value;
-    }
-
-    if (field === "hasMedia") {
+      } else if (field === "hasMedia") {
       updated.hasMedia = value;
       if (!value) {
         updated.mediaType = undefined;
         updated.mediaUrl = undefined;
+          updated.attachment = undefined;
+          updated.attachment_type = undefined;
       } else if (!updated.mediaType) {
         updated.mediaType = "image";
       }
     } else if (field === "mediaType") {
       updated.mediaType = value;
       updated.mediaUrl = undefined;
+        updated.attachment = undefined;
+        updated.attachment_type = undefined;
+      } else if (field === "mediaUrl" || field === "attachment") {
+        // set field value and ensure hasMedia true
+        // @ts-ignore
+        updated[field] = value;
+        if (value) {
+          updated.hasMedia = true;
+          if (!updated.mediaType) updated.mediaType = "image";
+        }
     } else {
+        // generic assignment
+        // @ts-ignore
       updated[field] = value;
     }
 
-    console.log("Updated question:", updated);
-    setLocalQuestion(updated);
+      return updated;
+    });
+
     setHasChanges(true);
+    onSave && onSave; // just to use parameter maybe not used; but we propagate to parent separately below
   };
 
   const handleSave = () => {

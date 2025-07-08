@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import FormHeader from "../components/FormHeader";
 import {
   Users,
@@ -318,6 +318,9 @@ const Audience = () => {
   const [tempSelectedCities, setTempSelectedCities] = useState<
     Record<string, number[]>
   >({});
+
+  // Ref for advanced settings container
+  const advancedSettingsRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch segments from API
   const fetchSegments = async () => {
@@ -1036,131 +1039,93 @@ const Audience = () => {
         return (
           <div className="space-y-4">
             <h4 className="font-medium text-[10px]">محل سکونت</h4>
-
-            {/* Province Selection */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-medium">استان:</label>
-              {provincesLoading ? (
-                <div className="text-center py-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
-                </div>
-              ) : (
-                <Select
-                  value={selectedProvince?.toString() || ""}
-                  onValueChange={(value) => {
-                    const provinceId = parseInt(value);
-                    setSelectedProvince(provinceId);
-                    setCities([]);
-                    fetchCities(provinceId);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="انتخاب استان" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {provinces.map((province) => (
-                      <SelectItem
-                        key={province.id}
-                        value={province.id.toString()}
-                      >
-                        {province.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            {/* Cities Selection */}
-            {selectedProvince && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Province Selection */}
               <div className="space-y-2">
-                <label className="text-[10px] font-medium">شهر:</label>
-                {citiesLoading ? (
+                <label className="text-[10px] font-medium">استان:</label>
+                {provincesLoading ? (
                   <div className="text-center py-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
                   </div>
                 ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between"
-                      >
-                        انتخاب شهر
-                        <ChevronDown className="w-4 h-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 max-h-60 overflow-y-auto">
-                      {/* Select All Option */}
-                      <DropdownMenuItem
-                        onSelect={(e) => {
-                          e.preventDefault();
-                        }}
-                        className="font-medium text-blue-600 dark:text-blue-400 bg-gray-50 dark:bg-gray-700"
-                        onClick={() => {
-                          if (!selectedSegmentId) return;
-                          const allCitiesInProvince = cities.map(
-                            (city) => city.id
-                          );
-                          const currentCities =
-                            tempSelectedCities[selectedSegmentId] ||
-                            selectedSegment?.target_city ||
-                            [];
-                          const citiesNotInList = allCitiesInProvince.filter(
-                            (cityId) => !currentCities.includes(cityId)
-                          );
-                          const updated = [
-                            ...currentCities,
-                            ...citiesNotInList,
-                          ];
-                          setTempSelectedCities((prev) => ({
-                            ...prev,
-                            [selectedSegmentId]: updated,
-                          }));
-                        }}
-                      >
-                        <div className="flex items-center space-x-2 space-x-reverse">
-                          <Checkbox
-                            checked={(() => {
-                              const currentCities =
-                                tempSelectedCities[selectedSegmentId] ||
-                                selectedSegment?.target_city ||
-                                [];
-                              const allCitiesInProvince = cities.map(
-                                (city) => city.id
-                              );
-                              return (
-                                allCitiesInProvince.length > 0 &&
-                                allCitiesInProvince.every((cityId) =>
-                                  currentCities.includes(cityId)
-                                )
-                              );
-                            })()}
-                            onCheckedChange={() => {}}
-                          />
-                          <span>همه شهرها ({cities.length} شهر)</span>
-                        </div>
-                      </DropdownMenuItem>
+                  <Select
+                    value={selectedProvince?.toString() || ""}
+                    onValueChange={(value) => {
+                      const provinceId = parseInt(value);
+                      setSelectedProvince(provinceId);
+                      setCities([]);
+                      fetchCities(provinceId);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="انتخاب استان" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {provinces.map((province) => (
+                        <SelectItem
+                          key={province.id}
+                          value={province.id.toString()}
+                        >
+                          {province.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
 
-                      <DropdownMenuSeparator />
-
-                      {/* Individual Cities */}
-                      {cities.map((city) => (
+              {/* Cities Selection */}
+              {selectedProvince && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-medium">شهر:</label>
+                  {citiesLoading ? (
+                    <div className="text-center py-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+                    </div>
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between"
+                        >
+                          انتخاب شهر
+                          <ChevronDown className="w-4 h-4 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56 max-h-60 overflow-y-auto">
+                        {/* Select All Option */}
                         <DropdownMenuItem
-                          key={city.id}
                           onSelect={(e) => {
                             e.preventDefault();
                           }}
+                          className="font-medium text-blue-600 dark:text-blue-400 bg-gray-50 dark:bg-gray-700"
                           onClick={() => {
                             if (!selectedSegmentId) return;
+                            const allCitiesInProvince = cities.map(
+                              (city) => city.id
+                            );
                             const currentCities =
                               tempSelectedCities[selectedSegmentId] ||
                               selectedSegment?.target_city ||
                               [];
-                            const isSelected = currentCities.includes(city.id);
-                            const updated = isSelected
-                              ? currentCities.filter((id) => id !== city.id)
-                              : [...currentCities, city.id];
+                            const allSelected = allCitiesInProvince.every(
+                              (id) => currentCities.includes(id)
+                            );
+                            let updated: number[];
+                            if (allSelected) {
+                              // Deselect all
+                              updated = currentCities.filter(
+                                (id) => !allCitiesInProvince.includes(id)
+                              );
+                            } else {
+                              // Select missing ones
+                              const citiesNotInList =
+                                allCitiesInProvince.filter(
+                                  (id) => !currentCities.includes(id)
+                                );
+                              updated = [...currentCities, ...citiesNotInList];
+                            }
                             setTempSelectedCities((prev) => ({
                               ...prev,
                               [selectedSegmentId]: updated,
@@ -1174,19 +1139,70 @@ const Audience = () => {
                                   tempSelectedCities[selectedSegmentId] ||
                                   selectedSegment?.target_city ||
                                   [];
-                                return currentCities.includes(city.id);
+                                const allCitiesInProvince = cities.map(
+                                  (city) => city.id
+                                );
+                                return (
+                                  allCitiesInProvince.length > 0 &&
+                                  allCitiesInProvince.every((cityId) =>
+                                    currentCities.includes(cityId)
+                                  )
+                                );
                               })()}
                               onCheckedChange={() => {}}
                             />
-                            <span>{city.name}</span>
+                            <span>همه شهرها ({cities.length} شهر)</span>
                           </div>
                         </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            )}
+
+                        <DropdownMenuSeparator />
+
+                        {/* Individual Cities */}
+                        {cities.map((city) => (
+                          <DropdownMenuItem
+                            key={city.id}
+                            onSelect={(e) => {
+                              e.preventDefault();
+                            }}
+                            onClick={() => {
+                              if (!selectedSegmentId) return;
+                              const currentCities =
+                                tempSelectedCities[selectedSegmentId] ||
+                                selectedSegment?.target_city ||
+                                [];
+                              const isSelected = currentCities.includes(
+                                city.id
+                              );
+                              const updated = isSelected
+                                ? currentCities.filter((id) => id !== city.id)
+                                : [...currentCities, city.id];
+                              setTempSelectedCities((prev) => ({
+                                ...prev,
+                                [selectedSegmentId]: updated,
+                              }));
+                            }}
+                          >
+                            <div className="flex items-center space-x-2 space-x-reverse">
+                              <Checkbox
+                                checked={(() => {
+                                  const currentCities =
+                                    tempSelectedCities[selectedSegmentId] ||
+                                    selectedSegment?.target_city ||
+                                    [];
+                                  return currentCities.includes(city.id);
+                                })()}
+                                onCheckedChange={() => {}}
+                              />
+                              <span>{city.name}</span>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Currently Selected Cities Display */}
             {selectedSegmentId &&
@@ -1577,8 +1593,10 @@ const Audience = () => {
         );
 
       case "age":
-        const currentMinAge = selectedSegment?.target_min_age || 18;
-        const currentMaxAge = selectedSegment?.target_max_age || 65;
+        const currentMinAge =
+          selectedSegment?.target_min_age || defaultFilterData?.min_age;
+        const currentMaxAge =
+          selectedSegment?.target_max_age || defaultFilterData?.max_age;
 
         return (
           <div className="space-y-4">
@@ -1712,6 +1730,7 @@ const Audience = () => {
                     max={defaultFilterData?.max_age || 80}
                     step={1}
                     className="w-full"
+                    dir="rtl"
                   />
                   <div className="flex justify-between mt-1">
                     <span className="text-[9px] text-gray-500 dark:text-gray-400">
@@ -1725,7 +1744,7 @@ const Audience = () => {
               </div>
 
               {/* Age Preset Buttons */}
-              <div className="space-y-2">
+              <div className="space-y-2 hidden">
                 <label className="text-[9px] text-gray-600 dark:text-gray-400">
                   انتخاب سریع:
                 </label>
@@ -1847,7 +1866,7 @@ const Audience = () => {
             <h4 className="font-medium">محل سکونت</h4>
 
             {/* Province Selection */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:w-1/2">
               <label className="text-[10px] font-medium">استان:</label>
               {provincesLoading ? (
                 <div className="text-center py-2">
@@ -1882,7 +1901,7 @@ const Audience = () => {
 
             {/* Cities Selection */}
             {selectedProvince && (
-              <div className="space-y-2">
+              <div className="space-y-2 md:w-1/2">
                 <label className="text-[10px] font-medium">شهر:</label>
                 {citiesLoading ? (
                   <div className="text-center py-2">
@@ -1916,13 +1935,22 @@ const Audience = () => {
                             tempSelectedCities[selectedSegmentId] ||
                             selectedSegment?.target_city ||
                             [];
-                          const citiesNotInList = allCitiesInProvince.filter(
-                            (cityId) => !currentCities.includes(cityId)
+                          const allSelected = allCitiesInProvince.every((id) =>
+                            currentCities.includes(id)
                           );
-                          const updated = [
-                            ...currentCities,
-                            ...citiesNotInList,
-                          ];
+                          let updated: number[];
+                          if (allSelected) {
+                            // Deselect all
+                            updated = currentCities.filter(
+                              (id) => !allCitiesInProvince.includes(id)
+                            );
+                          } else {
+                            // Select missing ones
+                            const citiesNotInList = allCitiesInProvince.filter(
+                              (id) => !currentCities.includes(id)
+                            );
+                            updated = [...currentCities, ...citiesNotInList];
+                          }
                           setTempSelectedCities((prev) => ({
                             ...prev,
                             [selectedSegmentId]: updated,
@@ -2591,7 +2619,7 @@ const Audience = () => {
               </div>
 
               {/* Quick preset buttons */}
-              <div className="flex flex-wrap gap-2">
+              <div className="hidden">
                 <Button
                   size="sm"
                   variant="outline"
@@ -2692,6 +2720,34 @@ const Audience = () => {
         return null;
     }
   };
+
+  // Scroll to selected filter whenever selection changes
+  useEffect(() => {
+    let key: string | null = null;
+    if (generalFilterType) key = generalFilterType;
+    else if (selectedFilterForSettings) {
+      const lbl = filterCategories
+        .flatMap((cat) => cat.labels)
+        .find((l) => l.id === selectedFilterForSettings);
+      if (lbl) key = lbl.title;
+    }
+    if (key && advancedSettingsRef.current) {
+      const target = advancedSettingsRef.current.querySelector(
+        `[data-filter-key="${key}"]`
+      );
+      if (target) {
+        (target as HTMLElement).scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        // Offset for fixed header (approx 120px)
+        const container = advancedSettingsRef.current;
+        if (container) {
+          container.scrollBy({ top: -120, behavior: "smooth" });
+        }
+      }
+    }
+  }, [generalFilterType, selectedFilterForSettings, filterCategories]);
 
   const renderFilterSettings = () => {
     // Handle general filters
@@ -2799,9 +2855,8 @@ const Audience = () => {
         return selectedSegment.target_gender !== null;
       case "age":
         return (
-          selectedSegment.target_min_age !==
-            (defaultFilterData?.min_age || 18) ||
-          selectedSegment.target_max_age !== (defaultFilterData?.max_age || 65)
+          selectedSegment.target_min_age !== defaultFilterData?.min_age ||
+          selectedSegment.target_max_age !== defaultFilterData?.max_age
         );
       default:
         return false;
@@ -3011,14 +3066,16 @@ const Audience = () => {
 
     // سن
     if (
-      segment.target_min_age !== (defaultFilterData?.min_age || 18) ||
-      segment.target_max_age !== (defaultFilterData?.max_age || 65)
+      segment.target_min_age !== defaultFilterData?.min_age ||
+      segment.target_max_age !== defaultFilterData?.max_age
     ) {
       list.push({
         type: "age",
         key: "age",
         label: "محدوده سنی",
-        value: `${segment.target_min_age} تا ${segment.target_max_age} سال`,
+        value: `${segment.target_min_age || defaultFilterData?.min_age} تا ${
+          segment.target_max_age || defaultFilterData?.max_age
+        } سال`,
       });
     }
 
@@ -3243,6 +3300,291 @@ const Audience = () => {
     segmentCityDetails,
   ]);
 
+  // Full project summary content to show inside popover
+  const headerSummary = (
+    <Card className="rounded-2xl shadow-xl bg-white dark:bg-gray-900 max-h-[80vh] w-[380px] overflow-y-auto">
+      <CardHeader className="pb-2 flex-shrink-0 p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+            <Target className="w-3 h-3 text-white" />
+          </div>
+          <CardTitle className="text-base font-bold text-gray-900 dark:text-white tracking-tight">
+            خلاصه پروژه
+          </CardTitle>
+        </div>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          جزئیات هزینه و مخاطبان
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-3 flex-1 flex flex-col min-h-0 p-4 pt-0">
+        <div className="text-center flex-shrink-0 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
+          {summaryLoading ? (
+            <div className="py-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-1"></div>
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                در حال بروزرسانی...
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-0.5">
+                {totalRespondents.toLocaleString()}
+              </div>
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                کل پاسخ‌دهنده هدف
+              </div>
+            </>
+          )}
+        </div>
+        {/* Detailed cost list reused */}
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-1 min-h-0 flex flex-col">
+          {/* Itemization cost list (same as before) */}
+          {summaryLoading ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+               ...
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-y-auto flex-1 min-h-0 space-y-2">
+              {segments.map((segment, index) => {
+                const invoiceSegment = invoiceData?.[index];
+                const isExpanded = expandedSegmentDetails.includes(segment.id);
+                return (
+                  <Collapsible
+                    key={segment.id}
+                    open={isExpanded}
+                    onOpenChange={() => toggleSegmentDetails(segment.id)}
+                  >
+                    <CollapsibleTrigger className="w-full">
+                      <div className="flex justify-between items-center text-xs bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border border-slate-200 dark:border-slate-600 hover:from-slate-100 hover:to-slate-200 dark:hover:from-slate-700 dark:hover:to-slate-600 p-2 rounded-lg transition-all duration-200 shadow-sm">
+                        <div className="flex items-center space-x-2 space-x-reverse">
+                          {isExpanded ? (
+                            <ChevronDown className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+                          )}
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            سگمنت {index + 1}
+                          </span>
+                        </div>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                          {segment.user_limit} ×{" "}
+                          {invoiceSegment?.cost_of_each_person?.toLocaleString() ||
+                            0}{" "}
+                          ={" "}
+                          {invoiceSegment?.cost_of_all_persons?.toLocaleString() ||
+                            0}{" "}
+                          تومان
+                        </span>
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      {invoiceSegment && (
+                        <div className="mr-5 mt-0 pt-3 space-y-1.5 text-xs bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-600 rounded-b-lg p-3">
+                          <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                            <span>هزینه هر پاسخ:</span>
+                            <span>
+                              {invoiceSegment.cost_of_each_person.toLocaleString()}{" "}
+                              تومان
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                            <span>هزینه پایه:</span>
+                            <span>
+                              {invoiceSegment.base_price.toLocaleString()} تومان
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                            <span>هزینه فیلترهای انتخاب شده:</span>
+                            <span>
+                              {invoiceSegment.cost_of_filters.toLocaleString()}{" "}
+                              تومان
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                            <span>هزینه زمان پاسخگویی:</span>
+                            <span>
+                              {invoiceSegment.cost_of_answer_time.toLocaleString()}{" "}
+                              تومان
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                            <span>مالیات بر ارزش افزوده:</span>
+                            <span>
+                              {invoiceSegment.cost_of_tax.toLocaleString()}{" "}
+                              تومان
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Totals */}
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-shrink-0 space-y-1">
+          {summaryLoading ? (
+            <div className="text-center py-1 mb-1">
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-600 dark:text-gray-300">
+                  مجموع هزینه:
+                </span>
+                <span className="text-gray-900 dark:text-white">
+                  {totalCost.toLocaleString()} تومان
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-600 dark:text-gray-300">
+                  مالیات:
+                </span>
+                <span className="text-gray-900 dark:text-white">
+                  {totalTax.toLocaleString()} تومان
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1 text-sm font-bold">
+                <span className="text-gray-900 dark:text-white">کل:</span>
+                <span>{grandTotal.toLocaleString()} تومان</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Applied Filters Summary */}
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-1 min-h-0 flex flex-col mt-2">
+          <h4 className="font-medium text-xs mb-1 flex-shrink-0 text-gray-900 dark:text-white">
+            فیلترهای اعمال شده:
+          </h4>
+          <div className="space-y-2 overflow-y-auto flex-1 min-h-0 pr-1">
+            {segments.map((segment, index) => (
+              <div key={segment.id} className="space-y-1">
+                <div className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                  سگمنت {index + 1}:
+                </div>
+
+                {/* Gender Filter */}
+                {segment.target_gender && (
+                  <div className="text-xs mr-2">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      جنسیت:
+                    </span>{" "}
+                    <span className="text-gray-600 dark:text-gray-300">
+                      {segment.target_gender === "M" ? "مرد" : "زن"}
+                    </span>
+                  </div>
+                )}
+
+                {/* Age Filter */}
+                {(segment.target_min_age !== defaultFilterData?.min_age ||
+                  segment.target_max_age !== defaultFilterData?.max_age) && (
+                  <div className="text-xs mr-2">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      سن:
+                    </span>{" "}
+                    <span className="text-gray-600 dark:text-gray-300">
+                      {segment.target_min_age} تا {segment.target_max_age} سال
+                    </span>
+                  </div>
+                )}
+
+                {/* Cities Filter */}
+                {segment.target_city && segment.target_city.length > 0 && (
+                  <div className="text-xs mr-2 space-y-1">
+                    <div>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        شهرها:
+                      </span>{" "}
+                      <span className="text-gray-600 dark:text-gray-300">
+                        {getSelectedCitiesShortDescription(segment.id) ||
+                          `${segment.target_city.length} شهر انتخاب شده`}
+                      </span>
+                    </div>
+                    {formatSelectedCities(segment.id) && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mr-2 leading-relaxed">
+                        {formatSelectedCities(segment.id)}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* API Filters */}
+                {segmentMetrics[segment.id] &&
+                  segmentMetrics[segment.id].length > 0 && (
+                    <div className="text-xs mr-2 space-y-1">
+                      <span className="font-medium text-gray-900 dark:text-white block">
+                        فیلترهای تخصصی:
+                      </span>
+                      {(() => {
+                        const metricsByLabel: Record<string, string[]> = {};
+                        segmentMetrics[segment.id].forEach((metricId) => {
+                          filterCategories.forEach((cat) => {
+                            cat.labels.forEach((label) => {
+                              const metric = label.metrics.find(
+                                (m) => m.id === metricId
+                              );
+                              if (metric) {
+                                if (!metricsByLabel[label.title])
+                                  metricsByLabel[label.title] = [];
+                                metricsByLabel[label.title].push(metric.title);
+                              }
+                            });
+                          });
+                        });
+
+                        return Object.entries(metricsByLabel).map(
+                          ([labelTitle, metrics]) => (
+                            <div key={labelTitle} className="mr-2">
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {labelTitle}:
+                              </span>{" "}
+                              <span className="text-gray-600 dark:text-gray-300">
+                                {metrics.join(", ")}
+                              </span>
+                            </div>
+                          )
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                {/* If no filter */}
+                {segment.target_gender === null &&
+                  segment.target_min_age === defaultFilterData?.min_age &&
+                  segment.target_max_age === defaultFilterData?.max_age &&
+                  (!segment.target_city || segment.target_city.length === 0) &&
+                  (!segmentMetrics[segment.id] ||
+                    segmentMetrics[segment.id].length === 0) && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 italic mr-2">
+                      هیچ فیلتری اعمال نشده
+                    </div>
+                  )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Estimated time */}
+        {segments.some((s) => s.estimatedTime) && (
+          <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-shrink-0 text-xs flex justify-between">
+            <span className="text-gray-600 dark:text-gray-300">
+              زمان تخمینی:
+            </span>
+            <span className="text-gray-900 dark:text-white">2-3 روز کاری</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col  relative"
@@ -3305,11 +3647,18 @@ const Audience = () => {
         backPath={
           id ? (isAdTest ? `/adtest/${id}` : `/questionnaire/${id}`) : "/"
         }
+        totalAmount={grandTotal}
+        amountLoading={summaryLoading}
+        summary={headerSummary}
+        onPay={() => {
+          // TODO: Navigate to payment or trigger payment process
+          toast.info("درگاه پرداخت به زودی افزوده می‌شود");
+        }}
       />
 
       <div className="flex flex-1 h-[calc(100vh-64px)]">
         {/* Fixed Segments Sidebar */}
-        <div className="w-96 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 h-[calc(100vh-64px)] fixed top-16 right-0 flex flex-col shadow-xl">
+        <div className="w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 h-[calc(100vh-64px)] fixed top-16 right-0 flex flex-col shadow-xl">
           <div className="p-6 border-b border-gray-100 dark:border-gray-700/50 flex-shrink-0">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -3518,12 +3867,12 @@ const Audience = () => {
         </div>
 
         {/* Main Content with margin for fixed sidebar */}
-        <div className="flex-1 mr-96 p-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-12 gap-4">
+        <div className="flex-1 mr-72 p-4">
+          <div className="w-full">
+            <div className="grid grid-cols-12 gap-2">
               {/* Column 1: Filter Categories and Filters */}
-              <div className="col-span-4">
-                <Card className="rounded-2xl shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+              <div className="col-span-4 2xl:col-span-3">
+                <Card className="rounded-2xl shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 sticky top-20 h-[calc(100vh-100px)] overflow-y-auto">
                   <CardHeader className="pb-4 p-6">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -3904,6 +4253,7 @@ const Audience = () => {
                                   return (
                                     <div
                                       key={label.id}
+                                      data-filter-key={label.id}
                                       className={`p-2 rounded-lg transition-colors border ${
                                         segmentDetailsLoading ||
                                         filterOperationLoading ||
@@ -3960,9 +4310,9 @@ const Audience = () => {
                 </Card>
               </div>
 
-              {/* Column 2: Filter Settings */}
-              <div className="col-span-4">
-                <Card className="rounded-2xl shadow-lg sticky top-20 max-h-[calc(100vh-100px)] flex flex-col overflow-hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+              {/* Column 2: Filter Settings (takes remaining space) */}
+              <div className="col-span-8 2xl:col-span-9">
+                <Card className="flex flex-col bg-transparent shadow-none border-none">
                   <CardHeader className="pb-4 flex-shrink-0 p-6">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -3993,650 +4343,267 @@ const Audience = () => {
                         </p>
                       </div>
                     ) : (
-                      (() => {
-                        // Recalculate applied filters each render to ensure they're up to date
-                        let appliedFilters =
-                          getAllAppliedFilters(selectedSegmentId);
+                      <div className="space-y-2" ref={advancedSettingsRef}>
+                        {(() => {
+                          // Build list of applied filters similar to previous logic
+                          let appliedFilters =
+                            getAllAppliedFilters(selectedSegmentId);
 
-                        // اگر فیلتری در حال ویرایش است ولی هنوز ذخیره نشده، آن را نیز به لیست کارت‌ها اضافه کن
-                        if (selectedFilterForSettings) {
-                          const editingLabel = filterCategories
-                            .flatMap((cat) => cat.labels)
-                            .find(
-                              (lbl) => lbl.id === selectedFilterForSettings
-                            );
+                          if (selectedFilterForSettings) {
+                            const editingLabel = filterCategories
+                              .flatMap((cat) => cat.labels)
+                              .find(
+                                (lbl) => lbl.id === selectedFilterForSettings
+                              );
+                            if (
+                              editingLabel &&
+                              !appliedFilters.some(
+                                (f) => f.key === editingLabel.title
+                              )
+                            ) {
+                              appliedFilters.push({
+                                type: "metric",
+                                key: editingLabel.title,
+                                label: editingLabel.title,
+                                value: "",
+                              });
+                            }
+                          }
 
                           if (
-                            editingLabel &&
+                            generalFilterType &&
                             !appliedFilters.some(
-                              (f) => f.key === editingLabel.title
+                              (f) => f.type === generalFilterType
                             )
                           ) {
                             appliedFilters.push({
-                              type: "metric",
-                              key: editingLabel.title,
-                              label: editingLabel.title,
+                              type: generalFilterType,
+                              key: generalFilterType,
+                              label: getFilterLabel(generalFilterType),
                               value: "",
                             });
                           }
-                        }
 
-                        if (
-                          generalFilterType &&
-                          !appliedFilters.some(
-                            (f) => f.type === generalFilterType
-                          )
-                        ) {
-                          appliedFilters.push({
-                            type: generalFilterType,
-                            key: generalFilterType,
-                            label: getFilterLabel(generalFilterType),
-                            value: "",
-                          });
-                        }
-
-                        if (appliedFilters.length === 0) {
-                          return (
-                            <div className="text-center text-gray-500 dark:text-gray-400 py-6">
-                              <p className="text-xs">
-                                هیچ فیلتری اعمال نشده است
-                              </p>
-                            </div>
-                          );
-                        }
-
-                        // اگر هیچ فیلتر انتخاب نشده بود، اولین را انتخاب کنیم
-                        if (!selectedFilterForSettings && !generalFilterType) {
-                          const first = appliedFilters[0];
-                          if (first.type === "metric") {
-                            let id: number | null = null;
-                            filterCategories.forEach((cat) => {
-                              cat.labels.forEach((lbl) => {
-                                if (lbl.title === first.key) id = lbl.id;
-                              });
-                            });
-                            if (id) setSelectedFilterForSettings(id);
-                          } else {
-                            setGeneralFilterType(first.type);
-                          }
-                        }
-
-                        const activeLabel = generalFilterType
-                          ? getFilterLabel(generalFilterType)
-                          : getFilterLabel(
-                              selectedFilterForSettings?.toString() || ""
+                          if (appliedFilters.length === 0) {
+                            return (
+                              <div className="text-center text-gray-500 dark:text-gray-400 py-6">
+                                <p className="text-xs">
+                                  هیچ فیلتری اعمال نشده است
+                                </p>
+                              </div>
                             );
+                          }
 
-                        return (
-                          <div className="space-y-2">
-                            {appliedFilters.map((flt) => {
-                              const isActive =
-                                (flt.type === "metric" &&
-                                  flt.label === activeLabel) ||
-                                (flt.type !== "metric" &&
-                                  flt.type === generalFilterType);
+                          const activeLabel = generalFilterType
+                            ? getFilterLabel(generalFilterType)
+                            : getFilterLabel(
+                                selectedFilterForSettings?.toString() || ""
+                              );
 
-                              return (
-                                <div
-                                  key={`flt-${flt.key}`}
-                                  className={`border rounded-lg p-3 transition-colors cursor-pointer ${
-                                    isActive
-                                      ? "bg-blue-50 dark:bg-blue-900/20"
-                                      : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
-                                  }`}
-                                  onClick={() => {
-                                    if (
-                                      flt.type === "gender" ||
-                                      flt.type === "age" ||
-                                      flt.type === "location"
-                                    ) {
-                                      setGeneralFilterType(flt.type);
-                                      setSelectedFilterForSettings(null);
-                                    } else {
-                                      let lblId: number | null = null;
-                                      filterCategories.forEach((cat) => {
-                                        cat.labels.forEach((lbl) => {
-                                          if (lbl.title === flt.key)
-                                            lblId = lbl.id;
-                                        });
-                                      });
-                                      if (lblId)
-                                        setSelectedFilterForSettings(lblId);
-                                      setGeneralFilterType(null);
+                          return (
+                            <div
+                              className="space-y-2"
+                              ref={advancedSettingsRef}
+                            >
+                              {appliedFilters.map((flt) => {
+                                const isActive =
+                                  (flt.type === "metric" &&
+                                    flt.label === activeLabel) ||
+                                  (flt.type !== "metric" &&
+                                    flt.type === generalFilterType);
+                                return (
+                                  <div
+                                    key={`flt-${flt.key}`}
+                                    data-filter-key={
+                                      flt.type === "metric" ? flt.key : flt.type
                                     }
-                                  }}
-                                >
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="font-medium text-[10px] text-gray-900 dark:text-white">
-                                      {flt.label}
-                                    </span>
-                                    {isActive && (
-                                      <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-gray-600 dark:text-gray-300 mb-2">
-                                    {flt.value}
-                                  </p>
-
-                                  <div className="border-t pt-3 mt-2 border-dashed border-blue-200 dark:border-blue-600 relative">
-                                    {(segmentOperationLoading ||
-                                      filterOperationLoading) && (
-                                      <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
-                                        <div className="flex items-center gap-2">
-                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400"></div>
-                                          <span className="text-xs text-gray-600 dark:text-gray-400">
-                                            در حال ذخیره...
-                                          </span>
-                                        </div>
-                                      </div>
-                                    )}
-                                    {(() => {
-                                      // Render settings for this specific filter
+                                    className={`border rounded-lg p-3 transition-colors cursor-pointer scroll-mt-52 ${
+                                      isActive
+                                        ? "border-indigo-400 bg-white dark:bg-gray-800 shadow-md ring-2 ring-indigo-300 dark:ring-indigo-700"
+                                        : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    }`}
+                                    onClick={() => {
                                       if (
                                         flt.type === "gender" ||
                                         flt.type === "age" ||
                                         flt.type === "location"
                                       ) {
-                                        // For general filters, use the dedicated function
-                                        return renderGeneralFilterSettingsForType(
-                                          flt.type
-                                        );
+                                        setGeneralFilterType(flt.type);
+                                        setSelectedFilterForSettings(null);
                                       } else {
-                                        // For API filters, find the filter and render its settings
-                                        let filterLabelId: number | null = null;
+                                        let lblId: number | null = null;
                                         filterCategories.forEach((cat) => {
                                           cat.labels.forEach((lbl) => {
                                             if (lbl.title === flt.key)
-                                              filterLabelId = lbl.id;
+                                              lblId = lbl.id;
                                           });
                                         });
-
-                                        if (filterLabelId) {
-                                          const filterLabel = filterCategories
-                                            .flatMap(
-                                              (category) => category.labels
-                                            )
-                                            .find(
-                                              (label) =>
-                                                label.id === filterLabelId
-                                            );
-
-                                          if (filterLabel) {
-                                            const filterIdStr =
-                                              filterLabelId.toString();
-                                            const currentSelectedMetrics =
-                                              segmentMetrics[
-                                                selectedSegmentId
-                                              ] || [];
-
-                                            return (
-                                              <div className="space-y-4">
-                                                <h4 className="font-medium text-[10px]">
-                                                  {filterLabel.title}
-                                                </h4>
-                                                <div className="space-y-2">
-                                                  {filterLabel.metrics.map(
-                                                    (metric) => (
-                                                      <div
-                                                        key={metric.id}
-                                                        className="flex items-center space-x-2 space-x-reverse"
-                                                      >
-                                                        <Checkbox
-                                                          checked={currentSelectedMetrics.includes(
-                                                            metric.id
-                                                          )}
-                                                          onCheckedChange={(
-                                                            checked
-                                                          ) => {
-                                                            if (
-                                                              !selectedSegmentId
-                                                            )
-                                                              return;
-
-                                                            const updated =
-                                                              checked
-                                                                ? [
-                                                                    ...currentSelectedMetrics,
-                                                                    metric.id,
-                                                                  ]
-                                                                : currentSelectedMetrics.filter(
-                                                                    (
-                                                                      id: number
-                                                                    ) =>
-                                                                      id !==
-                                                                      metric.id
-                                                                  );
-
-                                                            setSegmentMetrics(
-                                                              (prev) => ({
-                                                                ...prev,
-                                                                [selectedSegmentId]:
-                                                                  updated,
-                                                              })
-                                                            );
-
-                                                            // Save or remove the clicked metric to/from API
-                                                            if (checked) {
-                                                              saveSegmentMetric(
-                                                                selectedSegmentId,
-                                                                metric.id
-                                                              );
-                                                            } else {
-                                                              // Remove metric from API when unchecked
-                                                              removeSegmentMetric(
-                                                                selectedSegmentId,
-                                                                metric.id
-                                                              );
-                                                            }
-
-                                                            // Update segment filters as well for local state
-                                                            updateSegmentFilter(
-                                                              selectedSegmentId,
-                                                              filterIdStr,
-                                                              updated
-                                                            );
-                                                          }}
-                                                        />
-                                                        <span className="text-[10px]">
-                                                          {metric.title}
-                                                        </span>
-                                                      </div>
-                                                    )
-                                                  )}
-                                                </div>
-                                              </div>
-                                            );
-                                          }
-                                        }
-                                        return null;
+                                        if (lblId)
+                                          setSelectedFilterForSettings(lblId);
+                                        setGeneralFilterType(null);
                                       }
-                                    })()}
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="font-medium text-[10px] text-gray-900 dark:text-white">
+                                        {flt.label}
+                                      </span>
+                                      {isActive && (
+                                        <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-gray-600 dark:text-gray-300 mb-2">
+                                      {flt.value}
+                                    </p>
+
+                                    <div className="border-t pt-3 mt-2 border-dashed border-blue-200 dark:border-blue-600 relative">
+                                      {(segmentOperationLoading ||
+                                        filterOperationLoading) && (
+                                        <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+                                          <div className="flex items-center gap-2">
+                                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                                              در حال ذخیره...
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {(() => {
+                                        // Render settings for this specific filter
+                                        if (
+                                          flt.type === "gender" ||
+                                          flt.type === "age" ||
+                                          flt.type === "location"
+                                        ) {
+                                          // For general filters, use the dedicated function
+                                          return renderGeneralFilterSettingsForType(
+                                            flt.type
+                                          );
+                                        } else {
+                                          // For API filters, find the filter and render its settings
+                                          let filterLabelId: number | null =
+                                            null;
+                                          filterCategories.forEach((cat) => {
+                                            cat.labels.forEach((lbl) => {
+                                              if (lbl.title === flt.key)
+                                                filterLabelId = lbl.id;
+                                            });
+                                          });
+
+                                          if (filterLabelId) {
+                                            const filterLabel = filterCategories
+                                              .flatMap(
+                                                (category) => category.labels
+                                              )
+                                              .find(
+                                                (label) =>
+                                                  label.id === filterLabelId
+                                              );
+
+                                            if (filterLabel) {
+                                              const filterIdStr =
+                                                filterLabelId.toString();
+                                              const currentSelectedMetrics =
+                                                segmentMetrics[
+                                                  selectedSegmentId
+                                                ] || [];
+
+                                              return (
+                                                <div className="space-y-4">
+                                                  <h4 className="font-medium text-[10px]">
+                                                    {filterLabel.title}
+                                                  </h4>
+                                                  <div className="space-y-2">
+                                                    {filterLabel.metrics.map(
+                                                      (metric) => (
+                                                        <div
+                                                          key={metric.id}
+                                                          className="flex items-center space-x-2 space-x-reverse"
+                                                        >
+                                                          <Checkbox
+                                                            checked={currentSelectedMetrics.includes(
+                                                              metric.id
+                                                            )}
+                                                            onCheckedChange={(
+                                                              checked
+                                                            ) => {
+                                                              if (
+                                                                !selectedSegmentId
+                                                              )
+                                                                return;
+
+                                                              const updated =
+                                                                checked
+                                                                  ? [
+                                                                      ...currentSelectedMetrics,
+                                                                      metric.id,
+                                                                    ]
+                                                                  : currentSelectedMetrics.filter(
+                                                                      (
+                                                                        id: number
+                                                                      ) =>
+                                                                        id !==
+                                                                        metric.id
+                                                                    );
+
+                                                              setSegmentMetrics(
+                                                                (prev) => ({
+                                                                  ...prev,
+                                                                  [selectedSegmentId]:
+                                                                    updated,
+                                                                })
+                                                              );
+
+                                                              // Save or remove the clicked metric to/from API
+                                                              if (checked) {
+                                                                saveSegmentMetric(
+                                                                  selectedSegmentId,
+                                                                  metric.id
+                                                                );
+                                                              } else {
+                                                                // Remove metric from API when unchecked
+                                                                removeSegmentMetric(
+                                                                  selectedSegmentId,
+                                                                  metric.id
+                                                                );
+                                                              }
+
+                                                              // Update segment filters as well for local state
+                                                              updateSegmentFilter(
+                                                                selectedSegmentId,
+                                                                filterIdStr,
+                                                                updated
+                                                              );
+                                                            }}
+                                                          />
+                                                          <span className="text-[10px]">
+                                                            {metric.title}
+                                                          </span>
+                                                        </div>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                          }
+                                          return null;
+                                        }
+                                      })()}
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Column 3: Summary */}
-              <div className="col-span-4">
-                <Card className="rounded-2xl shadow-xl sticky top-24 h-[calc(100vh-120px)] flex flex-col bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
-                  <CardHeader className="pb-2 flex-shrink-0 p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-                        <Target className="w-3 h-3 text-white" />
-                      </div>
-                      <CardTitle className="text-base font-bold text-gray-900 dark:text-white tracking-tight">
-                        خلاصه پروژه
-                      </CardTitle>
-                    </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      جزئیات هزینه و مخاطبان
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-3 flex-1 flex flex-col min-h-0 p-4 pt-0">
-                    <div className="text-center flex-shrink-0 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                      {summaryLoading ? (
-                        <div className="py-2">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-1"></div>
-                          <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                            در حال بروزرسانی...
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-0.5">
-                            {totalRespondents.toLocaleString()}
-                          </div>
-                          <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                            کل پاسخ‌دهنده هدف
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Create a flex container for equal height sections */}
-                    <div className="flex-1 min-h-0 flex flex-col gap-2">
-                      {/* Restaurant-style itemization */}
-                      <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-1 min-h-0 flex flex-col">
-                        <h4 className="font-medium text-xs mb-1 flex-shrink-0 text-gray-900 dark:text-white">
-                          جزئیات محاسبه:
-                        </h4>
-                        {summaryLoading ? (
-                          <div className="text-center py-4">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              در حال محاسبه هزینه‌ها...
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="overflow-y-auto flex-1 min-h-0 space-y-2">
-                            {segments.map((segment, index) => {
-                              const invoiceSegment = invoiceData?.[index]; // Assume array order matches segments order
-                              const isExpanded =
-                                expandedSegmentDetails.includes(segment.id);
-
-                              return (
-                                <Collapsible
-                                  key={segment.id}
-                                  open={isExpanded}
-                                  onOpenChange={() =>
-                                    toggleSegmentDetails(segment.id)
-                                  }
-                                >
-                                  <CollapsibleTrigger className="w-full">
-                                    <div className="flex justify-between items-center text-xs bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border border-slate-200 dark:border-slate-600 hover:from-slate-100 hover:to-slate-200 dark:hover:from-slate-700 dark:hover:to-slate-600 p-3 rounded-lg transition-all duration-200 shadow-sm">
-                                      <div className="flex items-center space-x-2 space-x-reverse">
-                                        {isExpanded ? (
-                                          <ChevronDown className="w-3 h-3 text-slate-600 dark:text-slate-300" />
-                                        ) : (
-                                          <ChevronRight className="w-3 h-3 text-slate-600 dark:text-slate-300" />
-                                        )}
-                                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                                          سگمنت {index + 1}
-                                        </span>
-                                      </div>
-                                      <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                        {segment.user_limit} ×{" "}
-                                        {invoiceSegment?.cost_of_each_person?.toLocaleString() ||
-                                          0}{" "}
-                                        ={" "}
-                                        {invoiceSegment?.cost_of_all_persons?.toLocaleString() ||
-                                          0}{" "}
-                                        تومان
-                                      </span>
-                                    </div>
-                                  </CollapsibleTrigger>
-
-                                  <CollapsibleContent>
-                                    {invoiceSegment && (
-                                      <div className="mr-5 mt-0 pt-3 space-y-1.5 text-xs bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-600 rounded-b-lg p-3">
-                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                          <span>هزینه هر پاسخ:</span>
-                                          <span>
-                                            {invoiceSegment.cost_of_each_person.toLocaleString()}{" "}
-                                            تومان
-                                          </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                          <span>هزینه پایه:</span>
-                                          <span>
-                                            {invoiceSegment.base_price.toLocaleString()}{" "}
-                                            تومان
-                                          </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                          <span>
-                                            هزینه فیلترهای انتخاب شده:
-                                          </span>
-                                          <span>
-                                            {invoiceSegment.cost_of_filters.toLocaleString()}{" "}
-                                            تومان
-                                          </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                          <span>هزینه زمان پاسخگویی:</span>
-                                          <span>
-                                            {invoiceSegment.cost_of_answer_time.toLocaleString()}{" "}
-                                            تومان
-                                          </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                          <span>مالیات بر ارزش افزوده:</span>
-                                          <span>
-                                            {invoiceSegment.cost_of_tax.toLocaleString()}{" "}
-                                            تومان
-                                          </span>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </CollapsibleContent>
-                                </Collapsible>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Applied Filters Summary - Scrollable Section */}
-                      <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-1 min-h-0 flex flex-col">
-                        <h4 className="font-medium text-xs mb-1 flex-shrink-0 text-gray-900 dark:text-white">
-                          فیلترهای اعمال شده:
-                        </h4>
-                        <div className="space-y-2 overflow-y-auto flex-1 min-h-0">
-                          {segments.map((segment, index) => (
-                            <div key={segment.id} className="space-y-1">
-                              <div className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                                سگمنت {index + 1}:
-                              </div>
-
-                              {/* Gender Filter */}
-                              {segment.target_gender && (
-                                <div className="text-xs mr-2">
-                                  <span className="font-medium text-gray-900 dark:text-white">
-                                    جنسیت:
-                                  </span>{" "}
-                                  <span className="text-gray-600 dark:text-gray-300">
-                                    {segment.target_gender === "M"
-                                      ? "مرد"
-                                      : "زن"}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Age Filter */}
-                              {(segment.target_min_age !==
-                                (defaultFilterData?.min_age || 18) ||
-                                segment.target_max_age !==
-                                  (defaultFilterData?.max_age || 65)) && (
-                                <div className="text-xs mr-2">
-                                  <span className="font-medium text-gray-900 dark:text-white">
-                                    سن:
-                                  </span>{" "}
-                                  <span className="text-gray-600 dark:text-gray-300">
-                                    {segment.target_min_age} تا{" "}
-                                    {segment.target_max_age} سال
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Cities Filter */}
-                              {segment.target_city &&
-                                segment.target_city.length > 0 && (
-                                  <div className="text-xs mr-2 space-y-1">
-                                    <div>
-                                      <span className="font-medium text-gray-900 dark:text-white">
-                                        شهرها:
-                                      </span>{" "}
-                                      <span className="text-gray-600 dark:text-gray-300">
-                                        {getSelectedCitiesShortDescription(
-                                          segment.id
-                                        ) ||
-                                          `${segment.target_city.length} شهر انتخاب شده`}
-                                      </span>
-                                    </div>
-                                    {/* Detailed cities information */}
-                                    {formatSelectedCities(segment.id) && (
-                                      <div className="text-xs text-gray-500 dark:text-gray-400 mr-2 leading-relaxed">
-                                        {formatSelectedCities(segment.id)}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                              {/* API Filters */}
-                              {segmentMetrics[segment.id] &&
-                                segmentMetrics[segment.id].length > 0 && (
-                                  <div className="text-xs mr-2 space-y-1">
-                                    <span className="font-medium text-gray-900 dark:text-white block">
-                                      فیلترهای تخصصی:
-                                    </span>
-                                    {(() => {
-                                      // Group metrics by their labels
-                                      const metricsByLabel: Record<
-                                        string,
-                                        string[]
-                                      > = {};
-                                      segmentMetrics[segment.id].forEach(
-                                        (metricId) => {
-                                          filterCategories.forEach((cat) => {
-                                            cat.labels.forEach((label) => {
-                                              const metric = label.metrics.find(
-                                                (m) => m.id === metricId
-                                              );
-                                              if (metric) {
-                                                if (
-                                                  !metricsByLabel[label.title]
-                                                ) {
-                                                  metricsByLabel[label.title] =
-                                                    [];
-                                                }
-                                                metricsByLabel[
-                                                  label.title
-                                                ].push(metric.title);
-                                              }
-                                            });
-                                          });
-                                        }
-                                      );
-
-                                      return Object.entries(metricsByLabel).map(
-                                        ([labelTitle, metrics]) => (
-                                          <div
-                                            key={labelTitle}
-                                            className="mr-2"
-                                          >
-                                            <span className="font-medium text-gray-900 dark:text-white">
-                                              {labelTitle}:
-                                            </span>{" "}
-                                            <span className="text-gray-600 dark:text-gray-300">
-                                              {metrics.join(", ")}
-                                            </span>
-                                          </div>
-                                        )
-                                      );
-                                    })()}
-                                  </div>
-                                )}
-
-                              {/* Empty state for this segment */}
-                              {segment.target_gender === null &&
-                                segment.target_min_age ===
-                                  (defaultFilterData?.min_age || 18) &&
-                                segment.target_max_age ===
-                                  (defaultFilterData?.max_age || 65) &&
-                                (!segment.target_city ||
-                                  segment.target_city.length === 0) &&
-                                (!segmentMetrics[segment.id] ||
-                                  segmentMetrics[segment.id].length === 0) && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 italic mr-2">
-                                    هیچ فیلتری اعمال نشده (همه مخاطبان)
-                                  </div>
-                                )}
-                            </div>
-                          ))}
-
-                          {segments.length === 0 && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center">
-                              هیچ سگمنتی وجود ندارد
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex-shrink-0">
-                      {summaryLoading ? (
-                        <div className="text-center py-1 mb-1">
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
-                        </div>
-                      ) : (
-                        invoiceData && (
-                          <div className="space-y-1 mb-1">
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-600 dark:text-gray-300">
-                                مجموع هزینه:
-                              </span>
-                              <span className="text-gray-900 dark:text-white">
-                                {totalCost.toLocaleString()} تومان
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-600 dark:text-gray-300">
-                                مالیات بر ارزش افزوده:
-                              </span>
-                              <span className="text-gray-900 dark:text-white">
-                                {totalTax.toLocaleString()} تومان
-                              </span>
-                            </div>
-                          </div>
-                        )
-                      )}
-
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs text-gray-600 dark:text-gray-300">
-                          کل هزینه:
-                        </span>
-                        <span className="font-bold text-sm text-gray-900 dark:text-white">
-                          {summaryLoading ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400 inline-block"></div>
-                          ) : (
-                            `${grandTotal.toLocaleString()} تومان`
-                          )}
-                        </span>
-                      </div>
-
-                      {segments.some((s) => s.estimatedTime) && (
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-gray-600 dark:text-gray-300">
-                            زمان تخمینی:
-                          </span>
-                          <span className="text-gray-900 dark:text-white">
-                            2-3 روز کاری
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="border-t border-gray-200/50 dark:border-gray-600/50 pt-3 flex-shrink-0">
-                      <Button
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-700 dark:to-blue-800 dark:hover:from-blue-800 dark:hover:to-blue-900 text-white font-medium shadow-lg shadow-blue-500/25 transition-all duration-200 h-10 rounded-lg text-sm"
-                        disabled={
-                          !allSegmentsPossible ||
-                          grandTotal === 0 ||
-                          summaryLoading ||
-                          segmentOperationLoading ||
-                          filterOperationLoading
-                        }
-                        size="default"
-                      >
-                        {summaryLoading ||
-                        segmentOperationLoading ||
-                        filterOperationLoading ? (
-                          <>
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                            در حال پردازش...
-                          </>
-                        ) : (
-                          <>
-                            <DollarSign className="w-4 h-4 ml-2" />
-                            تأیید و پرداخت
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Column 3 removed: summary now shown via popover */}
             </div>
           </div>
         </div>

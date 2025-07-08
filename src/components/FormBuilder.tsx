@@ -492,7 +492,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         <div className="h-[50px] border rounded-lg p-2 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing">
           <div className="flex items-center justify-between h-full">
             <div className="flex items-center gap-2">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 drag-handle">
                 <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
               </div>
               <div className="flex-shrink-0">
@@ -870,6 +870,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 );
               }
             }}
+            handle=".drag-handle"
           >
             {item.children && item.children.length > 0
               ? item.children.map((child, childIndex) => (
@@ -916,7 +917,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
         <div className="h-[50px] border rounded-lg p-2 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing border-gray-200 dark:border-gray-600">
           <div className="flex items-center justify-between h-full">
             <div className="flex items-center gap-2">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 drag-handle">
                 <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600" />
               </div>
               <div className="flex-shrink-0">
@@ -1296,6 +1297,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               }
             }
           }}
+          handle=".drag-handle"
         >
           {nestedItems.map((item, index) => (
             <div key={item.id}>

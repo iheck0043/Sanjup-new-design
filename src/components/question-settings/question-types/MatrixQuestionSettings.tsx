@@ -57,7 +57,7 @@ const MatrixQuestionSettings: React.FC<MatrixQuestionSettingsProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div dir="rtl" className="space-y-4 ">
       <div>
         <div className="flex items-center justify-between mb-3">
           <Label className="text-sm font-medium">سطرها</Label>

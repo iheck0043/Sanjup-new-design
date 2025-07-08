@@ -16,7 +16,6 @@ const NumberQuestionSettings: React.FC<NumberQuestionSettingsProps> = ({
     <div className="space-y-4">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">حداقل مقدار</Label>
           <Input
             type="number"
             value={question.minNumber || 0}
@@ -25,10 +24,10 @@ const NumberQuestionSettings: React.FC<NumberQuestionSettingsProps> = ({
             }
             className="w-24"
           />
+          <Label className="text-sm font-medium">حداقل مقدار</Label>
         </div>
 
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">حداکثر مقدار</Label>
           <Input
             type="number"
             value={question.maxNumber || 0}
@@ -37,6 +36,7 @@ const NumberQuestionSettings: React.FC<NumberQuestionSettingsProps> = ({
             }
             className="w-24"
           />
+          <Label className="text-sm font-medium">حداکثر مقدار</Label>
         </div>
       </div>
     </div>

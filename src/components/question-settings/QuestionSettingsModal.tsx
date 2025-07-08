@@ -33,15 +33,48 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   }, [question]);
 
   const handleUpdateField = (field: keyof Question, value: any) => {
-    console.log(
-      "QuestionSettingsModal - Updating field:",
-      field,
-      "with value:",
-      value
-    );
-    const updated = { ...localQuestion, [field]: value };
-    console.log("QuestionSettingsModal - Updated question:", updated);
-    setLocalQuestion(updated);
+    setLocalQuestion((prev) => {
+      const updated: Question = { ...prev } as Question;
+
+      if (field === "label") {
+        updated.label = value;
+        updated.title = value;
+      } else if (field === "hasMedia") {
+        updated.hasMedia = value;
+        if (!value) {
+          updated.mediaType = undefined;
+          updated.mediaUrl = undefined;
+          updated.attachment = undefined;
+          updated.attachment_type = undefined;
+        } else if (!updated.mediaType) {
+          updated.mediaType = "image";
+        }
+      } else if (field === "mediaType") {
+        updated.mediaType = value;
+        // reset urls when changing type
+        updated.mediaUrl = undefined;
+        updated.attachment = undefined;
+        updated.attachment_type = undefined;
+      } else if (field === "mediaUrl" || field === "attachment") {
+        // set the value
+        // @ts-ignore
+        updated[field] = value;
+        if (value) {
+          updated.hasMedia = true;
+          if (!updated.mediaType) {
+            updated.mediaType = "image";
+          }
+        }
+      } else {
+        // generic assignment
+        // @ts-ignore
+        updated[field] = value;
+      }
+
+      return updated;
+    });
+
+    // propagate to parent
     onUpdateField(field, value);
   };
 
@@ -71,6 +104,7 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         onUpdateField("attachment_type", initialQuestion.attachment_type);
       } else {
         console.log("QuestionSettingsModal - Updating existing question");
+        if (localQuestion.id !== question.id) {
         const updatedQuestion = {
           ...question,
           label: question.title || question.label || "",
@@ -89,7 +123,8 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
         onUpdateField("attachment_type", updatedQuestion.attachment_type);
       }
     }
-  }, [question, isNewQuestion]);
+    }
+  }, [question.id, isNewQuestion]);
 
   console.log("QuestionSettingsModal - Current localQuestion:", localQuestion);
 
