@@ -206,7 +206,6 @@ const FormHeader: React.FC<FormHeaderProps> = ({
                 <Eye className="w-3.5 h-3.5" />
                 <span className="text-sm">پیش‌نمایش</span>
               </Button>
-
               <ThemeToggle />
               <UserMenu />
             </div>

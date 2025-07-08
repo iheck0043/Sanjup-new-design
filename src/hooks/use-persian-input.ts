@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 
 // Helper functions for Persian numbers
-const toPersianNumbers = (str: string | number): string => {
+const toPersianNumbers = (str: string | number | null | undefined): string => {
+  if (str === null || str === undefined) return "";
   const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
   const englishDigits = "0123456789";
 
