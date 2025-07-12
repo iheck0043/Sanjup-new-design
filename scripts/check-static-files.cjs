@@ -7,6 +7,7 @@ const publicFiles = [
   "Logo-Sanjup.png",
   "Logo-Sanjup-blue.png",
   "favicon.ico",
+  "Sanjup_fav.ico",
   "robots.txt",
 ];
 

@@ -5,6 +5,7 @@ import {
   Target,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   X,
   Plus,
   Copy,
@@ -3342,9 +3343,7 @@ const Audience = () => {
           {summaryLoading ? (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-               ...
-              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">...</p>
             </div>
           ) : (
             <div className="overflow-y-auto flex-1 min-h-0 space-y-2">
@@ -3363,7 +3362,7 @@ const Audience = () => {
                           {isExpanded ? (
                             <ChevronDown className="w-3 h-3 text-slate-600 dark:text-slate-300" />
                           ) : (
-                            <ChevronRight className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+                            <ChevronLeft className="w-3 h-3 text-slate-600 dark:text-slate-300" />
                           )}
                           <span className="font-medium text-slate-800 dark:text-slate-200">
                             سگمنت {index + 1}
@@ -3960,7 +3959,7 @@ const Audience = () => {
                                   {expandedCategories.includes("general") ? (
                                     <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                                   ) : (
-                                    <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                    <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                                   )}
                                 </div>
                               </div>
@@ -4229,7 +4228,7 @@ const Audience = () => {
                                     ) ? (
                                       <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                                     ) : (
-                                      <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                      <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                                     )}
                                   </div>
                                 </div>
@@ -4402,7 +4401,7 @@ const Audience = () => {
 
                           return (
                             <div
-                              className="space-y-2"
+                              className="space-y-5"
                               ref={advancedSettingsRef}
                             >
                               {appliedFilters.map((flt) => {

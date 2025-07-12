@@ -891,12 +891,7 @@ const Index = () => {
         // Check if the response is successful (status 200 or 201)
         if (response.ok || response.status === 201) {
           // Removed duplicate fetchQuestions to avoid double reload
-          toast.success("سوال با موفقیت ایجاد شد");
-          setShowSettings(false);
-          setSelectedQuestion(null);
-          setIsCreatingNewQuestion(false);
-          setShowConditionalLogic(false);
-          setExpandedGroups([]);
+          // Toast notification moved to handleQuestionSave to avoid duplicate notifications
           return data.data || { message: "Created" };
         } else {
           throw new Error(data.info?.message || "خطا در ایجاد سوال");

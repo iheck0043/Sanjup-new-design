@@ -1063,10 +1063,10 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             put: true,
             pull: false,
           }}
-          className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg transition-all duration-200 border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-900/20"
+          className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed rounded-lg transition-all duration-200 border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-900/20 min-h-[calc(100vh-150px)]"
         >
           <div className="mb-2 text-gray-400 dark:text-gray-500">
-            <MoveRight className="w-8 h-8" />
+            <MoveRight className="w-8 h-8 rotate-180" />
           </div>
           <p className="text-sm text-center text-gray-500 dark:text-gray-400">
             سوالات را از لیست سمت راست به اینجا بکشید
@@ -1084,7 +1084,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             put: true,
             pull: true,
           }}
-          className="space-y-3 min-h-[calc(100vh-200px)] pb-32"
+          className="space-y-3 min-h-[calc(100vh-100px)] pb-5"
           animation={200}
           ghostClass="opacity-50"
           chosenClass="shadow-lg"

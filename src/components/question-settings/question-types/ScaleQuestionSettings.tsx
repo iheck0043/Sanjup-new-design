@@ -35,7 +35,7 @@ const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
               <span>11</span>
             </div>
           </div>
-          <div>
+          <div className="text-right">
             <Label className="text-xs text-gray-600 mb-1 block">
               یا وارد کنید
             </Label>
@@ -58,7 +58,10 @@ const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
       </div>
 
       <div className="space-y-3">
-        <Label className="text-sm font-medium">برچسب‌های طیف</Label>
+        <Label className="text-sm font-medium">
+          <span className="text-red-500 mr-1">*</span>
+          برچسب‌های طیف
+        </Label>
         <div className="space-y-2">
           <Input
             placeholder="برچسب چپ"
@@ -69,6 +72,7 @@ const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
                 left: e.target.value,
               })
             }
+            className="text-right"
           />
           <Input
             placeholder="برچسب وسط"
@@ -79,6 +83,7 @@ const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
                 center: e.target.value,
               })
             }
+            className="text-right"
           />
           <Input
             placeholder="برچسب راست"
@@ -89,6 +94,7 @@ const ScaleQuestionSettings: React.FC<ScaleQuestionSettingsProps> = ({
                 right: e.target.value,
               })
             }
+            className="text-right"
           />
         </div>
       </div>

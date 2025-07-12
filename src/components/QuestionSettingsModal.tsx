@@ -80,22 +80,22 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
     setLocalQuestion((prev) => {
       const updated = { ...prev } as Question;
 
-    if (field === "label") {
+      if (field === "label") {
         updated.label = value;
-      updated.title = value;
+        updated.title = value;
       } else if (field === "hasMedia") {
-      updated.hasMedia = value;
-      if (!value) {
-        updated.mediaType = undefined;
-        updated.mediaUrl = undefined;
+        updated.hasMedia = value;
+        if (!value) {
+          updated.mediaType = undefined;
+          updated.mediaUrl = undefined;
           updated.attachment = undefined;
           updated.attachment_type = undefined;
-      } else if (!updated.mediaType) {
-        updated.mediaType = "image";
-      }
-    } else if (field === "mediaType") {
-      updated.mediaType = value;
-      updated.mediaUrl = undefined;
+        } else if (!updated.mediaType) {
+          updated.mediaType = "image";
+        }
+      } else if (field === "mediaType") {
+        updated.mediaType = value;
+        updated.mediaUrl = undefined;
         updated.attachment = undefined;
         updated.attachment_type = undefined;
       } else if (field === "mediaUrl" || field === "attachment") {
@@ -106,11 +106,11 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
           updated.hasMedia = true;
           if (!updated.mediaType) updated.mediaType = "image";
         }
-    } else {
+      } else {
         // generic assignment
         // @ts-ignore
-      updated[field] = value;
-    }
+        updated[field] = value;
+      }
 
       return updated;
     });
@@ -122,6 +122,12 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   const handleSave = () => {
     if (!localQuestion.label.trim()) {
       inputRef.current?.focus();
+      return;
+    }
+
+    // Prevent saving scale question if any of its labels are missing
+    if (areScaleLabelsMissing) {
+      // Optionally, focus could be set to first label input if refs are managed; for now, just block save.
       return;
     }
 
@@ -286,6 +292,12 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
   const isMultiChoice = localQuestion.type === "single_select";
   const isDropdown = localQuestion.type === "combobox";
   const isScale = localQuestion.type === "range_slider";
+  // Determine if any of the required scale labels are missing
+  const areScaleLabelsMissing =
+    isScale &&
+    (!localQuestion.scaleLabels?.left?.trim() ||
+      !localQuestion.scaleLabels?.center?.trim() ||
+      !localQuestion.scaleLabels?.right?.trim());
   const isText =
     localQuestion.type === "text_question_short" ||
     localQuestion.type === "text_question_long";
@@ -338,7 +350,11 @@ const QuestionSettingsModal: React.FC<QuestionSettingsModalProps> = ({
                 <Button
                   onClick={handleSave}
                   className="flex-1"
-                  disabled={!hasChanges || !localQuestion.label.trim()}
+                  disabled={
+                    !hasChanges ||
+                    !localQuestion.label.trim() ||
+                    areScaleLabelsMissing
+                  }
                 >
                   ذخیره
                 </Button>
